@@ -41,24 +41,38 @@
           return `${index === 0 ? 'M' : 'L'}${pt[0].toFixed(p)} ${pt[1].toFixed(p)}`;
       }).join(' ');
 
-      // Contain info of polygon's vertices label
-      let vertices = '';
+      // Contain info of polygon's vertice labels
+      let verticeLabels = '';
 
-      // Render vertices label of polygon
-      (points || []).forEach((pt, index) => {
-        if (index !== points.length - 1) {
-          vertices +=
+      // Contain info of polygon's edge labels
+      let edgeLabels = '';
+
+      let midPoint = [];
+
+      for (let index = 0; index < (points || []).length; index++) {
+        if (index < points.length - 1) {
+          // Render vertice labels of polygon
+          verticeLabels +=
             `<text fill="#000000" font-family="serif" font-size="24" id="svg_1" stroke="#000000"
             stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
             style="cursor: move;" text-anchor="middle" xml:space="preserve"
-            x="${pt[0]}" y="${pt[1]}">${index + 1}</text>`
+            x="${points[index][0]}" y="${points[index][1]}">${index + 1}</text>`
+    
+          midPoint = getMidpointCoordinate(points[index], points[index + 1]);
+
+          // Render edge labels of polygon
+          edgeLabels +=
+            `<text fill="#000000" font-family="serif" font-size="24" id="svg_1" stroke="#000000"
+            stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
+            style="cursor: move;" text-anchor="middle" xml:space="preserve"
+            x="${midPoint[0]}" y="${midPoint[1]}">${index + 10.10}</text>`
         }
-      });
+      }
 
       const svgStr = `<path d="${pathd}" />`;
       const svgStyle = svg.style(svgStr, option);
 
-      return `${svgStyle}${vertices}`;
+      return `${svgStyle}${verticeLabels}${edgeLabels}`;
   }
 
   // parse svg string to svg element
@@ -69,6 +83,10 @@
       while (div.firstChild)
           frag.appendChild(div.firstChild);
       return frag;
+  }
+
+  function getMidpointCoordinate(firstPoint, secondPoint) {
+      return [firstPoint[0] + (secondPoint[0] - firstPoint[0]) / 2, firstPoint[1] + (secondPoint[1] - firstPoint[1]) / 2];
   }
 
   function getExtent(points) {
