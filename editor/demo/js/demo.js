@@ -26,10 +26,11 @@ function convert() {
 
     // After convert geojson to svg then open svg editor dialog
     $("#dialog").dialog({
+      title: 'BIÊN TẬP SƠ ĐỒ THỬA ĐẤT',
       autoOpen: false,
       modal: true,
-      width: 1000,
-      height: 600,
+      width: 1200,
+      height: 800,
       open: function(ev, ui){
         $('#svgEditor').attr('src','http://localhost:8000/editor/svg-editor-es.html');
       }

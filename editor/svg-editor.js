@@ -47,6 +47,13 @@ import loadStylesheets from './external/load-stylesheets/index-es.js';
 */
 const editor = {};
 
+let isShowAdjacent = false;
+const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
+const MAIN_LAND_KEY = 'main-land';
+const ADJACENT_LANDS_KEY = 'adjacent_lands';
+const SVG_EDIT_DATA_KEY = 'svgedit-data';
+const ADJACENT_REGEX = /<path id="adjacent-marker".*?>.*?<path id="adjacent-marker".*?>/igm;
+
 const $ = [
   jQueryPluginJSHotkeys, jQueryPluginBBQ, jQueryPluginSVGIcons, jQueryPluginJGraduate,
   jQueryPluginSpinButton, jQueryPluginSVG, jQueryPluginContextMenu, jQueryPluginJPicker
@@ -1223,6 +1230,7 @@ editor.init = function () {
         docprops: 'document-properties.png',
         source: 'source.png',
         wireframe: 'wireframe.png',
+        toggle_adjacent: 'wireframe.png',
 
         undo: 'undo.png',
         redo: 'redo.png',
@@ -1285,6 +1293,7 @@ editor.init = function () {
         '#tool_source': 'source',
         '#tool_docprops > div': 'docprops',
         '#tool_wireframe': 'wireframe',
+        '#tool_toggle_adjacent': 'toggle_adjacent',
 
         '#tool_undo': 'undo',
         '#tool_redo': 'redo',
@@ -4658,6 +4667,38 @@ editor.init = function () {
     updateWireFrame();
   };
 
+  /**
+  * Handle toggle adjacent
+  * @returns {void}
+  */
+  const clickToggleAdjacent = function () {
+    $('#tool_toggle_adjacent').toggleClass('push_button_pressed tool_button');
+
+    // Get svg data
+    let svgData = svgCanvas.getSvgString();
+    // let svgData = editor.storage.getItem(`svgedit-default`);
+
+    // const mainLand = editor.storage.getItem(MAIN_LAND_KEY);
+    const adjacentLands = editor.storage.getItem(ADJACENT_LANDS_KEY);
+
+    if (isShowAdjacent) {
+      // Hide adjacent
+      svgData = svgData.replace(/\n*/g, '').replace(ADJACENT_REGEX, `${ADJACENT_MAKER}${ADJACENT_MAKER}`);
+    } else {
+      // Show adjacent
+      svgData = svgData.replace(/\n*/g, '');
+      svgData = svgData.replace(/  /g, '');
+      svgData = svgData.replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
+    }
+
+    isShowAdjacent = !isShowAdjacent;
+
+    // Reload svg source
+    editor.loadFromString(svgData);
+
+    clickWireframe();
+  };
+
   $('#svg_docprops_container, #svg_prefs_container').draggable({
     cancel: 'button,fieldset',
     containment: 'window'
@@ -5591,6 +5632,7 @@ editor.init = function () {
       {sel: '#tool_import', fn: clickImport, evt: 'mouseup'},
       {sel: '#tool_source', fn: showSourceEditor, evt: 'click', key: ['U', true]},
       {sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true]},
+      {sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['T', true]},
       {
         key: ['esc', false, false],
         fn () {
