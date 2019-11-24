@@ -1217,6 +1217,7 @@ editor.init = function () {
 
         new_image: 'clear.png',
         save: 'save.png',
+        save_database: 'save.png',
         export: 'export.png',
         open: 'open.png',
         import: 'import.png',
@@ -1279,6 +1280,7 @@ editor.init = function () {
 
         '#tool_clear div,#layer_new': 'new_image',
         '#tool_save div': 'save',
+        '#tool_save_database div': 'save',
         '#tool_export div': 'export',
         '#tool_open div div': 'open',
         '#tool_import div div': 'import',
@@ -4491,6 +4493,32 @@ editor.init = function () {
     };
     svgCanvas.save(saveOpts);
   };
+  /**
+  *
+  * @returns {void}
+  */
+ const clickSaveDatabase = function () {
+  // In the future, more options can be provided here
+  const dataSave = {
+    Id: "",
+    ObjectId: "",
+    SoTo: "6",
+    SoThua: "7",
+    CodeDiaChinh: "109",
+    Data:""
+  };
+  svgCanvas.saveDatabase(dataSave);
+};
+const clickSearchDatabase = async function () {
+  // In the future, more options can be provided here
+  const dataSave = {
+    SoTo: $('#txtSoTo').val(),
+    SoThua: $('#txtSoThua').val(),
+    CodeDiaChinh: $('#txtCodeDiaChinh').val(),
+  };
+  const message = uiStrings.notification.QwantToOpen;
+  await svgCanvas.searchDatabase(dataSave, message);
+};
 
   let loadingURL;
   /**
@@ -4987,8 +5015,8 @@ editor.init = function () {
   // in Opera and Chrome
   if (isMac() && !window.opera) {
     const shortcutButtons = [
-      'tool_clear', 'tool_save', 'tool_source',
-      'tool_undo', 'tool_redo', 'tool_clone'
+      'tool_clear', 'tool_save', 'tool_save_database', 'tool_source',
+      'tool_undo', 'tool_redo', 'btnSearch', 'tool_clone'
     ];
     let i = shortcutButtons.length;
     while (i--) {
@@ -5586,6 +5614,12 @@ editor.init = function () {
           clickSave();
         }
       }, evt: 'mouseup', key: ['S', true]},
+      {sel: '#tool_save_database', fn () {
+        clickSaveDatabase();
+      }, evt: 'mouseup'},
+      {sel: '#btnSearch', fn () {
+        clickSearchDatabase();
+      }, evt: 'mouseup'},
       {sel: '#tool_export', fn: clickExport, evt: 'mouseup'},
       {sel: '#tool_open', fn: clickOpen, evt: 'mouseup', key: ['O', true]},
       {sel: '#tool_import', fn: clickImport, evt: 'mouseup'},
