@@ -75,16 +75,16 @@ select {
 }
 
 #ruler_corner {
-  top: 41px;
-  left: 41px;
+  top: 57px;
+  left: 30px;
   width: 15px;
   height: 15px;
 }
 
 #ruler_x {
   height: 15px;
-  top: 41px;
-  left: 56px;
+  top: 57px;
+  left: 46px;
   right: 30px;
   border-bottom: 1px solid;
   border-left: 1px solid #777;
@@ -92,8 +92,8 @@ select {
 
 #ruler_y {
   width: 15px;
-  top: 55px;
-  left: 41px;
+  top: 56px;
+  left: 30px;
   bottom: 56px;
   border-right: 1px solid;
   border-top: 1px solid #777;
@@ -582,12 +582,18 @@ div.toolset label span {
 }
 
 #tools_top input {
-  margin-top: 5px;
   height: 15px;
 }
+#tools_top .search_panel input[type=number]{
+  width: 50px;
+}
+#tools_top .search_panel input[type=text]{
+  width: 70px;
+}
 
-input[type=text] {
-  padding: 2px;
+#tools_top .search_panel button{
+  cursor: pointer;
+  margin-top: 2px;
 }
 
 #tools_left .tool_button,
