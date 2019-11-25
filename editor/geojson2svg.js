@@ -16,7 +16,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
   const svg = {};
   let adjacentLands = [];
   let mainLand = '';
-  let metadata;
+  // let metadata;
   let properties = {};
   const MAIN_LAND_KEY = 'main-land';
   const ADJACENT_LANDS_KEY = 'adjacent_lands';
@@ -136,9 +136,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
               return pointsArr.reduce((prev, item) => prev.concat(item), pointsArr[0]);
           }
           case 'Feature': {
-              if (!metadata) {
-                metadata = geojson.properties;
-              }
+              // if (!metadata) {
+              //   metadata = geojson.properties;
+              // }
               return getAllPoints(geojson.geometry);
           }
           case 'FeatureCollection': {
@@ -325,7 +325,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0] * 2) + '" height="' + (option.size[1] * 2) + '" >';
 
       // Add metadata for svg
-      fullSvgStr += `<metadata>${JSON.stringify(metadata)}</metadata>`
+      // fullSvgStr += `<metadata>${JSON.stringify(metadata)}</metadata>`;
       let convert = converter[funcName];
 
       // handle one point
