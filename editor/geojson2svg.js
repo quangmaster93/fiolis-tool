@@ -1,4 +1,4 @@
-(function () {
+export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
   const defaultOption = {
       size: [256, 256],                // size[0] is svg width, size[1] is svg height
@@ -69,7 +69,7 @@
             midPoint = getMidpointCoordinate(points[index], points[index + 1]);
 
             // Render edge labels of polygon
-            edgeLabels += `${textFormat} x="${midPoint[0]}" y="${midPoint[1]}">${index + 10}</text>`;
+            edgeLabels += `${textFormat} x="${midPoint[0]}" y="${midPoint[1]}">C${index + 1}</text>`;
           }
         }
       }
@@ -309,7 +309,7 @@
       }).join('');
   }
 
-  const geojson2svg = function (geojson, option) {
+  const convertToSvg = function(geojson, option, sheetNum, parcelNum) {
       const type = geojson.type;
       let funcName = 'convert' + type;
       if (!converter[funcName]) {
@@ -341,12 +341,21 @@
           }
       }
 
-      if (geojson.features &&
-        geojson.features.length > 0 &&
-        geojson.features[0].properties
-      ) {
-        geojson.features[0].properties.isMainLand = true;
-      }
+      // if (geojson.features &&
+      //   geojson.features.length > 0 &&
+      //   geojson.features[0].properties
+      // ) {
+      //   geojson.features[0].properties.isMainLand = true;
+      // }
+      geojson.features.map(
+          feature => {
+            if(feature.properties &&
+                feature.properties.SoHieuToBanDo === parseInt(sheetNum) &&
+                feature.properties.SoThuTuThua === parseInt(parcelNum)) {
+                    return feature.properties.isMainLand = true;
+            }
+          }
+      )
 
       convert(geojson, option, commonOpt);
 
@@ -355,16 +364,12 @@
 
       // Save svg data into local storage
       localStorage.setItem(SVG_EDIT_DEFAULT_KEY, fullSvgStr);
-    //   localStorage.setItem(SVG_EDIT_DATA_KEY, fullSvgStr);
       localStorage.setItem(ADJACENT_LANDS_KEY, adjacentLands);
-    //   localStorage.setItem(MAIN_LAND_KEY, mainLand);
+      return {
+          mainLand: fullSvgStr,
+          adjacentLands: adjacentLands
+      };
   }
 
-  if (typeof module !== 'undefined' && module.exports) {
-      module.exports = geojson2svg;
-  }
-
-  if (typeof window !== 'undefined') {
-      window.geojson2svg = geojson2svg;
-  }
-})();
+  return convertToSvg(geojson, option, sheetNum, parcelNum);
+};
