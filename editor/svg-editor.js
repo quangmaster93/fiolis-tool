@@ -49,6 +49,7 @@ import loadStylesheets from './external/load-stylesheets/index-es.js';
 const editor = {};
 
 let isShowAdjacent = false;
+let properties = {};
 const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
 const MAIN_LAND_KEY = 'main-land';
 const ADJACENT_LANDS_KEY = 'adjacent_lands';
@@ -528,6 +529,7 @@ editor.loadContentAndPrefs = function () {
         }
 
         if (svgData) {
+          properties = svgData.properties;
           editor.loadFromString(svgData.mainLand);
         } else {
           const name = 'svgedit-' + curConfig.canvasName;

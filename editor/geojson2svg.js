@@ -17,6 +17,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
   let adjacentLands = [];
   let mainLand = '';
   let metadata;
+  let properties = {};
   const MAIN_LAND_KEY = 'main-land';
   const ADJACENT_LANDS_KEY = 'adjacent_lands';
   const SVG_EDIT_DEFAULT_KEY = 'svgedit-default';
@@ -352,6 +353,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
             if(feature.properties &&
                 feature.properties.SoHieuToBanDo === parseInt(sheetNum) &&
                 feature.properties.SoThuTuThua === parseInt(parcelNum)) {
+                    properties = feature.properties;
                     return feature.properties.isMainLand = true;
             }
           }
@@ -367,7 +369,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       localStorage.setItem(ADJACENT_LANDS_KEY, adjacentLands);
       return {
           mainLand: fullSvgStr,
-          adjacentLands: adjacentLands
+          adjacentLands: adjacentLands,
+          properties: properties
       };
   }
 
