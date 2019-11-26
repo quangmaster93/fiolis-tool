@@ -342,22 +342,24 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           }
       }
 
-      // if (geojson.features &&
-      //   geojson.features.length > 0 &&
-      //   geojson.features[0].properties
-      // ) {
-      //   geojson.features[0].properties.isMainLand = true;
-      // }
-      geojson.features.map(
-          feature => {
-            if(feature.properties &&
-                feature.properties.SoHieuToBanDo === parseInt(sheetNum) &&
-                feature.properties.SoThuTuThua === parseInt(parcelNum)) {
-                    properties = feature.properties;
-                    return feature.properties.isMainLand = true;
-            }
-          }
-      )
+      if (geojson.features &&
+        geojson.features.length > 0 &&
+        geojson.features[0].properties
+      ) {
+        properties = geojson.features[0].properties;
+        geojson.features[0].properties.isMainLand = true;
+      }
+
+      // geojson.features.map(
+      //     feature => {
+      //       if(feature.properties &&
+      //           feature.properties.SoHieuToBanDo === parseInt(sheetNum) &&
+      //           feature.properties.SoThuTuThua === parseInt(parcelNum)) {
+      //               properties = feature.properties;
+      //               return feature.properties.isMainLand = true;
+      //       }
+      //     }
+      // )
 
       convert(geojson, option, commonOpt);
 
