@@ -1,4 +1,4 @@
-(function () {
+export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
   const defaultOption = {
       size: [256, 256],                // size[0] is svg width, size[1] is svg height
@@ -14,8 +14,15 @@
   };
 
   const svg = {};
-
+  let adjacentLands = [];
+  let mainLand = '';
   let metadata;
+  let properties = {};
+  const MAIN_LAND_KEY = 'main-land';
+  const ADJACENT_LANDS_KEY = 'adjacent_lands';
+  const SVG_EDIT_DEFAULT_KEY = 'svgedit-default';
+  const SVG_EDIT_DATA_KEY = 'svgedit-data';
+  const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
 
   svg.style = function (svgStr, option) {
       const { fill, fillOpacity, stroke, strokeWidth } = option;
@@ -34,7 +41,7 @@
       return svg.style(svgStr, option);
   }
 
-  svg.createPath = function (points, option) {
+  svg.createPath = function (points, option, isMainLand = false) {
       let p = option.precision;
       // firefox cannot use common as splitor, so use space
       let pathd = points.map((pt, index) => {
@@ -49,30 +56,30 @@
 
       let midPoint = [];
 
-      for (let index = 0; index < (points || []).length; index++) {
-        if (index < points.length - 1) {
-          // Render vertice labels of polygon
-          verticeLabels +=
-            `<text fill="#000000" font-family="serif" font-size="24" id="svg_1" stroke="#000000"
+      if (isMainLand) {
+        // Render vertice labels and edge labels of polygon
+        for (let index = 0; index < (points || []).length; index++) {
+          if (index < points.length - 1) {
+            const textFormat = `<text fill="#000" font-family="serif" font-size="16" stroke="#000"
             stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
-            style="cursor: move;" text-anchor="middle" xml:space="preserve"
-            x="${points[index][0]}" y="${points[index][1]}">${index + 1}</text>`
-    
-          midPoint = getMidpointCoordinate(points[index], points[index + 1]);
+            style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
 
-          // Render edge labels of polygon
-          edgeLabels +=
-            `<text fill="#000000" font-family="serif" font-size="24" id="svg_1" stroke="#000000"
-            stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
-            style="cursor: move;" text-anchor="middle" xml:space="preserve"
-            x="${midPoint[0]}" y="${midPoint[1]}">${index + 10.10}</text>`
+            // Render vertice labels of polygon
+            verticeLabels += `${textFormat} x="${points[index][0]}" y="${points[index][1]}">${index + 1}</text>`;
+    
+            midPoint = getMidpointCoordinate(points[index], points[index + 1]);
+
+            // Render edge labels of polygon
+            edgeLabels += `${textFormat} x="${midPoint[0]}" y="${midPoint[1]}">C${index + 1}</text>`;
+          }
         }
       }
 
       const svgStr = `<path d="${pathd}" />`;
       const svgStyle = svg.style(svgStr, option);
+      const adjacentMarker = isMainLand ? ADJACENT_MAKER : '';
 
-      return `${svgStyle}${verticeLabels}${edgeLabels}`;
+      return `${svgStyle}${verticeLabels}${edgeLabels}${adjacentMarker}`;
   }
 
   // parse svg string to svg element
@@ -206,13 +213,13 @@
       return commonOpt;
   }
 
-  converter.convertPoint = function (geojson, option, commonOpt) {
+  converter.convertPoint = function (geojson, option, commonOpt, isMainLand = false) {
       let { xRes, yRes, res, extent, origin, geometrySize } = commonOpt;
       let center = geoPointToPixelPoint(geojson.coordinates, geometrySize, xRes, yRes, res, extent, origin, option.padding);
       return svg.createCircle(center, option);
   }
 
-  converter.convertMultiPoint = function (geojson, option, commonOpt) {
+  converter.convertMultiPoint = function (geojson, option, commonOpt, isMainLand = false) {
       let { xRes, yRes, res, extent, origin, geometrySize } = commonOpt;
       // callers are supposed to set reasonable padding themselves.
       // option.padding = option.padding.map(item => item + radius);  // comment it
@@ -227,7 +234,7 @@
       return svgStr;
   }
 
-  converter.convertLineString = function (geojson, option, commonOpt) {
+  converter.convertLineString = function (geojson, option, commonOpt, isMainLand = false) {
       let { xRes, yRes, res, extent, origin, geometrySize } = commonOpt;
       let coords = (Array.isArray(geojson) ? geojson : geojson.coordinates);
       let pixelPoints = coords.map(pt => {
@@ -240,13 +247,13 @@
       return svg.createPath(pixelPoints, optionForLineString);
   }
 
-  converter.convertMultiLineString = function (geojson, option, commonOpt) {
+  converter.convertMultiLineString = function (geojson, option, commonOpt, isMainLand = false) {
       return geojson.coordinates.map(points => {
           return converter.convertLineString(points, option, commonOpt);
       }).join('');
   }
 
-  converter.convertPolygon = function (geojson, option, commonOpt) {
+  converter.convertPolygon = function (geojson, option, commonOpt, isMainLand = false) {
       let { xRes, yRes, res, extent, origin, geometrySize } = commonOpt;
       let coords = (Array.isArray(geojson) ? geojson : geojson.coordinates);
 
@@ -256,24 +263,32 @@
       optionForInner.fill = option.background;
       optionForInner.fillOpacity = 1;
 
-      return coords.map((points, index) => {
+      const path = coords.map((points, index) => {
           let pixelPoints = points.map(pt => geoPointToPixelPoint(pt, geometrySize, xRes, yRes, res, extent, origin, option.padding));
           // the first polygon is outer polygon
           if (index == 0 || Array.isArray(geojson)) {
-              return svg.createPath(pixelPoints, option);
+              return svg.createPath(pixelPoints, option, isMainLand);
           }
           // the others are inner polygon, so change their fill style
-          return svg.createPath(pixelPoints, optionForInner);
+          return svg.createPath(pixelPoints, optionForInner, isMainLand);
       }).join('');
+
+      if (isMainLand) {
+          mainLand = path;
+      } else {
+          adjacentLands = [...adjacentLands, path];
+      }
+
+      return path;
   }
 
-  converter.convertMultiPolygon = function (geojson, option, commonOpt) {
+  converter.convertMultiPolygon = function (geojson, option, commonOpt, isMainLand = false) {
       return geojson.coordinates.map((points, index) => {
-          return converter.convertPolygon(points, option, commonOpt);
+          return converter.convertPolygon(points, option, commonOpt, isMainLand);
       }).join('');
   }
 
-  converter.convertGeometryCollection = function (geojson, option, commonOpt) {
+  converter.convertGeometryCollection = function (geojson, option, commonOpt, isMainLand = false) {
       let geoms = geojson.geometries;
       return geoms.map(geom => {
           let funcName = `convert${geom.type}`;
@@ -283,8 +298,9 @@
 
   converter.convertFeature = function (geojson, option, commonOpt) {
       let geom = geojson.geometry;
+      const isMainLand = geojson.properties ? geojson.properties.isMainLand : false;
       let funcName = `convert${geom.type}`;
-      return converter[funcName](geom, option, commonOpt);
+      return converter[funcName](geom, option, commonOpt, isMainLand);
   }
 
   converter.convertFeatureCollection = function (geojson, option, commonOpt) {
@@ -294,7 +310,7 @@
       }).join('');
   }
 
-  const geojson2svg = function (geojson, option) {
+  const convertToSvg = function(geojson, option, sheetNum, parcelNum) {
       const type = geojson.type;
       let funcName = 'convert' + type;
       if (!converter[funcName]) {
@@ -326,24 +342,39 @@
           }
       }
 
-      let svgContent = convert(geojson, option, commonOpt);
-      fullSvgStr += svgContent;
-      fullSvgStr += '</svg>';
-      let fullSvg = fullSvgStr;
+      if (geojson.features &&
+        geojson.features.length > 0 &&
+        geojson.features[0].properties
+      ) {
+        properties = geojson.features[0].properties;
+        geojson.features[0].properties.isMainLand = true;
+      }
+
+      // geojson.features.map(
+      //     feature => {
+      //       if(feature.properties &&
+      //           feature.properties.SoHieuToBanDo === parseInt(sheetNum) &&
+      //           feature.properties.SoThuTuThua === parseInt(parcelNum)) {
+      //               properties = feature.properties;
+      //               return feature.properties.isMainLand = true;
+      //       }
+      //     }
+      // )
+
+      convert(geojson, option, commonOpt);
+
+      fullSvgStr += `${mainLand}${ADJACENT_MAKER}`;
+      fullSvgStr += `</svg>`;
 
       // Save svg data into local storage
-      localStorage.setItem('svgedit-default', fullSvgStr)
-      if (option.output == 'element') {
-          fullSvg = svg.parseSVG(fullSvgStr);
-      }
-      return fullSvg;
+      localStorage.setItem(SVG_EDIT_DEFAULT_KEY, fullSvgStr);
+      localStorage.setItem(ADJACENT_LANDS_KEY, adjacentLands);
+      return {
+          mainLand: fullSvgStr,
+          adjacentLands: adjacentLands,
+          properties: properties
+      };
   }
 
-  if (typeof module !== 'undefined' && module.exports) {
-      module.exports = geojson2svg;
-  }
-
-  if (typeof window !== 'undefined') {
-      window.geojson2svg = geojson2svg;
-  }
-})();
+  return convertToSvg(geojson, option, sheetNum, parcelNum);
+};

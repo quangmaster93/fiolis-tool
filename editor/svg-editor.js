@@ -12,6 +12,7 @@ import {importSetGlobalDefault} from './external/dynamic-import-polyfill/importM
 
 import SvgCanvas from './svgcanvas.js';
 import Layer from './layer.js';
+import geojson2svg from './geojson2svg.js';
 
 import jQueryPluginJSHotkeys from './js-hotkeys/jquery.hotkeys.min.js';
 import jQueryPluginBBQ from './jquerybbq/jquery.bbq.min.js';
@@ -46,6 +47,14 @@ import loadStylesheets from './external/load-stylesheets/index-es.js';
 * @borrows module:locale.setStrings as setStrings
 */
 const editor = {};
+
+let isShowAdjacent = false;
+let properties = {};
+const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
+const MAIN_LAND_KEY = 'main-land';
+const ADJACENT_LANDS_KEY = 'adjacent_lands';
+const SVG_EDIT_DATA_KEY = 'svgedit-data';
+const ADJACENT_REGEX = /<path id="adjacent-marker".*?>.*?<path id="adjacent-marker".*?>/igm;
 
 const $ = [
   jQueryPluginJSHotkeys, jQueryPluginBBQ, jQueryPluginSVGIcons, jQueryPluginJGraduate,
@@ -430,6 +439,73 @@ editor.setStrings = setStrings;
 * @returns {void}
 */
 editor.loadContentAndPrefs = function () {
+  const getLandParams = function() {
+    const pageURL = window.location.search.substring(1);
+    const urlVariables = pageURL.split('&');
+    let parameterName;
+    let landParams = {};
+
+    for (let i = 0; i < urlVariables.length; i++) {
+        parameterName = urlVariables[i].split('=');
+
+        switch (parameterName[0]) {
+          case 'soTo':
+            landParams.sheetNum = decodeURIComponent(parameterName[1]) || '';
+            break;
+          case 'soThua':
+            landParams.parcelNum = decodeURIComponent(parameterName[1]) || '';
+            break;
+          case 'maXa':
+            landParams.code = decodeURIComponent(parameterName[1]) || '';
+            break;
+          default:
+            break;
+        }
+    }
+
+    return landParams;
+  }
+
+  const convertGeojsonToSvg = function(geojson, sheetNum, parcelNum) {
+    var option = {
+      size: [512, 512],           // size[0] is svg width, size[1] is svg height
+      padding: [10, 10, 10, 10],  // paddingTop, paddingRight, paddingBottom, paddingLeft, respectively
+      output: 'element',          // output type: 'string' | 'element'(only supported in browser)
+      precision: 3,               // svg coordinates precision
+      stroke: '#000',             // stroke color
+      strokeWidth: '1px',         // stroke width
+      background: '#ccc',         // svg background color, and as the fill color of polygon hole
+      fill: '#fff',               // fill color
+      fillOpacity: 1,             // fill opacity
+      radius: 5                   // only for `Point`, `MultiPoint`
+    };
+  
+    if (geojson) {
+      return geojson2svg(geojson, option, sheetNum, parcelNum);
+    }
+  }
+  
+  const getLandInfo = function(sheetNum, parcelNum, code, done) {
+    var request = new XMLHttpRequest();
+    const key = `8bd33b7fd36d68baa96bf446c84011da`;
+    request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/find-adjacent?code=${code}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
+    request.onload = function() {
+      // Begin accessing JSON data here
+      var data = JSON.parse(this.response);
+
+      if (request.status >= 200 && request.status < 400 &&
+        data.result && data.result.features && data.result.features.length > 1) {
+        // Only get geojson with format wgs84
+        data.result.features.length = data.result.features.length / 2;
+        done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
+      } else {
+        done('Occur error when request API', null);
+      }
+    }
+  
+    request.send();
+  };
+
   if (!curConfig.forceStorage &&
     (curConfig.noStorageOnLoad ||
         !document.cookie.match(/(?:^|;\s*)svgeditstore=(?:prefsAndContent|prefsOnly)/)
@@ -445,10 +521,30 @@ editor.loadContentAndPrefs = function () {
         document.cookie.match(/(?:^|;\s*)svgeditstore=prefsAndContent/))
     )
   ) {
-    const name = 'svgedit-' + curConfig.canvasName;
-    const cached = editor.storage.getItem(name);
-    if (cached) {
-      editor.loadFromString(cached);
+    const landParams = getLandParams() || {};
+    if (landParams.sheetNum && landParams.parcelNum && landParams.code) {
+      getLandInfo(landParams.sheetNum, landParams.parcelNum, landParams.code, (err, svgData) => {
+        if (err) {
+          throw err;
+        }
+
+        if (svgData) {
+          properties = svgData.properties;
+          editor.loadFromString(svgData.mainLand);
+        } else {
+          const name = 'svgedit-' + curConfig.canvasName;
+          const cached = editor.storage.getItem(name);
+          if (cached) {
+            editor.loadFromString(cached);
+          }
+        }
+      });
+    } else {
+      const name = 'svgedit-' + curConfig.canvasName;
+      const cached = editor.storage.getItem(name);
+      if (cached) {
+        editor.loadFromString(cached);
+      }
     }
   }
 
@@ -1224,6 +1320,7 @@ editor.init = function () {
         docprops: 'document-properties.png',
         source: 'source.png',
         wireframe: 'wireframe.png',
+        toggle_adjacent: 'wireframe.png',
 
         undo: 'undo.png',
         redo: 'redo.png',
@@ -1287,6 +1384,7 @@ editor.init = function () {
         '#tool_source': 'source',
         '#tool_docprops > div': 'docprops',
         '#tool_wireframe': 'wireframe',
+        '#tool_toggle_adjacent': 'toggle_adjacent',
 
         '#tool_undo': 'undo',
         '#tool_redo': 'redo',
@@ -4686,6 +4784,38 @@ const clickSearchDatabase = async function () {
     updateWireFrame();
   };
 
+  /**
+  * Handle toggle adjacent
+  * @returns {void}
+  */
+  const clickToggleAdjacent = function () {
+    $('#tool_toggle_adjacent').toggleClass('push_button_pressed tool_button');
+
+    // Get svg data
+    let svgData = svgCanvas.getSvgString();
+    // let svgData = editor.storage.getItem(`svgedit-default`);
+
+    // const mainLand = editor.storage.getItem(MAIN_LAND_KEY);
+    const adjacentLands = editor.storage.getItem(ADJACENT_LANDS_KEY);
+
+    if (isShowAdjacent) {
+      // Hide adjacent
+      svgData = svgData.replace(/\n*/g, '').replace(ADJACENT_REGEX, `${ADJACENT_MAKER}${ADJACENT_MAKER}`);
+    } else {
+      // Show adjacent
+      svgData = svgData.replace(/\n*/g, '');
+      svgData = svgData.replace(/  /g, '');
+      svgData = svgData.replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
+    }
+
+    isShowAdjacent = !isShowAdjacent;
+
+    // Reload svg source
+    editor.loadFromString(svgData);
+
+    clickWireframe();
+  };
+
   $('#svg_docprops_container, #svg_prefs_container').draggable({
     cancel: 'button,fieldset',
     containment: 'window'
@@ -5625,6 +5755,7 @@ const clickSearchDatabase = async function () {
       {sel: '#tool_import', fn: clickImport, evt: 'mouseup'},
       {sel: '#tool_source', fn: showSourceEditor, evt: 'click', key: ['U', true]},
       {sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true]},
+      {sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['T', true]},
       {
         key: ['esc', false, false],
         fn () {
