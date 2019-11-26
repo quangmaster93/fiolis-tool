@@ -18,6 +18,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
   let mainLand = '';
   let metadata;
   let properties = {};
+  let centerPoint;
   const MAIN_LAND_KEY = 'main-land';
   const ADJACENT_LANDS_KEY = 'adjacent_lands';
   const PROPERTIES_KEY = 'properties_land';
@@ -55,15 +56,18 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       // Contain info of polygon's edge labels
       let edgeLabels = '';
 
+      let centerLabels = '';
+
       let midPoint = [];
+
+      const textFormat = `<text fill="#000" font-family="serif" font-size="14" stroke="#000"
+          stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
+          style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
 
       if (isMainLand) {
         // Render vertice labels and edge labels of polygon
         for (let index = 0; index < (points || []).length; index++) {
           if (index < points.length - 1) {
-            const textFormat = `<text fill="#000" font-family="serif" font-size="16" stroke="#000"
-            stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
-            style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
 
             // Render vertice labels of polygon
             verticeLabels += `${textFormat} x="${points[index][0]}" y="${points[index][1]}">${index + 1}</text>`;
@@ -74,13 +78,15 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
             edgeLabels += `${textFormat} x="${midPoint[0]}" y="${midPoint[1]}">C${index + 1}</text>`;
           }
         }
+
+        centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1]}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua}) / ${properties.DienTich}</text>`;
       }
 
       const svgStr = `<path d="${pathd}" />`;
       const svgStyle = svg.style(svgStr, option);
       const adjacentMarker = isMainLand ? ADJACENT_MAKER : '';
 
-      return `${svgStyle}${verticeLabels}${edgeLabels}${adjacentMarker}`;
+      return `${svgStyle}${centerLabels}${verticeLabels}${edgeLabels}`;
   }
 
   // parse svg string to svg element
@@ -211,6 +217,12 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           origin: [extent[0], extent[1]],
           geometrySize: [geometryWidth, geometryHeight]
       }
+
+      centerPoint = [
+          ((extent[2] - extent[0]) / 2) / xRes,
+          ((extent[3] - extent[1]) / 2) / yRes
+      ];
+
       return commonOpt;
   }
 
@@ -324,6 +336,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           option[key] = option[key] || defaultOption[key];
       }
       let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0] * 2) + '" height="' + (option.size[1] * 2) + '" >';
+      fullSvgStr += `<g class="layer"><title>Layer adjacent lands</title>`;
 
       // Add metadata for svg
       fullSvgStr += `<metadata>${JSON.stringify(metadata)}</metadata>`
@@ -364,7 +377,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
       convert(geojson, option, commonOpt);
 
-      fullSvgStr += `${mainLand}${ADJACENT_MAKER}`;
+      fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}</g>${mainLand}`;
       fullSvgStr += `</svg>`;
 
       // Save svg data into local storage
