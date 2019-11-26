@@ -20,6 +20,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
   let properties = {};
   const MAIN_LAND_KEY = 'main-land';
   const ADJACENT_LANDS_KEY = 'adjacent_lands';
+  const PROPERTIES_KEY = 'properties_land';
   const SVG_EDIT_DEFAULT_KEY = 'svgedit-default';
   const SVG_EDIT_DATA_KEY = 'svgedit-data';
   const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
@@ -369,6 +370,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       // Save svg data into local storage
       localStorage.setItem(SVG_EDIT_DEFAULT_KEY, fullSvgStr);
       localStorage.setItem(ADJACENT_LANDS_KEY, adjacentLands);
+      localStorage.setItem(PROPERTIES_KEY, JSON.stringify(properties));
       return {
           mainLand: fullSvgStr,
           adjacentLands: adjacentLands,
