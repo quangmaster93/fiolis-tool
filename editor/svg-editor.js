@@ -4502,8 +4502,8 @@ editor.init = function () {
   const dataSave = {
     Id: "",
     ObjectId: "",
-    SoTo: "6",
-    SoThua: "7",
+    SoTo: 6,
+    SoThua: 7,
     CodeDiaChinh: "109",
     Data:""
   };
