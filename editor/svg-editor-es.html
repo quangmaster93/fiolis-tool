@@ -96,7 +96,7 @@
   </div>
   <div id="main_button">
     <div id="main_icon" class="tool_button" title="Main Menu">
-      <span>SVG-Edit</span>
+      <span>File</span>
       <div id="logo"></div>
       <div class="dropdown"></div>
     </div>
@@ -123,6 +123,10 @@
           <div></div>
           Save Image (S)
         </li>
+        <li id="tool_save_database">
+          <div></div>
+          Save to Database
+        </li>
         <li id="tool_export">
           <div></div>
           Export
@@ -132,11 +136,6 @@
           Document Properties (D)
         </li>
       </ul>
-      <p>
-        <a href="https://github.com/SVG-Edit/svgedit" target="_blank">
-          SVG-edit Home Page
-        </a>
-      </p>
       <button id="tool_prefs_option">
         Editor Options
       </button>
@@ -156,6 +155,25 @@
         title="Undo [Z]"></div>
       <div class="push_button tool_button_disabled" id="tool_redo"
         title="Redo [Y]"></div>
+    </div>
+    <!-- Search database buttons -->
+    <div class="search_panel">
+      <label id="lblSoTo" title="Số tờ lô đất">
+        <span>Số tờ:</span>
+        <input id="txtSoTo" class="attr_changer"
+          data-attr="soTo" size="10" type="number"/>
+      </label>
+      <label id="lblSoThua" title="Số thửa lô đất">
+        <span>Số thửa:</span>
+        <input id="txtSoThua" class="attr_changer"
+          data-attr="soThua" size="10" type="number"/>
+      </label>
+      <label id="lblCodeDiaChinh" title="Mã địa chính của lô đất">
+        <span>Mã địa chính:</span>
+        <input id="txtCodeDiaChinh" class="attr_changer"
+          data-attr="codeDiaChinh" size="10" type="text"/>
+      </label>
+      <button id="btnSearch" title="Tìm svg của lô đất" type="button">Tìm kiếm</button>
     </div>
     <!-- Buttons when a single element is selected -->
     <div id="selected_panel">
