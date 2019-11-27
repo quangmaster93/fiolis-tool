@@ -12,7 +12,7 @@ fixture`TestCafe UI tests`
   .beforeEach((t) => {
     // Ensure we test against English regardless of the original locale
     return openEditorPreferences(approveStorage(t))
-      .click('#lang_select').click('#lang_en').click('#tool_prefs_save');
+      .click('#lang_select').click('#lang_vn').click('#tool_prefs_save');
   });
 
 test('Editor - No parameters: Export button', async (t) => {

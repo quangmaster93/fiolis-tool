@@ -4639,12 +4639,12 @@ editor.init = function () {
       $.alert(uiStrings.notification.SaveFail)
     }
   };
-  const clickSearchDatabase = async function () {
+  const clickSearchDatabase = async function (soTo, soThua, maXa) {
     // In the future, more options can be provided here
     const dataSave = {
-      SoTo: $('#txtSoTo').val(),
-      SoThua: $('#txtSoThua').val(),
-      MaXa: $('#txtCodeDiaChinh').val(),
+      SoTo: soTo,
+      SoThua: soThua,
+      MaXa: maXa,
     };
     const message = {
       ok: uiStrings.notification.QwantToOpen,
@@ -5834,7 +5834,10 @@ editor.init = function () {
       },
       {
         sel: '#btnSearch', fn() {
-          clickSearchDatabase();
+          let soTo = $('#txtSoTo').val();
+          let soThua = $('#txtSoThua').val();
+          let maXa = $('#txtCodeDiaChinh').val();
+          clickSearchDatabase(soTo, soThua, maXa);
         }, evt: 'mouseup'
       },
       { sel: '#tool_export', fn: clickExport, evt: 'mouseup' },

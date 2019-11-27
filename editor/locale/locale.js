@@ -201,10 +201,12 @@ export const readLang = async function (langData) {
 
     tool_clear: tools.new_doc,
     tool_docprops: tools.docprops,
+    tool_prefs_option: tools.prefsopt,
     tool_export: tools.export_img,
     tool_import: tools.import_doc,
     tool_open: tools.open_doc,
     tool_save: tools.save_doc,
+    tool_save_database: tools.save_database,
 
     svginfo_units_rulers: config.units_and_rulers,
     svginfo_rulers_onoff: config.show_rulers,
