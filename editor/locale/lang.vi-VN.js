@@ -1,5 +1,5 @@
 export default {
-    lang: 'vn',
+    lang: 'vi-VN',
     dir: 'ltr',
     common: {
       ok: 'OK',
