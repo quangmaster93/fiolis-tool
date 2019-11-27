@@ -550,7 +550,7 @@ const convertGeojsonToSvg = function (geojson, sheetNum, parcelNum) {
 const getLandInfo = function (sheetNum, parcelNum, code, done) {
   var request = new XMLHttpRequest();
   const key = `8bd33b7fd36d68baa96bf446c84011da`;
-  request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/find-adjacent?code=${code}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
+  request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${code}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
   request.onload = function () {
     // Begin accessing JSON data here
     var data = JSON.parse(this.response);
