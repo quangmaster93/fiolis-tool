@@ -18,7 +18,6 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
   let mainLand = '';
   // let metadata;
   let properties = {};
-  let centerPoint;
   const MAIN_LAND_KEY = 'main-land';
   const ADJACENT_LANDS_KEY = 'adjacent_lands';
   const PROPERTIES_KEY = 'properties_land';
@@ -79,7 +78,10 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           }
         }
 
-        centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1]}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua}) / ${properties.DienTich}</text>`;
+        const centerPoint = getCenterPointCoordinate(points);
+        centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua})</text>`;
+        centerLabels += `<line fill="none" stroke="#000" stroke-width="1" x1="${centerPoint[0] - 20}" x2="${centerPoint[0] + 20}" y1="${centerPoint[1]}" y2="${centerPoint[1]}"/>`;
+        centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] + 15}">${properties.DienTich}</text>`;
       }
 
       const svgStr = `<path d="${pathd}" />`;
@@ -101,6 +103,17 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
   function getMidpointCoordinate(firstPoint, secondPoint) {
       return [firstPoint[0] + (secondPoint[0] - firstPoint[0]) / 2, firstPoint[1] + (secondPoint[1] - firstPoint[1]) / 2];
+  }
+
+  function getCenterPointCoordinate(points) {
+      const extent = getExtent(points);
+
+      const centerPoint = [
+        extent[0] + ((extent[2] - extent[0]) / 2),
+        extent[1] + ((extent[3] - extent[1]) / 2)
+      ];
+
+      return centerPoint;
   }
 
   function getExtent(points) {
@@ -217,11 +230,6 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           origin: [extent[0], extent[1]],
           geometrySize: [geometryWidth, geometryHeight]
       }
-
-      centerPoint = [
-          ((extent[2] - extent[0]) / 2) / xRes,
-          ((extent[3] - extent[1]) / 2) / yRes
-      ];
 
       return commonOpt;
   }
