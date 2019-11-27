@@ -1,7 +1,7 @@
 export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
   const defaultOption = {
-      size: [256, 256],                // size[0] is svg width, size[1] is svg height
+      size: [1024, 1024],              // size[0] is svg width, size[1] is svg height
       padding: [20, 20, 20, 20],       // paddintTop, paddintRight, paddingBottom, paddingLeft, respectively
       output: 'string',                // output type: 'string'|'element'
       precision: 3,                    // svg coordinates precision
@@ -343,7 +343,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       for (let key in defaultOption) {
           option[key] = option[key] || defaultOption[key];
       }
-      let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0] * 2) + '" height="' + (option.size[1] * 2) + '" >';
+      let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '" >';
       fullSvgStr += `<g class="layer"><title>Layer adjacent lands</title>`;
 
       // Add metadata for svg
