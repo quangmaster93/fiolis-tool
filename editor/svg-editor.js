@@ -530,8 +530,8 @@ editor.loadContentAndPrefs = function () {
 
 const convertGeojsonToSvg = function (geojson, sheetNum, parcelNum) {
   var option = {
-    size: [512, 512],           // size[0] is svg width, size[1] is svg height
-    padding: [10, 10, 10, 10],  // paddingTop, paddingRight, paddingBottom, paddingLeft, respectively
+    size: [1500, 1500],           // size[0] is svg width, size[1] is svg height
+    padding: [250, 250, 250, 250],  // paddingTop, paddingRight, paddingBottom, paddingLeft, respectively
     output: 'element',          // output type: 'string' | 'element'(only supported in browser)
     precision: 3,               // svg coordinates precision
     stroke: '#000',             // stroke color
