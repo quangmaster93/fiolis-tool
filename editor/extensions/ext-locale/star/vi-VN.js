@@ -8,7 +8,7 @@ export default {
   contextTools: [
     {
       title: 'Số cạnh',
-      label: 'điểm'
+      label: 'Điểm'
     },
     {
       title: 'Mũi nhọn',
