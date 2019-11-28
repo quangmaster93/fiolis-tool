@@ -557,8 +557,9 @@ const getLandInfo = function (sheetNum, parcelNum, code, done) {
 
     if (request.status >= 200 && request.status < 400 &&
       data.result && data.result.features && data.result.features.length > 1) {
-      // Only get geojson with format wgs84
-      data.result.features.length = data.result.features.length / 2;
+      // Only get geojson with format vn2000
+      data.result.features = data.result.features.splice(data.result.features.length / 2);
+
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
     } else {
       done('Occur error when request API', null);
@@ -578,8 +579,9 @@ const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa
 
     if (request.status >= 200 && request.status < 400 &&
       data.result && data.result.features && data.result.features.length > 1) {
-      // Only get geojson with format wgs84
-      data.result.features.length = data.result.features.length / 2;
+      // Only get geojson with format vn2000
+      data.result.features = data.result.features.splice(data.result.features.length / 2);
+
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, maXa));
     } else {
       done('Occur error when request API', null);
