@@ -1,0 +1,107 @@
+<svg width="1500" height="1500" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <g class="layer">
+  <g class="layer" id="adjacent-lands">
+   <title>Adjacent lands</title>
+   <path id="adjacent-marker"/>
+   <path id="adjacent-marker"/>
+  </g>
+  <g class="layer" id="cordinates-table">
+   <title>Cordinates table</title>
+   <g class="layer" id="table" transform="translate(1100, 1225)" xmlns="http://www.w3.org/2000/svg">
+    <text fill="#000" font-size="16px" font-weight="bold" id="svg_1" text-anchor="middle" x="175" y="5">BẢNG LIỆT KÊ TỌA ĐỘ GÓC RANH</text>
+    <rect fill="none" height="30" id="header" stroke="#000" width="345" x="5" xmlns="http://www.w3.org/2000/svg" y="10"/>
+    <line fill="none" id="svg_2" stroke="#000" x1="5" x2="5" y1="40" y2="225"/>
+    <line fill="none" id="svg_3" stroke="#000" x1="60" x2="60" y1="10" y2="225"/>
+    <line fill="none" id="svg_4" stroke="#000" x1="150" x2="150" y1="10" y2="225"/>
+    <line fill="none" id="svg_5" stroke="#000" x1="250" x2="250" y1="10" y2="225"/>
+    <line fill="none" id="svg_6" stroke="#000" x1="350" x2="350" y1="40" y2="225"/>
+    <line fill="none" id="svg_7" stroke="#000" x1="5" x2="350" y1="225" y2="225"/>
+    <text fill="#000" font-size="16px" id="svg_8" text-anchor="middle" x="30" y="30">
+     <tspan id="svg_9" x="30">Điểm</tspan>
+     <tspan id="svg_10" x="100">X (m)</tspan>
+     <tspan id="svg_11" x="200">Y (m)</tspan>
+     <tspan id="svg_12" x="300">Cạnh (m)</tspan>
+    </text>
+    <text font-size="14px" id="svg_13" text-anchor="middle" x="30" y="32">
+     <tspan dy="25" fill="#000" id="svg_14" text-anchor="start" x="30">1</tspan>
+     <tspan id="svg_15" x="100">537070.69</tspan>
+     <tspan id="svg_16" x="200">1181037.28</tspan>
+     <tspan id="svg_17" x="300">23.86</tspan>
+    </text>
+    <text font-size="14px" id="svg_18" text-anchor="middle" x="30" y="32">
+     <tspan dy="45" fill="#000" id="svg_19" text-anchor="start" x="30">2</tspan>
+     <tspan id="svg_20" x="100">537060.91</tspan>
+     <tspan id="svg_21" x="200">1181059.04</tspan>
+     <tspan id="svg_22" x="300">30.56</tspan>
+    </text>
+    <text font-size="14px" id="svg_23" text-anchor="middle" x="30" y="32">
+     <tspan dy="65" fill="#000" id="svg_24" text-anchor="start" x="30">3</tspan>
+     <tspan id="svg_25" x="100">537091.25</tspan>
+     <tspan id="svg_26" x="200">1181062.71</tspan>
+     <tspan id="svg_27" x="300">12.07</tspan>
+    </text>
+    <text font-size="14px" id="svg_28" text-anchor="middle" x="30" y="32">
+     <tspan dy="85" fill="#000" id="svg_29" text-anchor="start" x="30">4</tspan>
+     <tspan id="svg_30" x="100">537102.55</tspan>
+     <tspan id="svg_31" x="200">1181066.94</tspan>
+     <tspan id="svg_32" x="300">29.73</tspan>
+    </text>
+    <text font-size="14px" id="svg_33" text-anchor="middle" x="30" y="32">
+     <tspan dy="105" fill="#000" id="svg_34" text-anchor="start" x="30">5</tspan>
+     <tspan id="svg_35" x="100">537119.26</tspan>
+     <tspan id="svg_36" x="200">1181042.35</tspan>
+     <tspan id="svg_37" x="300">24.20</tspan>
+    </text>
+    <text font-size="14px" id="svg_38" text-anchor="middle" x="30" y="32">
+     <tspan dy="125" fill="#000" id="svg_39" text-anchor="start" x="30">6</tspan>
+     <tspan id="svg_40" x="100">537132.78</tspan>
+     <tspan id="svg_41" x="200">1181022.28</tspan>
+     <tspan id="svg_42" x="300">25.18</tspan>
+    </text>
+    <text font-size="14px" id="svg_43" text-anchor="middle" x="30" y="32">
+     <tspan dy="145" fill="#000" id="svg_44" text-anchor="start" x="30">7</tspan>
+     <tspan id="svg_45" x="100">537110.00</tspan>
+     <tspan id="svg_46" x="200">1181011.55</tspan>
+     <tspan id="svg_47" x="300">6.67</tspan>
+    </text>
+    <text font-size="14px" id="svg_48" text-anchor="middle" x="30" y="32">
+     <tspan dy="165" fill="#000" id="svg_49" text-anchor="start" x="30">8</tspan>
+     <tspan id="svg_50" x="100">537105.96</tspan>
+     <tspan id="svg_51" x="200">1181016.86</tspan>
+     <tspan id="svg_52" x="300">39.10</tspan>
+    </text>
+    <text font-size="14px" id="svg_53" text-anchor="middle" x="30" y="32">
+     <tspan dy="185" fill="#000" id="svg_54" text-anchor="start" x="30">9</tspan>
+     <tspan id="svg_55" x="100">537074.36</tspan>
+     <tspan id="svg_56" x="200">1181039.88</tspan>
+     <tspan id="svg_57" x="300">4.50</tspan>
+    </text>
+   </g>
+  </g>
+  <g class="layer" id="main-land">
+   <title>Main layer</title>
+   <path d="m700.69,524.443l-26.822,-59.677l83.208,-10.065l30.99,-11.601l45.827,67.438l37.079,55.042l-62.474,29.427l-11.08,-14.562l-86.663,-63.133l-10.065,7.131" fill="#fff" id="svg_58" stroke="#000" stroke-width="1px"/>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_59" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="772.41999" xml:space="preserve" y="514.05356">93 (61)</text>
+   <line fill="none" id="svg_60" stroke="#000" x1="752.41999" x2="792.41999" y1="519.05356" y2="519.05356"/>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_61" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="772.41999" xml:space="preserve" y="534.05356">1977.7</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_62" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="700.68974" xml:space="preserve" y="524.44259">1</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_63" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="673.86803" xml:space="preserve" y="464.76565">2</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_64" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="757.07567" xml:space="preserve" y="454.70066">3</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_65" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="788.06598" xml:space="preserve" y="443.09985">4</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_66" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="833.89326" xml:space="preserve" y="510.53808">5</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_67" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="870.97194" xml:space="preserve" y="565.58018">6</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_68" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="808.49766" xml:space="preserve" y="595.00727">7</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_69" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="797.41793" xml:space="preserve" y="580.44456">8</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_70" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="710.75474" xml:space="preserve" y="517.31207">9</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_71" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="687.27889" xml:space="preserve" y="494.60412">23.86</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_72" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="715.47185" xml:space="preserve" y="459.73315">30.56</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_73" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="772.57083" xml:space="preserve" y="448.90026">12.07</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_74" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="810.97962" xml:space="preserve" y="476.81897">29.73</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_75" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="852.4326" xml:space="preserve" y="538.05913">24.20</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_76" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="839.7348" xml:space="preserve" y="580.29372">25.18</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_77" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="802.95779" xml:space="preserve" y="587.72591">6.67</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_78" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="754.08633" xml:space="preserve" y="548.87832">39.10</text>
+   <text fill="#000" font-family="serif" font-size="14" id="svg_79" stroke="#000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0" text-anchor="middle" x="705.72224" xml:space="preserve" y="520.87733">4.50</text>
+  </g>
+ </g>
+</svg>

@@ -285,7 +285,7 @@ const callbacks = [],
     showGrid: false, // Set by ext-grid.js
     // EXTENSION-RELATED (STORAGE)
     noStorageOnLoad: false, // Some interaction with ext-storage.js; prevent even the loading of previously saved local storage
-    forceStorage: false, // Some interaction with ext-storage.js; strongly discouraged from modification as it bypasses user privacy by preventing them from choosing whether to keep local storage or not
+    forceStorage: true, // Some interaction with ext-storage.js; strongly discouraged from modification as it bypasses user privacy by preventing them from choosing whether to keep local storage or not
     emptyStorageOnDecline: false, // Used by ext-storage.js; empty any prior storage if the user declines to store
     // EXTENSION (CLIENT VS. SERVER SAVING/OPENING)
     avoidClientSide: false, // Deprecated in favor of `avoidClientSideDownload`
@@ -557,8 +557,8 @@ const getLandInfo = function (sheetNum, parcelNum, code, done) {
 
     if (request.status >= 200 && request.status < 400 &&
       data.result && data.result.features && data.result.features.length > 1) {
-      // Only get geojson with format wgs84
-      data.result.features.length = data.result.features.length / 2;
+      // Only get geojson with format vn2000
+      data.result.features = data.result.features.splice(data.result.features.length / 2);
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
     } else {
       done('Occur error when request API', null);
@@ -578,8 +578,8 @@ const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa
 
     if (request.status >= 200 && request.status < 400 &&
       data.result && data.result.features && data.result.features.length > 1) {
-      // Only get geojson with format wgs84
-      data.result.features.length = data.result.features.length / 2;
+      // Only get geojson with format vn2000
+      data.result.features = data.result.features.splice(data.result.features.length / 2);
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, maXa));
     } else {
       done('Occur error when request API', null);
@@ -1344,8 +1344,7 @@ editor.init = function () {
         docprops: 'document-properties.png',
         source: 'source.png',
         wireframe: 'wireframe.png',
-        toggle_adjacent: 'wireframe.png',
-
+        // toggle_adjacent: 'wireframe.png',
         undo: 'undo.png',
         redo: 'redo.png',
 
@@ -1407,9 +1406,8 @@ editor.init = function () {
         '#tool_import div div': 'import',
         '#tool_source': 'source',
         '#tool_docprops > div': 'docprops',
-        '#tool_wireframe': 'wireframe',
-        '#tool_toggle_adjacent': 'toggle_adjacent',
-
+        '#tool_toggle_adjacent': 'wireframe',
+        // '#tool_toggle_adjacent': 'toggle_adjacent',
         '#tool_undo': 'undo',
         '#tool_redo': 'redo',
 
@@ -4870,17 +4868,16 @@ editor.init = function () {
       svgData = svgData.replace(/\n*/g, '').replace(ADJACENT_REGEX, `${ADJACENT_MAKER}${ADJACENT_MAKER}`);
     } else {
       // Show adjacent
-      svgData = svgData.replace(/\n*/g, '');
-      svgData = svgData.replace(/  /g, '');
-      svgData = svgData.replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
+      svgData = svgData.replace(/\n*/g, '')
+                       .replace(/   /g, '')
+                       .replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
     }
 
     isShowAdjacent = !isShowAdjacent;
 
     // Reload svg source
     editor.loadFromString(svgData);
-
-    clickWireframe();
+    // clickWireframe();
   };
 
   $('#svg_docprops_container, #svg_prefs_container').draggable({
@@ -5947,8 +5944,8 @@ editor.init = function () {
       { sel: '#tool_open', fn: clickOpen, evt: 'mouseup', key: ['O', true] },
       { sel: '#tool_import', fn: clickImport, evt: 'mouseup' },
       { sel: '#tool_source', fn: showSourceEditor, evt: 'click', key: ['U', true] },
-      { sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true] },
-      { sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['T', true] },
+      // { sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true] },
+      { sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['F', true] },
       {
         key: ['esc', false, false],
         fn() {

@@ -15,6 +15,7 @@ export default {
     misc: 'Hỗn hợp',
     raphael_1: 'raphaeljs.com bộ 1',
     raphael_2: 'raphaeljs.com bộ 2'
+
   },
   buttons: [
     {

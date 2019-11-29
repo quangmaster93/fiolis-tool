@@ -312,6 +312,7 @@ export default {
     SaveFail: 'Save SVG to database fail!',
     NotFound: 'Not found SVG!',
     SearchEmpty: 'Please enter value for Number of sheets, Number of plots And Cadastral code!',
+    SearchEmpty: 'Please enter value for SoTo, SoThua And MaXa!',
     QerrorsRevertToSource: 'There were parsing errors in your SVG source.\nRevert back to original SVG source?',
     QignoreSourceChanges: 'Ignore changes made to SVG source?',
     featNotSupported: 'Feature not supported',
