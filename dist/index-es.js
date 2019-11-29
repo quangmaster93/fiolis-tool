@@ -28696,7 +28696,8 @@ function () {
               tool_topath: tools.to_path,
               tool_undo: tools.undo,
               tool_ungroup: tools.ungroup,
-              tool_wireframe: tools.wireframe_mode,
+              // tool_wireframe: tools.wireframe_mode,
+              tool_toggle_adjacent: tools.toggle_adjacent_mode,
               tool_zoom: tools.mode_zoom,
               url_notice: tools.no_embed
             }, true);

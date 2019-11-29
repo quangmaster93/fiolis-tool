@@ -14,8 +14,10 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
   };
 
   const svg = {};
+  let svgSize = [];
   let adjacentLands = [];
   let mainLand = '';
+  let cordinateTable = '';
   // let metadata;
   let properties = {};
   const MAIN_LAND_KEY = 'main-land';
@@ -49,46 +51,25 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           return `${index === 0 ? 'M' : 'L'}${pt[0].toFixed(p)} ${pt[1].toFixed(p)}`;
       }).join(' ');
 
-      // Contain info of polygon's vertice labels
-      let verticeLabels = '';
+      let mainLandItems = {
+        centerLabels: '',
+        verticeLabels: '',
+        edgeLabels: ''
+      };
 
-      // Contain info of polygon's edge labels
-      let edgeLabels = '';
+      const svgStr = `<path d="${pathd}"/>`;
 
-      let centerLabels = '';
+      let svgStyle = svg.style(svgStr, option);
 
-      let midPoint = [];
-
-      const textFormat = `<text fill="#000" font-family="serif" font-size="14" stroke="#000"
-          stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
-          style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
+      let layerBreak = '';
 
       if (isMainLand) {
-        // Render vertice labels and edge labels of polygon
-        for (let index = 0; index < (points || []).length; index++) {
-          if (index < points.length - 1) {
-
-            // Render vertice labels of polygon
-            verticeLabels += `${textFormat} x="${points[index][0]}" y="${points[index][1]}">${index + 1}</text>`;
-    
-            midPoint = getMidpointCoordinate(points[index], points[index + 1]);
-
-            // Render edge labels of polygon
-            edgeLabels += `${textFormat} x="${midPoint[0]}" y="${midPoint[1]}">C${index + 1}</text>`;
-          }
-        }
-
-        const centerPoint = getCenterPointCoordinate(points);
-        centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua})</text>`;
-        centerLabels += `<line fill="none" stroke="#000" stroke-width="1" x1="${centerPoint[0] - 20}" x2="${centerPoint[0] + 20}" y1="${centerPoint[1]}" y2="${centerPoint[1]}"/>`;
-        centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] + 15}">${properties.DienTich}</text>`;
+        mainLandItems = getMainLandItems(points);
+        svgStyle = `<g class="layer" id="main-land"><title>Main layer</title>${svgStyle}`;
+        layerBreak = `</g>`;
       }
 
-      const svgStr = `<path d="${pathd}" />`;
-      const svgStyle = svg.style(svgStr, option);
-      const adjacentMarker = isMainLand ? ADJACENT_MAKER : '';
-
-      return `${svgStyle}${centerLabels}${verticeLabels}${edgeLabels}`;
+      return `${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${layerBreak}`;
   }
 
   // parse svg string to svg element
@@ -99,6 +80,105 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       while (div.firstChild)
           frag.appendChild(div.firstChild);
       return frag;
+  }
+
+  /**
+   * Get items of main land as: edge labels, vertice labels, center labels
+   */
+  function getMainLandItems(points) {
+    // Contain info of polygon's vertice labels
+    let verticeLabels = '';
+
+    // Contain info of polygon's edge labels
+    let edgeLabels = '';
+
+    let centerLabels = '';
+
+    let midPoint = [];
+
+    const move = -10;
+
+    const textFormat = `<text fill="#000" font-family="serif" font-size="14" stroke="#000"
+        stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
+        style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
+
+    // Render vertice labels and edge labels of polygon
+    for (let index = 0; index < (points || []).length; index++) {
+        if (index < points.length - 1) {
+
+            // Render vertice labels of polygon
+            verticeLabels += `${textFormat} x="${points[index][0] + move}" y="${points[index][1] + move}">${index + 1}</text>`;
+
+            midPoint = getMidpointCoordinate(points[index], points[index + 1]);
+
+            // Render edge labels of polygon
+            edgeLabels += `${textFormat} x="${midPoint[0] + move}" y="${midPoint[1] + move}">${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
+        }
+    }
+
+    const centerPoint = getCenterPointCoordinate(points);
+    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua})</text>`;
+    centerLabels += `<line fill="none" stroke="#000" stroke-width="1" x1="${centerPoint[0] - 20}" x2="${centerPoint[0] + 20}" y1="${centerPoint[1]}" y2="${centerPoint[1]}"/>`;
+    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] + 15}">${properties.DienTich}</text>`;
+
+    return {
+        centerLabels: centerLabels,
+        verticeLabels: verticeLabels,
+        edgeLabels: edgeLabels
+    };
+  }
+
+  function drawCordinateTable(points, edgeLabels) {
+      let raws = '';
+      let yAxesStart = 30;
+      let yAxes = 30;
+      let yAxesIncrease = 25;
+
+      // Calculate end point's y coordinates
+      const endPointY = yAxes + yAxesIncrease * edgeLabels.length + 10;
+
+      // Draw the raws of table
+      (points || []).forEach((pt, index) => {
+        if (index < points.length - 1) {
+            yAxes += yAxesIncrease;
+            raws += 
+                `
+                <text font-size="14px" text-anchor="middle" x="30" y="32" alignment-baseline="middle">
+                    <tspan fill="#000" text-anchor="start" x="30" y="${yAxes}">${index + 1}</tspan>
+                    <tspan x="100" y="${yAxes}">${pt[0].toFixed(2)}</tspan>
+                    <tspan x="200" y="${yAxes}">${pt[1].toFixed(2)}</tspan>
+                    <tspan x="300" y="${yAxes}">${(+edgeLabels[index]).toFixed(2)}</tspan>
+                </text>
+                `;
+        }
+      });
+
+      const table =
+      `
+        <g class="layer" id="cordinates-table">
+            <title>Cordinates table</title>
+            <g class="layer" id="table" transform="translate(${svgSize[0] - 400}, ${svgSize[1] - endPointY - 50})" xmlns="http://www.w3.org/2000/svg">
+                <text fill="#000" font-size="16px" font-weight="bold" text-anchor="middle" x="175" y="5">
+                BẢNG LIỆT KÊ TỌA ĐỘ GÓC RANH
+                </text>
+                <rect fill="none" height="30" id="header" stroke="#000" width="345" x="5" y="10" xmlns="http://www.w3.org/2000/svg"/>
+                <line fill="none" stroke="#000" x1="5" x2="5" y1="40" y2="${endPointY}"/>
+                <line fill="none" stroke="#000" x1="60" x2="60" y1="10" y2="${endPointY}"/>
+                <line fill="none" stroke="#000" x1="150" x2="150" y1="10" y2="${endPointY}"/>
+                <line fill="none" stroke="#000" x1="250" x2="250" y1="10" y2="${endPointY}"/>
+                <line fill="none" stroke="#000" x1="350" x2="350" y1="40" y2="${endPointY}"/>
+                <line fill="none"  stroke="#000" x1="5" x2="350" y1="${endPointY}" y2="${endPointY}"/>
+                <text fill="#000" font-size="16px" text-anchor="middle" x="30" y="${yAxesStart}">
+                    <tspan x="30" y="${yAxesStart}">Điểm</tspan>
+                    <tspan x="100" y="${yAxesStart}">X (m)</tspan>
+                    <tspan x="200" y="${yAxesStart}">Y (m)</tspan>
+                    <tspan x="300" y="${yAxesStart}">Cạnh (m)</tspan>
+                </text>
+                ${raws}
+            </g>
+        </g>
+      `
+      return table;
   }
 
   function getMidpointCoordinate(firstPoint, secondPoint) {
@@ -231,6 +311,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           geometrySize: [geometryWidth, geometryHeight]
       }
 
+      svgSize = option.size;
+
       return commonOpt;
   }
 
@@ -286,6 +368,10 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
       const path = coords.map((points, index) => {
           let pixelPoints = points.map(pt => geoPointToPixelPoint(pt, geometrySize, xRes, yRes, res, extent, origin, option.padding));
+
+          if (isMainLand) {
+              cordinateTable = drawCordinateTable(points, properties.calculate[0][0][0].distances)
+          }
           // the first polygon is outer polygon
           if (index == 0 || Array.isArray(geojson)) {
               return svg.createPath(pixelPoints, option, isMainLand);
@@ -344,7 +430,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           option[key] = option[key] || defaultOption[key];
       }
       let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '" >';
-      fullSvgStr += `<g class="layer"><title>Layer adjacent lands</title>`;
+      fullSvgStr += `<g class="layer"><g class="layer" id="adjacent-lands"><title>Adjacent lands</title>`;
 
       // Add metadata for svg
       // fullSvgStr += `<metadata>${JSON.stringify(metadata)}</metadata>`;
@@ -385,8 +471,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
       convert(geojson, option, commonOpt);
 
-      fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}</g>${mainLand}`;
-      fullSvgStr += `</svg>`;
+      fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}</g>`;
+      fullSvgStr += `${cordinateTable}`;
+      fullSvgStr += `${mainLand}</g></svg>`;
 
       // Save svg data into local storage
       localStorage.setItem(SVG_EDIT_DEFAULT_KEY, fullSvgStr);
