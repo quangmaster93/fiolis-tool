@@ -1346,7 +1346,7 @@ editor.init = function () {
         docprops: 'document-properties.png',
         source: 'source.png',
         wireframe: 'wireframe.png',
-        toggle_adjacent: 'wireframe.png',
+        // toggle_adjacent: 'wireframe.png',
 
         undo: 'undo.png',
         redo: 'redo.png',
@@ -1409,8 +1409,8 @@ editor.init = function () {
         '#tool_import div div': 'import',
         '#tool_source': 'source',
         '#tool_docprops > div': 'docprops',
-        '#tool_wireframe': 'wireframe',
-        '#tool_toggle_adjacent': 'toggle_adjacent',
+        '#tool_toggle_adjacent': 'wireframe',
+        // '#tool_toggle_adjacent': 'toggle_adjacent',
 
         '#tool_undo': 'undo',
         '#tool_redo': 'redo',
@@ -4882,7 +4882,7 @@ editor.init = function () {
     // Reload svg source
     editor.loadFromString(svgData);
 
-    clickWireframe();
+    // clickWireframe();
   };
 
   $('#svg_docprops_container, #svg_prefs_container').draggable({
@@ -5846,8 +5846,8 @@ editor.init = function () {
       { sel: '#tool_open', fn: clickOpen, evt: 'mouseup', key: ['O', true] },
       { sel: '#tool_import', fn: clickImport, evt: 'mouseup' },
       { sel: '#tool_source', fn: showSourceEditor, evt: 'click', key: ['U', true] },
-      { sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true] },
-      { sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['T', true] },
+      // { sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true] },
+      { sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['F', true] },
       {
         key: ['esc', false, false],
         fn() {

@@ -14,6 +14,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
   };
 
   const svg = {};
+  let svgSize = [];
   let adjacentLands = [];
   let mainLand = '';
   let cordinateTable = '';
@@ -95,6 +96,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
     let midPoint = [];
 
+    const move = -10;
+
     const textFormat = `<text fill="#000" font-family="serif" font-size="14" stroke="#000"
         stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
         style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
@@ -104,12 +107,12 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         if (index < points.length - 1) {
 
             // Render vertice labels of polygon
-            verticeLabels += `${textFormat} x="${points[index][0]}" y="${points[index][1]}">${index + 1}</text>`;
+            verticeLabels += `${textFormat} x="${points[index][0] + move}" y="${points[index][1] + move}">${index + 1}</text>`;
 
             midPoint = getMidpointCoordinate(points[index], points[index + 1]);
 
             // Render edge labels of polygon
-            edgeLabels += `${textFormat} x="${midPoint[0]}" y="${midPoint[1]}">${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
+            edgeLabels += `${textFormat} x="${midPoint[0] + move}" y="${midPoint[1] + move}">${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
         }
     }
 
@@ -127,21 +130,26 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
   function drawCordinateTable(points, edgeLabels) {
       let raws = '';
-      let dy = 1.5;
+      let yAxesStart = 30;
+      let yAxes = 30;
+      let yAxesIncrease = 25;
+
+      // Calculate end point's y coordinates
+      const endPointY = yAxes + yAxesIncrease * edgeLabels.length + 10;
 
       // Draw the raws of table
       (points || []).forEach((pt, index) => {
         if (index < points.length - 1) {
+            yAxes += yAxesIncrease;
             raws += 
                 `
-                <text font-size="14px" text-anchor="middle" x="30" y="30">
-                    <tspan dy="${dy}em" fill="#000" text-anchor="start" x="30">${index + 1}</tspan>
-                    <tspan x="100">${pt[0].toFixed(2)}</tspan>
-                    <tspan x="200">${pt[1].toFixed(2)}</tspan>
-                    <tspan x="300">${(+edgeLabels[index]).toFixed(2)}</tspan>
+                <text font-size="14px" text-anchor="middle" x="30" y="32" alignment-baseline="middle">
+                    <tspan fill="#000" text-anchor="start" x="30" y="${yAxes}">${index + 1}</tspan>
+                    <tspan x="100" y="${yAxes}">${pt[0].toFixed(2)}</tspan>
+                    <tspan x="200" y="${yAxes}">${pt[1].toFixed(2)}</tspan>
+                    <tspan x="300" y="${yAxes}">${(+edgeLabels[index]).toFixed(2)}</tspan>
                 </text>
                 `;
-            dy += 1;
         }
       });
 
@@ -149,22 +157,22 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       `
         <g class="layer" id="cordinates-table">
             <title>Cordinates table</title>
-            <g class="layer" id="table" transform="translate(1000, 1200)" xmlns="http://www.w3.org/2000/svg">
+            <g class="layer" id="table" transform="translate(${svgSize[0] - 400}, ${svgSize[1] - endPointY - 50})" xmlns="http://www.w3.org/2000/svg">
                 <text fill="#000" font-size="16px" font-weight="bold" text-anchor="middle" x="175" y="5">
                 BẢNG LIỆT KÊ TỌA ĐỘ GÓC RANH
                 </text>
                 <rect fill="none" height="30" id="header" stroke="#000" width="345" x="5" y="10" xmlns="http://www.w3.org/2000/svg"/>
-                <line fill="none" stroke="#000" x1="5" x2="5" y1="10" y2="150"/>
-                <line fill="none" stroke="#000" x1="60" x2="60" y1="10" y2="150"/>
-                <line fill="none" stroke="#000" x1="150" x2="150" y1="10" y2="150"/>
-                <line fill="none" stroke="#000" x1="250" x2="250" y1="10" y2="150"/>
-                <line fill="none" stroke="#000" x1="350" x2="350" y1="10" y2="150"/>
-                <line fill="none"  stroke="#000" x1="5" x2="350" y1="${30 * (edgeLabels.length - 1)}" y2="${30 * (edgeLabels.length - 1)}"/>
-                <text fill="#000" font-size="16px" text-anchor="middle" x="30" y="30">
-                    <tspan x="30">Điểm</tspan>
-                    <tspan x="100">X (m)</tspan>
-                    <tspan x="200">Y (m)</tspan>
-                    <tspan x="300">Cạnh (m)</tspan>
+                <line fill="none" stroke="#000" x1="5" x2="5" y1="40" y2="${endPointY}"/>
+                <line fill="none" stroke="#000" x1="60" x2="60" y1="10" y2="${endPointY}"/>
+                <line fill="none" stroke="#000" x1="150" x2="150" y1="10" y2="${endPointY}"/>
+                <line fill="none" stroke="#000" x1="250" x2="250" y1="10" y2="${endPointY}"/>
+                <line fill="none" stroke="#000" x1="350" x2="350" y1="40" y2="${endPointY}"/>
+                <line fill="none"  stroke="#000" x1="5" x2="350" y1="${endPointY}" y2="${endPointY}"/>
+                <text fill="#000" font-size="16px" text-anchor="middle" x="30" y="${yAxesStart}">
+                    <tspan x="30" y="${yAxesStart}">Điểm</tspan>
+                    <tspan x="100" y="${yAxesStart}">X (m)</tspan>
+                    <tspan x="200" y="${yAxesStart}">Y (m)</tspan>
+                    <tspan x="300" y="${yAxesStart}">Cạnh (m)</tspan>
                 </text>
                 ${raws}
             </g>
@@ -302,6 +310,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           origin: [extent[0], extent[1]],
           geometrySize: [geometryWidth, geometryHeight]
       }
+
+      svgSize = option.size;
 
       return commonOpt;
   }
