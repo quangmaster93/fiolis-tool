@@ -4872,9 +4872,9 @@ editor.init = function () {
       svgData = svgData.replace(/\n*/g, '').replace(ADJACENT_REGEX, `${ADJACENT_MAKER}${ADJACENT_MAKER}`);
     } else {
       // Show adjacent
-      svgData = svgData.replace(/\n*/g, '');
-      svgData = svgData.replace(/  /g, '');
-      svgData = svgData.replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
+      svgData = svgData.replace(/\n*/g, '')
+                       .replace(/   /g, '')
+                       .replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
     }
 
     isShowAdjacent = !isShowAdjacent;

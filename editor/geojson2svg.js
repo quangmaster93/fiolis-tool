@@ -56,14 +56,19 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         edgeLabels: ''
       };
 
+      const svgStr = `<path d="${pathd}"/>`;
+
+      let svgStyle = svg.style(svgStr, option);
+
+      let layerBreak = '';
+
       if (isMainLand) {
         mainLandItems = getMainLandItems(points);
+        svgStyle = `<g class="layer" id="main-land"><title>Main layer</title>${svgStyle}`;
+        layerBreak = `</g>`;
       }
 
-      const svgStr = `<path d="${pathd}" />`;
-      const svgStyle = svg.style(svgStr, option);
-
-      return `${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}`;
+      return `${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${layerBreak}`;
   }
 
   // parse svg string to svg element
@@ -142,9 +147,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
       const table =
       `
-        <g class="cordinates-table-layer">
+        <g class="layer" id="cordinates-table">
             <title>Cordinates table</title>
-            <g id="table" transform="translate(1000, 1200)" xmlns="http://www.w3.org/2000/svg">
+            <g class="layer" id="table" transform="translate(1000, 1200)" xmlns="http://www.w3.org/2000/svg">
                 <text fill="#000" font-size="16px" font-weight="bold" text-anchor="middle" x="175" y="5">
                 BẢNG LIỆT KÊ TỌA ĐỘ GÓC RANH
                 </text>
@@ -415,7 +420,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           option[key] = option[key] || defaultOption[key];
       }
       let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '" >';
-      fullSvgStr += `<g class="layer"><title>Layer adjacent lands</title>`;
+      fullSvgStr += `<g class="layer"><g class="layer" id="adjacent-lands"><title>Adjacent lands</title>`;
 
       // Add metadata for svg
       // fullSvgStr += `<metadata>${JSON.stringify(metadata)}</metadata>`;
@@ -456,9 +461,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
       convert(geojson, option, commonOpt);
 
-      fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}</g>${mainLand}`;
+      fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}</g>`;
       fullSvgStr += `${cordinateTable}`;
-      fullSvgStr += `</svg>`;
+      fullSvgStr += `${mainLand}</g></svg>`;
 
       // Save svg data into local storage
       localStorage.setItem(SVG_EDIT_DEFAULT_KEY, fullSvgStr);
