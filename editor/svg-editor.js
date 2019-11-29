@@ -1,17 +1,18 @@
 /* globals jQuery */
 
 import './touch.js';
-import {NS} from './namespaces.js';
-import {isWebkit, isChrome, isGecko, isIE, isMac, isTouch} from './browser.js';
+import { NS } from './namespaces.js';
+import { isWebkit, isChrome, isGecko, isIE, isMac, isTouch } from './browser.js';
 import * as Utils from './utilities.js';
-import {getTypeMap, convertUnit, isValidUnit} from './units.js';
+import { getTypeMap, convertUnit, isValidUnit } from './units.js';
 import {
   hasCustomHandler, getCustomHandler, injectExtendedContextMenuItemsIntoDom
 } from './contextmenu.js';
-import {importSetGlobalDefault} from './external/dynamic-import-polyfill/importModule.js';
+import { importSetGlobalDefault } from './external/dynamic-import-polyfill/importModule.js';
 
 import SvgCanvas from './svgcanvas.js';
 import Layer from './layer.js';
+import geojson2svg from './geojson2svg.js';
 
 import jQueryPluginJSHotkeys from './js-hotkeys/jquery.hotkeys.min.js';
 import jQueryPluginBBQ from './jquerybbq/jquery.bbq.min.js';
@@ -47,6 +48,15 @@ import loadStylesheets from './external/load-stylesheets/index-es.js';
 */
 const editor = {};
 
+let isShowAdjacent = false;
+let properties = {};
+const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
+const MAIN_LAND_KEY = 'main-land';
+const ADJACENT_LANDS_KEY = 'adjacent_lands';
+const PROPERTIES_KEY = 'properties_land';
+const SVG_EDIT_DATA_KEY = 'svgedit-data';
+const ADJACENT_REGEX = /<path id="adjacent-marker".*?>.*?<path id="adjacent-marker".*?>/igm;
+
 const $ = [
   jQueryPluginJSHotkeys, jQueryPluginBBQ, jQueryPluginSVGIcons, jQueryPluginJGraduate,
   jQueryPluginSpinButton, jQueryPluginSVG, jQueryPluginContextMenu, jQueryPluginJPicker
@@ -65,7 +75,7 @@ const favicon = 'images/logo.png';
 if ($.loadingStylesheets.some((item) => {
   return !Array.isArray(item) || item[0] !== favicon;
 })) {
-  $.loadingStylesheets.push([favicon, {favicon: true}]);
+  $.loadingStylesheets.push([favicon, { favicon: true }]);
 }
 
 // EDITOR PROPERTIES: (defined below)
@@ -329,7 +339,7 @@ let svgCanvas, urldata,
  *   falsey, though only until after the `alert` is closed); rejects if SVG
  *   loading fails and `noAlert` is truthy.
  */
-async function loadSvgString (str, {noAlert} = {}) {
+async function loadSvgString(str, { noAlert } = {}) {
   const success = svgCanvas.setSvgString(str) !== false;
   if (success) {
     return;
@@ -349,7 +359,7 @@ async function loadSvgString (str, {noAlert} = {}) {
  * @param {string} defaults.defaultName
  * @returns {module:SVGEditor~ImportLocale}
  */
-function getImportLocale ({defaultLang, defaultName}) {
+function getImportLocale({ defaultLang, defaultName }) {
   /**
    * @function module:SVGEditor~ImportLocale
    * @param {PlainObject} localeInfo
@@ -357,13 +367,13 @@ function getImportLocale ({defaultLang, defaultName}) {
    * @param {string} [localeInfo.lang=defaultLang] Defaults to `defaultLang` of {@link module:SVGEditor~getImportLocale}
    * @returns {Promise<module:locale.LocaleStrings>} Resolves to {@link module:locale.LocaleStrings}
    */
-  return async function importLocaleDefaulting ({name = defaultName, lang = defaultLang} = {}) {
+  return async function importLocaleDefaulting({ name = defaultName, lang = defaultLang } = {}) {
     /**
      *
      * @param {string} language
      * @returns {Promise<module:locale.LocaleStrings>} Resolves to {@link module:locale.LocaleStrings}
      */
-    function importLocale (language) {
+    function importLocale(language) {
       const url = `${curConfig.extPath}ext-locale/${name}/${language}.js`;
       return importSetGlobalDefault(url, {
         global: `svgEditorExtensionLocale_${name}_${language.replace(/-/g, '_')}`
@@ -430,9 +440,36 @@ editor.setStrings = setStrings;
 * @returns {void}
 */
 editor.loadContentAndPrefs = function () {
+  const getLandParams = function () {
+    const pageURL = window.location.search.substring(1);
+    const urlVariables = pageURL.split('&');
+    let parameterName;
+    let landParams = {};
+
+    for (let i = 0; i < urlVariables.length; i++) {
+      parameterName = urlVariables[i].split('=');
+
+      switch (parameterName[0]) {
+        case 'soTo':
+          landParams.sheetNum = decodeURIComponent(parameterName[1]) || '';
+          break;
+        case 'soThua':
+          landParams.parcelNum = decodeURIComponent(parameterName[1]) || '';
+          break;
+        case 'maXa':
+          landParams.code = decodeURIComponent(parameterName[1]) || '';
+          break;
+        default:
+          break;
+      }
+    }
+
+    return landParams;
+  }
+
   if (!curConfig.forceStorage &&
     (curConfig.noStorageOnLoad ||
-        !document.cookie.match(/(?:^|;\s*)svgeditstore=(?:prefsAndContent|prefsOnly)/)
+      !document.cookie.match(/(?:^|;\s*)svgeditstore=(?:prefsAndContent|prefsOnly)/)
     )
   ) {
     return;
@@ -445,12 +482,34 @@ editor.loadContentAndPrefs = function () {
         document.cookie.match(/(?:^|;\s*)svgeditstore=prefsAndContent/))
     )
   ) {
-    const name = 'svgedit-' + curConfig.canvasName;
-    const cached = editor.storage.getItem(name);
-    if (cached) {
-      editor.loadFromString(cached);
+    const landParams = getLandParams() || {};
+    if (landParams.sheetNum && landParams.parcelNum && landParams.code) {
+      getLandInfo(landParams.sheetNum, landParams.parcelNum, landParams.code, (err, svgData) => {
+        if (err) {
+          throw err;
+        }
+
+        if (svgData) {
+          properties = svgData.properties;
+          editor.loadFromString(svgData.mainLand);
+        } else {
+          const name = 'svgedit-' + curConfig.canvasName;
+          const cached = editor.storage.getItem(name);
+          if (cached) {
+            editor.loadFromString(cached);
+          }
+        }
+      });
+    } else {
+      const name = 'svgedit-' + curConfig.canvasName;
+      const cached = editor.storage.getItem(name);
+      if (cached) {
+        editor.loadFromString(cached);
+      }
     }
   }
+
+
 
   // LOAD PREFS
   Object.keys(defaultPrefs).forEach((key) => {
@@ -467,6 +526,67 @@ editor.loadContentAndPrefs = function () {
       defaultPrefs[key] = result ? decodeURIComponent(result[1]) : '';
     }
   });
+};
+
+const convertGeojsonToSvg = function (geojson, sheetNum, parcelNum) {
+  var option = {
+    size: [1500, 1500],           // size[0] is svg width, size[1] is svg height
+    padding: [250, 250, 250, 250],  // paddingTop, paddingRight, paddingBottom, paddingLeft, respectively
+    output: 'element',          // output type: 'string' | 'element'(only supported in browser)
+    precision: 3,               // svg coordinates precision
+    stroke: '#000',             // stroke color
+    strokeWidth: '1px',         // stroke width
+    background: '#ccc',         // svg background color, and as the fill color of polygon hole
+    fill: '#fff',               // fill color
+    fillOpacity: 1,             // fill opacity
+    radius: 5                   // only for `Point`, `MultiPoint`
+  };
+
+  if (geojson) {
+    return geojson2svg(geojson, option, sheetNum, parcelNum);
+  }
+}
+
+const getLandInfo = function (sheetNum, parcelNum, code, done) {
+  var request = new XMLHttpRequest();
+  const key = `8bd33b7fd36d68baa96bf446c84011da`;
+  request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${code}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
+  request.onload = function () {
+    // Begin accessing JSON data here
+    var data = JSON.parse(this.response);
+
+    if (request.status >= 200 && request.status < 400 &&
+      data.result && data.result.features && data.result.features.length > 1) {
+      // Only get geojson with format wgs84
+      data.result.features.length = data.result.features.length / 2;
+      done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
+    } else {
+      done('Occur error when request API', null);
+    }
+  }
+
+  request.send();
+};
+
+const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa, done) {
+  var request = new XMLHttpRequest();
+  const key = `8bd33b7fd36d68baa96bf446c84011da`;
+  request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${maXa}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
+  request.onload = function () {
+    // Begin accessing JSON data here
+    var data = JSON.parse(this.response);
+
+    if (request.status >= 200 && request.status < 400 &&
+      data.result && data.result.features && data.result.features.length > 1) {
+      // Only get geojson with format wgs84
+      data.result.features.length = data.result.features.length / 2;
+      done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, maXa));
+    } else {
+      done('Occur error when request API', null);
+    }
+  }
+
+  request.send();
 };
 
 /**
@@ -498,7 +618,7 @@ editor.setConfig = function (opts, cfgCfg) {
    * @param {any} val See {@link module:SVGEditor.Config} or {@link module:SVGEditor.Prefs}
    * @returns {void}
    */
-  function extendOrAdd (cfgObj, key, val) {
+  function extendOrAdd(cfgObj, key, val) {
     if (cfgObj[key] && typeof cfgObj[key] === 'object') {
       $.extend(true, cfgObj[key], val);
     } else {
@@ -533,7 +653,7 @@ editor.setConfig = function (opts, cfgCfg) {
         return;
       }
       curConfig[key] = curConfig[key].concat(val); // We will handle any dupes later
-    // Only allow other curConfig if defined in defaultConfig
+      // Only allow other curConfig if defined in defaultConfig
     } else if ({}.hasOwnProperty.call(defaultConfig, key)) {
       if (cfgCfg.overwrite === false && (
         curConfig.preventAllURLConfig ||
@@ -680,7 +800,7 @@ editor.init = function () {
       */
       editor.storage = localStorage;
     }
-  } catch (err) {}
+  } catch (err) { }
 
   // Todo: Avoid const-defined functions and group functions together, etc. where possible
   const goodLangs = [];
@@ -692,7 +812,7 @@ editor.init = function () {
    * Sets up current preferences based on defaults.
    * @returns {void}
    */
-  function setupCurPrefs () {
+  function setupCurPrefs() {
     curPrefs = $.extend(true, {}, defaultPrefs, curPrefs); // Now safe to merge with priority for curPrefs in the event any are already set
     // Export updated prefs
     editor.curPrefs = curPrefs;
@@ -702,7 +822,7 @@ editor.init = function () {
    * Sets up current config based on defaults.
    * @returns {void}
    */
-  function setupCurConfig () {
+  function setupCurConfig() {
     curConfig = $.extend(true, {}, defaultConfig, curConfig); // Now safe to merge with priority for curConfig in the event any are already set
 
     // Now deal with extensions and other array config
@@ -749,7 +869,7 @@ editor.init = function () {
         }
       });
 
-      editor.setConfig(urldata, {overwrite: false}); // Note: source and url (as with storagePrompt later) are not set on config but are used below
+      editor.setConfig(urldata, { overwrite: false }); // Note: source and url (as with storagePrompt later) are not set on config but are used below
       setupCurConfig();
 
       if (!curConfig.preventURLContentLoading) {
@@ -757,7 +877,7 @@ editor.init = function () {
         qstr = $.param.querystring();
         if (!src) { // urldata.source may have been null if it ended with '='
           if (qstr.includes('source=data:')) {
-            ({src} = qstr.match(/source=(?<src>data:[^&]*)/).groups);
+            ({ src } = qstr.match(/source=(?<src>data:[^&]*)/).groups);
           }
         }
         if (src) {
@@ -809,18 +929,18 @@ editor.init = function () {
    */
   const extAndLocaleFunc = async function () {
     // const lang = ('lang' in curPrefs) ? curPrefs.lang : null;
-    const {langParam, langData} = await editor.putLocale(null, goodLangs, curConfig);
+    const { langParam, langData } = await editor.putLocale(null, goodLangs, curConfig);
     await setLang(langParam, langData);
 
-    const {ok, cancel} = uiStrings.common;
-    jQueryPluginDBox($, {ok, cancel});
+    const { ok, cancel } = uiStrings.common;
+    jQueryPluginDBox($, { ok, cancel });
 
     setIcons(); // Wait for dbox as needed for i18n
 
     try {
       await Promise.all(
         curConfig.extensions.map(async (extname) => {
-          const {extName} = extname.match(/^ext-(?<extName>.+)\.js/).groups;
+          const { extName } = extname.match(/^ext-(?<extName>.+)\.js/).groups;
           if (!extName) { // Ensure URL cannot specify some other unintended file in the extPath
             return undefined;
           }
@@ -840,9 +960,9 @@ editor.init = function () {
             const imported = await importSetGlobalDefault(url, {
               global: 'svgEditorExtension_' + extName.replace(/-/g, '_')
             });
-            const {name = extName, init} = imported;
-            const importLocale = getImportLocale({defaultLang: langParam, defaultName: name});
-            return editor.addExtension(name, (init && init.bind(editor)), {$, importLocale});
+            const { name = extName, init } = imported;
+            const importLocale = getImportLocale({ defaultLang: langParam, defaultName: name });
+            return editor.addExtension(name, (init && init.bind(editor)), { $, importLocale });
           } catch (err) {
             // Todo: Add config to alert any errors
             console.log(err); // eslint-disable-line no-console
@@ -890,7 +1010,7 @@ editor.init = function () {
     }
   };
 
-  const stateObj = {tool_scale: editor.tool_scale};
+  const stateObj = { tool_scale: editor.tool_scale };
 
   /**
   *
@@ -899,9 +1019,9 @@ editor.init = function () {
   const setFlyoutPositions = function () {
     $('.tools_flyout').each(function () {
       const shower = $('#' + this.id + '_show');
-      const {left, top} = shower.offset();
+      const { left, top } = shower.offset();
       const w = shower.outerWidth();
-      $(this).css({left: (left + w) * editor.tool_scale, top});
+      $(this).css({ left: (left + w) * editor.tool_scale, top });
     });
   };
 
@@ -971,8 +1091,8 @@ editor.init = function () {
   const setIconSize = editor.setIconSize = function (size) {
     // const elems = $('.tool_button, .push_button, .tool_button_current, .disabled, .icon_label, #url_notice, #tool_open');
     const selToscale = '#tools_top .toolset, #editor_panel > *, #history_panel > *,' +
-  '        #main_button, #tools_left > *, #path_node_panel > *, #multiselected_panel > *,' +
-  '        #g_panel > *, #tool_font_size > *, .tools_flyout';
+      '        #main_button, #tools_left > *, #path_node_panel > *, #multiselected_panel > *,' +
+      '        #g_panel > *, #tool_font_size > *, .tools_flyout';
 
     const elems = $(selToscale);
 
@@ -980,7 +1100,7 @@ editor.init = function () {
     if (typeof size === 'number') {
       scale = size;
     } else {
-      const iconSizes = {s: 0.75, m: 1, l: 1.25, xl: 1.5};
+      const iconSizes = { s: 0.75, m: 1, l: 1.25, xl: 1.5 };
       scale = iconSizes[size];
     }
 
@@ -1177,7 +1297,7 @@ editor.init = function () {
    * Setup SVG icons.
    * @returns {void}
    */
-  function setIcons () {
+  function setIcons() {
     $.svgIcons(curConfig.imgPath + 'svg_edit_icons.svg', {
       w: 24, h: 24,
       id_match: false,
@@ -1224,6 +1344,7 @@ editor.init = function () {
         docprops: 'document-properties.png',
         source: 'source.png',
         wireframe: 'wireframe.png',
+        toggle_adjacent: 'wireframe.png',
 
         undo: 'undo.png',
         redo: 'redo.png',
@@ -1287,6 +1408,7 @@ editor.init = function () {
         '#tool_source': 'source',
         '#tool_docprops > div': 'docprops',
         '#tool_wireframe': 'wireframe',
+        '#tool_toggle_adjacent': 'toggle_adjacent',
 
         '#tool_undo': 'undo',
         '#tool_redo': 'redo',
@@ -1374,7 +1496,7 @@ editor.init = function () {
         '.stroke_tool div div .svg_icon': 20,
         '#tools_bottom label .svg_icon': 18
       },
-      async callback (icons) {
+      async callback(icons) {
         $('.toolbar_button button > svg, .toolbar_button button > img').each(function () {
           $(this).parent().prepend(this);
         });
@@ -1409,18 +1531,18 @@ editor.init = function () {
          * @param {string} stylesheetFile
          * @returns {Integer|PositiveInfinity}
          */
-        function getStylesheetPriority (stylesheetFile) {
+        function getStylesheetPriority(stylesheetFile) {
           switch (stylesheetFile) {
-          case 'jgraduate/css/jPicker.css':
-            return 1;
-          case 'jgraduate/css/jGraduate.css':
-            return 2;
-          case 'svg-editor.css':
-            return 3;
-          case 'spinbtn/jQuery.SpinButton.css':
-            return 4;
-          default:
-            return Infinity;
+            case 'jgraduate/css/jPicker.css':
+              return 1;
+            case 'jgraduate/css/jGraduate.css':
+              return 2;
+            case 'svg-editor.css':
+              return 3;
+            case 'spinbtn/jQuery.SpinButton.css':
+              return 4;
+            default:
+              return Infinity;
           }
         }
         let stylesheets = $.loadingStylesheets.sort((a, b) => {
@@ -1440,7 +1562,7 @@ editor.init = function () {
           }
         }
         await loadStylesheets(stylesheets, {
-          acceptErrors ({stylesheetURL, reject, resolve}) {
+          acceptErrors({ stylesheetURL, reject, resolve }) {
             if ($.loadingStylesheets.includes(stylesheetURL)) {
               reject(new Error(`Missing expected stylesheet: ${stylesheetURL}`));
               return;
@@ -1462,25 +1584,25 @@ editor.init = function () {
     curConfig
   );
   const palette = [
-      // Todo: Make into configuration item?
-      '#000000', '#3f3f3f', '#7f7f7f', '#bfbfbf', '#ffffff',
-      '#ff0000', '#ff7f00', '#ffff00', '#7fff00',
-      '#00ff00', '#00ff7f', '#00ffff', '#007fff',
-      '#0000ff', '#7f00ff', '#ff00ff', '#ff007f',
-      '#7f0000', '#7f3f00', '#7f7f00', '#3f7f00',
-      '#007f00', '#007f3f', '#007f7f', '#003f7f',
-      '#00007f', '#3f007f', '#7f007f', '#7f003f',
-      '#ffaaaa', '#ffd4aa', '#ffffaa', '#d4ffaa',
-      '#aaffaa', '#aaffd4', '#aaffff', '#aad4ff',
-      '#aaaaff', '#d4aaff', '#ffaaff', '#ffaad4'
-    ],
+    // Todo: Make into configuration item?
+    '#000000', '#3f3f3f', '#7f7f7f', '#bfbfbf', '#ffffff',
+    '#ff0000', '#ff7f00', '#ffff00', '#7fff00',
+    '#00ff00', '#00ff7f', '#00ffff', '#007fff',
+    '#0000ff', '#7f00ff', '#ff00ff', '#ff007f',
+    '#7f0000', '#7f3f00', '#7f7f00', '#3f7f00',
+    '#007f00', '#007f3f', '#007f7f', '#003f7f',
+    '#00007f', '#3f007f', '#7f007f', '#7f003f',
+    '#ffaaaa', '#ffd4aa', '#ffffaa', '#d4ffaa',
+    '#aaffaa', '#aaffd4', '#aaffff', '#aad4ff',
+    '#aaaaff', '#d4aaff', '#ffaaff', '#ffaad4'
+  ],
     modKey = (isMac() ? 'meta+' : 'ctrl+'), // ⌘
     path = svgCanvas.pathActions,
-    {undoMgr} = svgCanvas,
+    { undoMgr } = svgCanvas,
     workarea = $('#workarea'),
     canvMenu = $('#cmenu_canvas'),
     // layerMenu = $('#cmenu_layers'), // Unused
-    paintBox = {fill: null, stroke: null};
+    paintBox = { fill: null, stroke: null };
 
   let resizeTimer, curScrollPos;
   let exportWindow = null,
@@ -1512,7 +1634,7 @@ editor.init = function () {
           cancelable: true
         });
         w.document.documentElement.dispatchEvent(svgEditorReadyEvent);
-      } catch (e) {}
+      } catch (e) { }
     }
   }());
 
@@ -1601,7 +1723,7 @@ editor.init = function () {
     if (icon !== undefined) {
       const copy = icon.clone();
       $('td.layervis', layerlist).append(copy);
-      $.resizeSvgIcons({'td.layervis .svg_icon': 14});
+      $.resizeSvgIcons({ 'td.layervis .svg_icon': 14 });
     }
     // handle selection of layer
     $('#layerlist td.layername')
@@ -1743,7 +1865,7 @@ editor.init = function () {
    * @returns {void}
    */
   const exportHandler = function (win, data) {
-    const {issues, exportWindowName} = data;
+    const { issues, exportWindowName } = data;
 
     exportWindow = window.open(Utils.blankPageObjectURL || '', exportWindowName); // A hack to get the window via JSON-able name without opening a new one
 
@@ -1788,8 +1910,8 @@ editor.init = function () {
    * @param {boolean} changeElem
    * @returns {void}
    */
-  function setStrokeOpt (opt, changeElem) {
-    const {id} = opt;
+  function setStrokeOpt(opt, changeElem) {
+    const { id } = opt;
     const bits = id.split('_');
     const [pre, val] = bits;
 
@@ -1882,7 +2004,7 @@ editor.init = function () {
    * @param {string} url
    * @returns {void}
    */
-  function setBackground (color, url) {
+  function setBackground(color, url) {
     // if (color == $.pref('bkgd_color') && url == $.pref('bkgd_url')) { return; }
     $.pref('bkgd_color', color);
     $.pref('bkgd_url', url);
@@ -1896,7 +2018,7 @@ editor.init = function () {
    * @param {boolean} [opts.cancelDeletes=false}]
    * @returns {Promise<void>} Resolves to `undefined`
    */
-  async function promptImgURL ({cancelDeletes = false} = {}) {
+  async function promptImgURL({ cancelDeletes = false } = {}) {
     let curhref = svgCanvas.getHref(selectedElement);
     curhref = curhref.startsWith('data:') ? '' : curhref;
     const url = await $.prompt(uiStrings.notification.enterNewImgURL, curhref);
@@ -1922,7 +2044,7 @@ editor.init = function () {
    * @param {Float} [zoom]
    * @returns {void}
    */
-  function updateRulers (scanvas, zoom) {
+  function updateRulers(scanvas, zoom) {
     if (!zoom) { zoom = svgCanvas.getZoom(); }
     if (!scanvas) { scanvas = $('#svgcanvas'); }
 
@@ -2225,50 +2347,50 @@ editor.init = function () {
     let i, len;
     if (!Utils.isNullish(selectedElement)) {
       switch (selectedElement.tagName) {
-      case 'use':
-      case 'image':
-      case 'foreignObject':
-        break;
-      case 'g':
-      case 'a': {
-        // Look for common styles
-        const childs = selectedElement.getElementsByTagName('*');
-        let gWidth = null;
-        for (i = 0, len = childs.length; i < len; i++) {
-          const swidth = childs[i].getAttribute('stroke-width');
+        case 'use':
+        case 'image':
+        case 'foreignObject':
+          break;
+        case 'g':
+        case 'a': {
+          // Look for common styles
+          const childs = selectedElement.getElementsByTagName('*');
+          let gWidth = null;
+          for (i = 0, len = childs.length; i < len; i++) {
+            const swidth = childs[i].getAttribute('stroke-width');
 
-          if (i === 0) {
-            gWidth = swidth;
-          } else if (gWidth !== swidth) {
-            gWidth = null;
+            if (i === 0) {
+              gWidth = swidth;
+            } else if (gWidth !== swidth) {
+              gWidth = null;
+            }
+          }
+
+          $('#stroke_width').val(gWidth === null ? '' : gWidth);
+
+          paintBox.fill.update(true);
+          paintBox.stroke.update(true);
+
+          break;
+        } default: {
+          paintBox.fill.update(true);
+          paintBox.stroke.update(true);
+
+          $('#stroke_width').val(selectedElement.getAttribute('stroke-width') || 1);
+          $('#stroke_style').val(selectedElement.getAttribute('stroke-dasharray') || 'none');
+
+          let attr = selectedElement.getAttribute('stroke-linejoin') || 'miter';
+
+          if ($('#linejoin_' + attr).length) {
+            setStrokeOpt($('#linejoin_' + attr)[0]);
+          }
+
+          attr = selectedElement.getAttribute('stroke-linecap') || 'butt';
+
+          if ($('#linecap_' + attr).length) {
+            setStrokeOpt($('#linecap_' + attr)[0]);
           }
         }
-
-        $('#stroke_width').val(gWidth === null ? '' : gWidth);
-
-        paintBox.fill.update(true);
-        paintBox.stroke.update(true);
-
-        break;
-      } default: {
-        paintBox.fill.update(true);
-        paintBox.stroke.update(true);
-
-        $('#stroke_width').val(selectedElement.getAttribute('stroke-width') || 1);
-        $('#stroke_style').val(selectedElement.getAttribute('stroke-dasharray') || 'none');
-
-        let attr = selectedElement.getAttribute('stroke-linejoin') || 'miter';
-
-        if ($('#linejoin_' + attr).length) {
-          setStrokeOpt($('#linejoin_' + attr)[0]);
-        }
-
-        attr = selectedElement.getAttribute('stroke-linecap') || 'butt';
-
-        if ($('#linecap_' + attr).length) {
-          setStrokeOpt($('#linecap_' + attr)[0]);
-        }
-      }
       }
     }
 
@@ -2320,7 +2442,7 @@ editor.init = function () {
         if (elname === 'image' && svgCanvas.getMode() === 'image') {
           // Prompt for URL if not a data URL
           if (!svgCanvas.getHref(elem).startsWith('data:')) {
-            /* await */ promptImgURL({cancelDeletes: true});
+            /* await */ promptImgURL({ cancelDeletes: true });
           }
         }
         /* else if (elname == 'text') {
@@ -2340,7 +2462,7 @@ editor.init = function () {
           if (['g', 'polyline', 'path'].includes(elname)) {
             const bb = svgCanvas.getStrokedBBox([elem]);
             if (bb) {
-              ({x, y} = bb);
+              ({ x, y } = bb);
             }
           } else {
             x = elem.getAttribute('x');
@@ -2400,7 +2522,7 @@ editor.init = function () {
         use: []
       };
 
-      const {tagName} = elem;
+      const { tagName } = elem;
 
       // if ($(elem).data('gsvg')) {
       //   $('#g_panel').show();
@@ -2462,10 +2584,10 @@ editor.init = function () {
               $('#text').focus().select();
             }, 100);
           }
-        // text
+          // text
         } else if (tagName === 'image' && svgCanvas.getMode() === 'image') {
           setImageURL(svgCanvas.getHref(elem));
-        // image
+          // image
         } else if (tagName === 'g' || tagName === 'use') {
           $('#container_panel').show();
           const title = svgCanvas.getTitle();
@@ -2477,7 +2599,7 @@ editor.init = function () {
       }
       menuItems[(tagName === 'g' ? 'en' : 'dis') + 'ableContextMenuItems']('#ungroup');
       menuItems[((tagName === 'g' || !multiselected) ? 'dis' : 'en') + 'ableContextMenuItems']('#group');
-    // if (!Utils.isNullish(elem))
+      // if (!Utils.isNullish(elem))
     } else if (multiselected) {
       $('#multiselected_panel').show();
       menuItems
@@ -2598,18 +2720,18 @@ editor.init = function () {
     // Only updating fields for single elements for now
     if (!multiselected) {
       switch (mode) {
-      case 'rotate': {
-        const ang = svgCanvas.getRotationAngle(elem);
-        $('#angle').val(ang);
-        $('#tool_reorient').toggleClass('disabled', ang === 0);
-        break;
+        case 'rotate': {
+          const ang = svgCanvas.getRotationAngle(elem);
+          $('#angle').val(ang);
+          $('#tool_reorient').toggleClass('disabled', ang === 0);
+          break;
 
-      // TODO: Update values that change on move/resize, etc
-      // } case 'select': {
-      // } case 'resize': {
-      //   break;
-      // }
-      }
+          // TODO: Update values that change on move/resize, etc
+          // } case 'select': {
+          // } case 'resize': {
+          //   break;
+          // }
+        }
       }
     }
     svgCanvas.runExtensions('elementTransition', /** @type {module:svgcanvas.SvgCanvas#event:ext_elementTransition} */ {
@@ -2622,7 +2744,7 @@ editor.init = function () {
    * @param {SVGGElement} elem - The SVGGElement to test.
    * @returns {boolean} True if the element is a layer
    */
-  function isLayer (elem) {
+  function isLayer(elem) {
     return elem && elem.tagName === 'g' && Layer.CLASS_REGEX.test(elem.getAttribute('class'));
   }
 
@@ -2648,8 +2770,8 @@ editor.init = function () {
         if (isSvgElem) {
           updateCanvas();
         }
-      // Update selectedElement if element is no longer part of the image.
-      // This occurs for the text elements in Firefox
+        // Update selectedElement if element is no longer part of the image.
+        // This occurs for the text elements in Firefox
       } else if (elem && selectedElement && Utils.isNullish(selectedElement.parentNode)) {
         // || elem && elem.tagName == "path" && !multiselected) { // This was added in r1430, but not sure why
         selectedElement = elem;
@@ -2716,7 +2838,7 @@ editor.init = function () {
       bb = zInfo.bbox;
 
     if (zoomlevel < 0.001) {
-      changeZoom({value: 0.1});
+      changeZoom({ value: 0.1 });
       return;
     }
 
@@ -2725,7 +2847,7 @@ editor.init = function () {
     if (autoCenter) {
       updateCanvas();
     } else {
-      updateCanvas(false, {x: bb.x * zoomlevel + (bb.width * zoomlevel) / 2, y: bb.y * zoomlevel + (bb.height * zoomlevel) / 2});
+      updateCanvas(false, { x: bb.x * zoomlevel + (bb.width * zoomlevel) / 2, y: bb.y * zoomlevel + (bb.height * zoomlevel) / 2 });
     }
 
     if (svgCanvas.getMode() === 'zoom' && bb.width) {
@@ -2851,7 +2973,7 @@ editor.init = function () {
         .each(function () {
           // Get this button's options
           const idSel = '#' + this.getAttribute('id');
-          const [i, opts] = Object.entries(btnOpts).find(([_, {sel}]) => {
+          const [i, opts] = Object.entries(btnOpts).find(([_, { sel }]) => {
             return sel === idSel;
           });
 
@@ -2990,7 +3112,7 @@ editor.init = function () {
   */
   const addAltDropDown = function (elemSel, listSel, callback, opts) {
     const button = $(elemSel);
-    const {dropUp} = opts;
+    const { dropUp } = opts;
     const list = $(listSel);
     if (dropUp) {
       $(elemSel).addClass('dropup');
@@ -3008,7 +3130,7 @@ editor.init = function () {
       if (!onButton) {
         button.removeClass('down');
         list.hide();
-        list.css({top: 0, left: 0});
+        list.css({ top: 0, left: 0 });
       }
       onButton = false;
     });
@@ -3030,7 +3152,7 @@ editor.init = function () {
       } else {
         // CSS position must be reset for Webkit
         list.hide();
-        list.css({top: 0, left: 0});
+        list.css({ top: 0, left: 0 });
       }
       button.toggleClass('down');
     }).hover(function () {
@@ -3066,7 +3188,7 @@ editor.init = function () {
         await ext.langReady({
           lang,
           uiStrings,
-          importLocale: getImportLocale({defaultLang: lang, defaultName: ext.name})
+          importLocale: getImportLocale({ defaultLang: lang, defaultName: ext.name })
         });
         loadedExtensionNames.push(ext.name);
       } else {
@@ -3079,7 +3201,7 @@ editor.init = function () {
      *   perform an icon resize.
      * @returns {void}
      */
-    function prepResize () {
+    function prepResize() {
       if (resizeTimer) {
         clearTimeout(resizeTimer);
         resizeTimer = null;
@@ -3128,88 +3250,88 @@ editor.init = function () {
         let panel = $('#' + tool.panel);
         // create the panel if it doesn't exist
         if (!panel.length) {
-          panel = $('<div>', {id: tool.panel}).appendTo('#tools_top');
+          panel = $('<div>', { id: tool.panel }).appendTo('#tools_top');
         }
 
         let html;
         // TODO: Allow support for other types, or adding to existing tool
         switch (tool.type) {
-        case 'tool_button': {
-          html = '<div class="tool_button">' + tool.id + '</div>';
-          const div = $(html).appendTo(panel);
-          if (tool.events) {
-            $.each(tool.events, function (evt, func) {
-              $(div).bind(evt, func);
+          case 'tool_button': {
+            html = '<div class="tool_button">' + tool.id + '</div>';
+            const div = $(html).appendTo(panel);
+            if (tool.events) {
+              $.each(tool.events, function (evt, func) {
+                $(div).bind(evt, func);
+              });
+            }
+            break;
+          } case 'select': {
+            html = '<label' + contId + '>' +
+              '<select id="' + tool.id + '">';
+            $.each(tool.options, function (val, text) {
+              const sel = (val === tool.defval) ? ' selected' : '';
+              html += '<option value="' + val + '"' + sel + '>' + text + '</option>';
             });
-          }
-          break;
-        } case 'select': {
-          html = '<label' + contId + '>' +
-            '<select id="' + tool.id + '">';
-          $.each(tool.options, function (val, text) {
-            const sel = (val === tool.defval) ? ' selected' : '';
-            html += '<option value="' + val + '"' + sel + '>' + text + '</option>';
-          });
-          html += '</select></label>';
-          // Creates the tool, hides & adds it, returns the select element
-          const sel = $(html).appendTo(panel).find('select');
+            html += '</select></label>';
+            // Creates the tool, hides & adds it, returns the select element
+            const sel = $(html).appendTo(panel).find('select');
 
-          $.each(tool.events, function (evt, func) {
-            $(sel).bind(evt, func);
-          });
-          break;
-        } case 'button-select': {
-          html = '<div id="' + tool.id + '" class="dropdown toolset" title="' + tool.title + '">' +
-            '<div id="cur_' + tool.id + '" class="icon_label"></div><button></button></div>';
+            $.each(tool.events, function (evt, func) {
+              $(sel).bind(evt, func);
+            });
+            break;
+          } case 'button-select': {
+            html = '<div id="' + tool.id + '" class="dropdown toolset" title="' + tool.title + '">' +
+              '<div id="cur_' + tool.id + '" class="icon_label"></div><button></button></div>';
 
-          const list = $('<ul id="' + tool.id + '_opts"></ul>').appendTo('#option_lists');
+            const list = $('<ul id="' + tool.id + '_opts"></ul>').appendTo('#option_lists');
 
-          if (tool.colnum) {
-            list.addClass('optcols' + tool.colnum);
-          }
+            if (tool.colnum) {
+              list.addClass('optcols' + tool.colnum);
+            }
 
           // Creates the tool, hides & adds it, returns the select element
           /* const dropdown = */ $(html).appendTo(panel).children();
 
-          btnSelects.push({
-            elem: ('#' + tool.id),
-            list: ('#' + tool.id + '_opts'),
-            title: tool.title,
-            callback: tool.events.change,
-            cur: ('#cur_' + tool.id)
-          });
-
-          break;
-        } case 'input': {
-          html = '<label' + contId + '>' +
-            '<span id="' + tool.id + '_label">' +
-            tool.label + ':</span>' +
-            '<input id="' + tool.id + '" title="' + tool.title +
-            '" size="' + (tool.size || '4') +
-            '" value="' + (tool.defval || '') + '" type="text"/></label>';
-
-          // Creates the tool, hides & adds it, returns the select element
-
-          // Add to given tool.panel
-          const inp = $(html).appendTo(panel).find('input');
-
-          if (tool.spindata) {
-            inp.SpinButton(tool.spindata);
-          }
-
-          if (tool.events) {
-            $.each(tool.events, function (evt, func) {
-              inp.bind(evt, func);
+            btnSelects.push({
+              elem: ('#' + tool.id),
+              list: ('#' + tool.id + '_opts'),
+              title: tool.title,
+              callback: tool.events.change,
+              cur: ('#cur_' + tool.id)
             });
-          }
-          break;
-        } default:
-          break;
+
+            break;
+          } case 'input': {
+            html = '<label' + contId + '>' +
+              '<span id="' + tool.id + '_label">' +
+              tool.label + ':</span>' +
+              '<input id="' + tool.id + '" title="' + tool.title +
+              '" size="' + (tool.size || '4') +
+              '" value="' + (tool.defval || '') + '" type="text"/></label>';
+
+            // Creates the tool, hides & adds it, returns the select element
+
+            // Add to given tool.panel
+            const inp = $(html).appendTo(panel).find('input');
+
+            if (tool.spindata) {
+              inp.SpinButton(tool.spindata);
+            }
+
+            if (tool.events) {
+              $.each(tool.events, function (evt, func) {
+                inp.bind(evt, func);
+              });
+            }
+            break;
+          } default:
+            break;
         }
       });
     }
 
-    const {svgicons} = ext;
+    const { svgicons } = ext;
     if (ext.buttons) {
       const fallbackObj = {},
         altsObj = {},
@@ -3245,7 +3367,7 @@ editor.init = function () {
       */
       // Add buttons given by extension
       $.each(ext.buttons, function (i, /** @type {module:SVGEditor.Button} */ btn) {
-        let {id} = btn;
+        let { id } = btn;
         let num = i;
         // Give button a unique ID
         while ($('#' + id).length) {
@@ -3256,8 +3378,8 @@ editor.init = function () {
         if (!svgicons) {
           icon = $(
             '<img src="' + btn.icon +
-              (btn.title ? '" alt="' + btn.title : '') +
-              '">'
+            (btn.title ? '" alt="' + btn.title : '') +
+            '">'
           );
         } else {
           fallbackObj[id] = btn.icon;
@@ -3274,23 +3396,23 @@ editor.init = function () {
 
         // Set button up according to its type
         switch (btn.type) {
-        case 'mode_flyout':
-        case 'mode':
-          cls = 'tool_button';
-          parent = '#tools_left';
-          break;
-        case 'context':
-          cls = 'tool_button';
-          parent = '#' + btn.panel;
-          // create the panel if it doesn't exist
-          if (!$(parent).length) {
-            $('<div>', {id: btn.panel}).appendTo('#tools_top');
-          }
-          break;
-        case 'app_menu':
-          cls = '';
-          parent = '#main_menu ul';
-          break;
+          case 'mode_flyout':
+          case 'mode':
+            cls = 'tool_button';
+            parent = '#tools_left';
+            break;
+          case 'context':
+            cls = 'tool_button';
+            parent = '#' + btn.panel;
+            // create the panel if it doesn't exist
+            if (!$(parent).length) {
+              $('<div>', { id: btn.panel }).appendTo('#tools_top');
+            }
+            break;
+          case 'app_menu':
+            cls = '';
+            parent = '#main_menu ul';
+            break;
         }
         let flyoutHolder, showBtn, refData, refBtn;
         const button = $((btn.list || btn.type === 'app_menu') ? '<li/>' : '<div/>')
@@ -3309,7 +3431,7 @@ editor.init = function () {
           }
 
           if (btn.type === 'mode_flyout') {
-          // Add to flyout menu / make flyout menu
+            // Add to flyout menu / make flyout menu
             // const opts = btn.includeWith;
             // // opts.button, default, position
             refBtn = $(button);
@@ -3322,7 +3444,7 @@ editor.init = function () {
               tlsId = refBtn[0].id.replace('tool_', 'tools_');
               showBtn = refBtn.clone()
                 .attr('id', tlsId + '_show')
-                .append($('<div>', {class: 'flyout_arrow_horiz'}));
+                .append($('<div>', { class: 'flyout_arrow_horiz' }));
 
               refBtn.before(showBtn);
 
@@ -3383,7 +3505,7 @@ editor.init = function () {
             tlsId = refBtn[0].id.replace('tool_', 'tools_');
             showBtn = refBtn.clone()
               .attr('id', tlsId + '_show')
-              .append($('<div>', {class: 'flyout_arrow_horiz'}));
+              .append($('<div>', { class: 'flyout_arrow_horiz' }));
 
             refBtn.before(showBtn);
             // Create a flyout div
@@ -3458,7 +3580,7 @@ editor.init = function () {
       });
 
       $.each(btnSelects, function () {
-        addAltDropDown(this.elem, this.list, this.callback, {seticon: true});
+        addAltDropDown(this.elem, this.list, this.callback, { seticon: true });
       });
 
       if (svgicons) {
@@ -3469,7 +3591,7 @@ editor.init = function () {
             no_img: (!isWebkit()),
             fallback: fallbackObj,
             placement: placementObj,
-            callback (icons) {
+            callback(icons) {
               // Non-ideal hack to make the icon match the current size
               // if (curPrefs.iconsize && curPrefs.iconsize !== 'm') {
               if ($.pref('iconsize') !== 'm') {
@@ -3493,7 +3615,7 @@ editor.init = function () {
   */
   const getPaint = function (color, opac, type) {
     // update the editor's fill paint
-    const opts = {alpha: opac};
+    const opts = { alpha: opac };
     if (color.startsWith('url(#')) {
       let refElem = svgCanvas.getRefElem(color);
       if (refElem) {
@@ -3523,7 +3645,7 @@ editor.init = function () {
     if (!data.output) { // Ignore Chrome
       return;
     }
-    const {exportWindowName} = data;
+    const { exportWindowName } = data;
     if (exportWindowName) {
       exportWindow = window.open('', exportWindowName); // A hack to get the window via JSON-able name without opening a new one
     }
@@ -3545,7 +3667,7 @@ editor.init = function () {
      * @listens module:svgcanvas.SvgCanvas#event:updateCanvas
      * @returns {void}
      */
-    function (win, {center, newCtr}) {
+    function (win, { center, newCtr }) {
       updateCanvas(center, newCtr);
     }
   );
@@ -3777,7 +3899,7 @@ editor.init = function () {
       color = 'none';
       paint = new $.jGraduate.Paint();
     } else {
-      paint = new $.jGraduate.Paint({alpha: 100, solidColor: color.substr(1)});
+      paint = new $.jGraduate.Paint({ alpha: 100, solidColor: color.substr(1) });
     }
 
     paintBox[picker].setPaint(paint);
@@ -3998,14 +4120,14 @@ editor.init = function () {
 
   // For slider usage, see: http://jqueryui.com/demos/slider/
   $('#opac_slider').slider({
-    start () {
+    start() {
       $('#opacity_dropdown li:not(.special)').hide();
     },
-    stop () {
+    stop() {
       $('#opacity_dropdown li').show();
       $(window).mouseup();
     },
-    slide (evt, ui) {
+    slide(evt, ui) {
       changeOpacity(ui);
     }
   });
@@ -4016,16 +4138,16 @@ editor.init = function () {
   $('#blur_slider').slider({
     max: 10,
     step: 0.1,
-    stop (evt, ui) {
+    stop(evt, ui) {
       slideStart = false;
       changeBlur(ui);
       $('#blur_dropdown li').show();
       $(window).mouseup();
     },
-    start () {
+    start() {
       slideStart = true;
     },
-    slide (evt, ui) {
+    slide(evt, ui) {
       changeBlur(ui, null, slideStart);
     }
   });
@@ -4036,22 +4158,22 @@ editor.init = function () {
     if (val) {
       zoomChanged(window, val);
     } else {
-      changeZoom({value: parseFloat(item.text())});
+      changeZoom({ value: parseFloat(item.text()) });
     }
   }, true);
 
   addAltDropDown('#stroke_linecap', '#linecap_opts', function () {
     setStrokeOpt(this, true);
-  }, {dropUp: true});
+  }, { dropUp: true });
 
   addAltDropDown('#stroke_linejoin', '#linejoin_opts', function () {
     setStrokeOpt(this, true);
-  }, {dropUp: true});
+  }, { dropUp: true });
 
   addAltDropDown('#tool_position', '#position_opts', function () {
     const letter = this.id.replace('tool_pos', '').charAt(0);
     svgCanvas.alignSelectedElements(letter, 'page');
-  }, {multiclick: true});
+  }, { multiclick: true });
 
   /*
 
@@ -4497,28 +4619,71 @@ editor.init = function () {
   *
   * @returns {void}
   */
- const clickSaveDatabase = function () {
-  // In the future, more options can be provided here
-  const dataSave = {
-    Id: "",
-    ObjectId: "",
-    SoTo: "6",
-    SoThua: "7",
-    CodeDiaChinh: "109",
-    Data:""
+  const clickSaveDatabase = function () {
+    // In the future, more options can be provided here
+    const properties = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
+    if (properties != null) {
+      const dataSave = {
+        objectId: properties.ObjectId,
+        soTo: properties.SoHieuToBanDo,
+        soThua: properties.SoThuTuThua,
+        maXa: properties.MaXa,
+        dataSVG: ""
+      }
+      const message = {
+        ok: uiStrings.notification.SaveSuccess,
+        error: uiStrings.notification.SaveFail
+      }
+      svgCanvas.saveDatabase(dataSave, message);
+    } else {
+      $.alert(uiStrings.notification.SaveFail)
+    }
   };
-  svgCanvas.saveDatabase(dataSave);
-};
-const clickSearchDatabase = async function () {
-  // In the future, more options can be provided here
-  const dataSave = {
-    SoTo: $('#txtSoTo').val(),
-    SoThua: $('#txtSoThua').val(),
-    CodeDiaChinh: $('#txtCodeDiaChinh').val(),
+  const clickSearchDatabase = async function (soTo, soThua, maXa) {
+    // In the future, more options can be provided here
+    const dataSave = {
+      SoTo: soTo,
+      SoThua: soThua,
+      MaXa: maXa,
+    };
+    const message = {
+      ok: uiStrings.notification.QwantToOpen,
+      error: uiStrings.notification.NotFound,
+      searchEmpty: uiStrings.notification.SearchEmpty
+    }
+
+    if (dataSave.SoTo && dataSave.SoThua && dataSave.MaXa) {
+      let result = await svgCanvas.searchDatabase(dataSave);
+      if (result != undefined && result != null) {
+        const ok = await $.confirm(message.ok);
+        if (!ok) {
+          return;
+        }
+        svgCanvas.setSvgString(result);
+
+      } else {
+        getLandInfoByMaXaSoToAndSoThua(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
+          if (err) {
+            $.alert(message.error);
+            throw err;
+          }
+
+          if (svgData) {
+            const ok = await $.confirm(message.ok);
+            if (!ok) {
+              return;
+            }
+            properties = svgData.properties;
+            editor.loadFromString(svgData.mainLand);
+          } else {
+            $.alert(message.error);
+          }
+        });
+      }
+    } else {
+      $.alert(message.searchEmpty);
+    }
   };
-  const message = uiStrings.notification.QwantToOpen;
-  await svgCanvas.searchDatabase(dataSave, message);
-};
 
   let loadingURL;
   /**
@@ -4554,8 +4719,8 @@ const clickSearchDatabase = async function () {
      *
      * @returns {void}
      */
-    function openExportWindow () {
-      const {loadingImage} = uiStrings.notification;
+    function openExportWindow() {
+      const { loadingImage } = uiStrings.notification;
       if (curConfig.exportWindowType === 'new') {
         editor.exportWindowCt++;
       }
@@ -4572,7 +4737,7 @@ const clickSearchDatabase = async function () {
           <body><h1>${loadingImage}</h1></body>
         <html>`;
         if (typeof URL !== 'undefined' && URL.createObjectURL) {
-          const blob = new Blob([popHTML], {type: 'text/html'});
+          const blob = new Blob([popHTML], { type: 'text/html' });
           popURL = URL.createObjectURL(blob);
         } else {
           popURL = 'data:text/html;base64;charset=utf-8,' + Utils.encode64(popHTML);
@@ -4644,7 +4809,7 @@ const clickSearchDatabase = async function () {
     // group
     if (multiselected) {
       svgCanvas.groupSelectedElements();
-    // ungroup
+      // ungroup
     } else if (selectedElement) {
       svgCanvas.ungroupSelectedElement();
     }
@@ -4684,6 +4849,38 @@ const clickSearchDatabase = async function () {
     }
 
     updateWireFrame();
+  };
+
+  /**
+  * Handle toggle adjacent
+  * @returns {void}
+  */
+  const clickToggleAdjacent = function () {
+    $('#tool_toggle_adjacent').toggleClass('push_button_pressed tool_button');
+
+    // Get svg data
+    let svgData = svgCanvas.getSvgString();
+    // let svgData = editor.storage.getItem(`svgedit-default`);
+
+    // const mainLand = editor.storage.getItem(MAIN_LAND_KEY);
+    const adjacentLands = editor.storage.getItem(ADJACENT_LANDS_KEY);
+
+    if (isShowAdjacent) {
+      // Hide adjacent
+      svgData = svgData.replace(/\n*/g, '').replace(ADJACENT_REGEX, `${ADJACENT_MAKER}${ADJACENT_MAKER}`);
+    } else {
+      // Show adjacent
+      svgData = svgData.replace(/\n*/g, '');
+      svgData = svgData.replace(/  /g, '');
+      svgData = svgData.replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
+    }
+
+    isShowAdjacent = !isShowAdjacent;
+
+    // Reload svg source
+    editor.loadFromString(svgData);
+
+    clickWireframe();
   };
 
   $('#svg_docprops_container, #svg_prefs_container').draggable({
@@ -4862,7 +5059,7 @@ const clickSearchDatabase = async function () {
     // set language
     const lang = $('#lang_select').val();
     if (lang !== $.pref('lang')) {
-      const {langParam, langData} = await editor.putLocale(lang, goodLangs, curConfig);
+      const { langParam, langData } = await editor.putLocale(lang, goodLangs, curConfig);
       await setLang(langParam, langData);
     }
 
@@ -4920,7 +5117,7 @@ const clickSearchDatabase = async function () {
     resetScrollPos();
   };
 
-  const winWh = {width: $(window).width(), height: $(window).height()};
+  const winWh = { width: $(window).width(), height: $(window).height() };
 
   // Fix for Issue 781: Drawing area jumps to top-left corner on window resize (IE9)
   if (isIE()) {
@@ -5022,7 +5219,7 @@ const clickSearchDatabase = async function () {
     while (i--) {
       const button = document.getElementById(shortcutButtons[i]);
       if (button) {
-        const {title} = button;
+        const { title } = button;
         const index = title.indexOf('Ctrl+');
         button.title = [
           title.substr(0, index),
@@ -5045,20 +5242,123 @@ const clickSearchDatabase = async function () {
     const title = picker === 'stroke'
       ? uiStrings.ui.pick_stroke_paint_opacity
       : uiStrings.ui.pick_fill_paint_opacity;
+    const picker_solid_tab = uiStrings.ui.pick_solid_color_tab
+    const picker_linear_tab = uiStrings.ui.pick_linear_gradient_tab
+    const picker_radial_tab = uiStrings.ui.pick_radial_gradient_tab
+    const picker_begin_point = uiStrings.ui.pick_begin_point
+    const picker_center_point = uiStrings.ui.pick_center_point
+    const picker_end_point = uiStrings.ui.pick_end_point
+    const picker_focal_point = uiStrings.ui.pick_focal_point
+    const picker_ok = uiStrings.ui.pick_ok
+    const picker_cancel = uiStrings.ui.pick_cancel
+    const picker_titleRadius = uiStrings.ui.pick_title_radius
+    const picker_titleEllip = uiStrings.ui.pick_title_ellip
+    const picker_titleAngle = uiStrings.ui.pick_title_angle
+    const picker_titleOpac = uiStrings.ui.pick_title_opac
+    const picker_titleX1 = uiStrings.ui.pick_title_x1
+    const picker_titleY1 = uiStrings.ui.pick_title_y1
+    const picker_titleX2 = uiStrings.ui.pick_title_x2
+    const picker_titleY2 = uiStrings.ui.pick_title_y2
+    const picker_titleX3 = uiStrings.ui.pick_title_x3
+    const picker_titleY3 = uiStrings.ui.pick_title_y3
+    const picker_spreadMethod = uiStrings.ui.pick_spread_method
+    const picker_optionPad = uiStrings.ui.pick_option_pad
+    const picker_optionReflect = uiStrings.ui.pick_option_reflect
+    const picker_optionRepeat = uiStrings.ui.pick_option_repeat
+    const picker_lblAngle = uiStrings.ui.pick_lbl_angle 
+    const picker_lblOpac = uiStrings.ui.pick_lbl_opac
+    const picker_lblRadius = uiStrings.ui.pick_lbl_radius
+    const localization_text_title = uiStrings.localization.text.title
+    const localization_text_newColor = uiStrings.localization.text.newColor
+    const localization_text_currentColor = uiStrings.localization.text.currentColor
+    const localization_tooltips_colors_currentColor = uiStrings.localization.tooltips.colors.currentColor
+    const localization_tooltips_colors_newColor = uiStrings.localization.tooltips.colors.newColor
+    const localization_tooltips_buttons_ok = uiStrings.localization.tooltips.buttons.ok
+    const localization_text_cancel = uiStrings.localization.text.cancel
+    const localization_tooltips_buttons_cancel = uiStrings.localization.tooltips.buttons.cancel
+    const localization_tooltips_hue_radio = uiStrings.localization.tooltips.hue.radio
+    const localization_tooltips_hue_textbox = uiStrings.localization.tooltips.hue.textbox
+    const localization_tooltips_saturation_radio = uiStrings.localization.tooltips.saturation.radio
+    const localization_tooltips_saturation_textbox = uiStrings.localization.tooltips.saturation.textbox
+    const localization_tooltips_value_radio = uiStrings.localization.tooltips.value.radio
+    const localization_tooltips_value_textbox = uiStrings.localization.tooltips.value.textbox
+    const localization_tooltips_red_radio = uiStrings.localization.tooltips.red.radio
+    const localization_tooltips_red_textbox = uiStrings.localization.tooltips.red.textbox
+    const localization_tooltips_green_radio = uiStrings.localization.tooltips.green.radio
+    const localization_tooltips_green_textbox = uiStrings.localization.tooltips.green.textbox
+    const localization_tooltips_blue_radio = uiStrings.localization.tooltips.blue.radio
+    const localization_tooltips_blue_textbox = uiStrings.localization.tooltips.blue.textbox
+    const localization_tooltips_alpha_radio = uiStrings.localization.tooltips.alpha.radio
+    const localization_tooltips_alpha_textbox = uiStrings.localization.tooltips.alpha.textbox
+    const localization_tooltips_hex_textbox = uiStrings.localization.tooltips.hex.textbox
+    const localization_tooltips_hex_alpha = uiStrings.localization.tooltips.hex.alpha
+    const picker_lbl_deg = uiStrings.ui.pick_lbl_deg
     // let wasNone = false; // Currently unused
     const pos = elem.offset();
-    let {paint} = paintBox[picker];
+    let { paint } = paintBox[picker];
     $('#color_picker')
       .draggable({
         cancel: '.jGraduate_tabs, .jGraduate_colPick, .jGraduate_gradPick, .jPicker',
         containment: 'window'
       })
-      .css(curConfig.colorPickerCSS || {left: pos.left - 140, bottom: 40})
+      .css(curConfig.colorPickerCSS || { left: pos.left - 140, bottom: 40 })
       .jGraduate(
         {
           paint,
-          window: {pickerTitle: title},
-          images: {clientPath: curConfig.jGraduatePath},
+          window: { pickerTitle: title, 
+            solidColor: picker_solid_tab, 
+            linearColor: picker_linear_tab, 
+            radialColor: picker_radial_tab,
+            beginPoint: picker_begin_point,
+            endPoint: picker_end_point,
+            centerPoint: picker_center_point,
+            focalPoint: picker_focal_point,
+            btnOK: picker_ok,
+            btnCancel: picker_cancel,
+            titleRadius: picker_titleRadius,
+            titleEllip: picker_titleEllip,
+            titleAngle: picker_titleAngle,
+            titleOpac: picker_titleOpac,
+            titleX1: picker_titleX1,
+            titleY1: picker_titleY1,
+            titleX2: picker_titleX2,
+            titleY2: picker_titleY2,
+            titleX3: picker_titleX3,
+            titleY3: picker_titleY3,
+            lblSpreadMethod: picker_spreadMethod,
+            optPad: picker_optionPad,
+            optReflect: picker_optionReflect,
+            optRepeat: picker_optionRepeat,
+            lblAngle: picker_lblAngle,
+            lblOpac: picker_lblOpac,
+            lblRadius: picker_lblRadius,
+            localization_text_title: localization_text_title,
+            localization_text_newColor: localization_text_newColor,
+            localization_tooltips_colors_currentColor: localization_tooltips_colors_currentColor,
+            localization_text_currentColor: localization_text_currentColor,
+            localization_tooltips_colors_newColor: localization_tooltips_colors_newColor,
+            localization_tooltips_buttons_ok: localization_tooltips_buttons_ok,
+            localization_text_cancel: localization_text_cancel,
+            localization_tooltips_buttons_cancel: localization_tooltips_buttons_cancel,
+            localization_tooltips_hue_radio: localization_tooltips_hue_radio,
+            localization_tooltips_hue_textbox: localization_tooltips_hue_textbox,
+            localization_tooltips_saturation_radio: localization_tooltips_saturation_radio,
+            localization_tooltips_saturation_textbox: localization_tooltips_saturation_textbox,
+            localization_tooltips_value_radio: localization_tooltips_value_radio,
+            localization_tooltips_value_textbox: localization_tooltips_value_textbox,
+            localization_tooltips_red_radio: localization_tooltips_red_radio,
+            localization_tooltips_red_textbox: localization_tooltips_red_textbox,
+            localization_tooltips_green_radio: localization_tooltips_green_radio,
+            localization_tooltips_green_textbox: localization_tooltips_green_textbox,
+            localization_tooltips_blue_radio: localization_tooltips_blue_radio,
+            localization_tooltips_blue_textbox: localization_tooltips_blue_textbox,
+            localization_tooltips_alpha_radio: localization_tooltips_alpha_radio,
+            localization_tooltips_alpha_textbox: localization_tooltips_alpha_textbox,
+            localization_tooltips_hex_textbox: localization_tooltips_hex_textbox,
+            localization_tooltips_hex_alpha: localization_tooltips_hex_alpha,
+            lblDeg: picker_lbl_deg
+           },
+          images: { clientPath: curConfig.jGraduatePath },
           newstop: 'inverse'
         },
         function (p) {
@@ -5074,7 +5374,7 @@ const clickSearchDatabase = async function () {
   };
 
   class PaintBox {
-    constructor (container, type) {
+    constructor(container, type) {
       const cur = curConfig[type === 'fill' ? 'initFill' : 'initStroke'];
       // set up gradients to be used for the buttons
       const svgdocbox = new DOMParser().parseFromString(
@@ -5093,10 +5393,10 @@ const clickSearchDatabase = async function () {
       this.rect = docElem.firstElementChild;
       this.defs = docElem.getElementsByTagName('defs')[0];
       this.grad = this.defs.firstElementChild;
-      this.paint = new $.jGraduate.Paint({solidColor: cur.color});
+      this.paint = new $.jGraduate.Paint({ solidColor: cur.color });
       this.type = type;
     }
-    setPaint (paint, apply) {
+    setPaint(paint, apply) {
       this.paint = paint;
 
       const ptype = paint.type;
@@ -5104,17 +5404,17 @@ const clickSearchDatabase = async function () {
 
       let fillAttr = 'none';
       switch (ptype) {
-      case 'solidColor':
-        fillAttr = (paint[ptype] !== 'none') ? '#' + paint[ptype] : paint[ptype];
-        break;
-      case 'linearGradient':
-      case 'radialGradient': {
-        this.grad.remove();
-        this.grad = this.defs.appendChild(paint[ptype]);
-        const id = this.grad.id = 'gradbox_' + this.type;
-        fillAttr = 'url(#' + id + ')';
-        break;
-      }
+        case 'solidColor':
+          fillAttr = (paint[ptype] !== 'none') ? '#' + paint[ptype] : paint[ptype];
+          break;
+        case 'linearGradient':
+        case 'radialGradient': {
+          this.grad.remove();
+          this.grad = this.defs.appendChild(paint[ptype]);
+          const id = this.grad.id = 'gradbox_' + this.type;
+          fillAttr = 'url(#' + id + ')';
+          break;
+        }
       }
 
       this.rect.setAttribute('fill', fillAttr);
@@ -5126,50 +5426,50 @@ const clickSearchDatabase = async function () {
       }
     }
 
-    update (apply) {
+    update(apply) {
       if (!selectedElement) { return; }
 
-      const {type} = this;
+      const { type } = this;
       switch (selectedElement.tagName) {
-      case 'use':
-      case 'image':
-      case 'foreignObject':
-        // These elements don't have fill or stroke, so don't change
-        // the current value
-        return;
-      case 'g':
-      case 'a': {
-        const childs = selectedElement.getElementsByTagName('*');
-
-        let gPaint = null;
-        for (let i = 0, len = childs.length; i < len; i++) {
-          const elem = childs[i];
-          const p = elem.getAttribute(type);
-          if (i === 0) {
-            gPaint = p;
-          } else if (gPaint !== p) {
-            gPaint = null;
-            break;
-          }
-        }
-
-        if (gPaint === null) {
-          // No common color, don't update anything
-          this._paintColor = null;
+        case 'use':
+        case 'image':
+        case 'foreignObject':
+          // These elements don't have fill or stroke, so don't change
+          // the current value
           return;
-        }
-        this._paintColor = gPaint;
-        this._paintOpacity = 1;
-        break;
-      } default: {
-        this._paintOpacity = parseFloat(selectedElement.getAttribute(type + '-opacity'));
-        if (isNaN(this._paintOpacity)) {
-          this._paintOpacity = 1.0;
-        }
+        case 'g':
+        case 'a': {
+          const childs = selectedElement.getElementsByTagName('*');
 
-        const defColor = type === 'fill' ? 'black' : 'none';
-        this._paintColor = selectedElement.getAttribute(type) || defColor;
-      }
+          let gPaint = null;
+          for (let i = 0, len = childs.length; i < len; i++) {
+            const elem = childs[i];
+            const p = elem.getAttribute(type);
+            if (i === 0) {
+              gPaint = p;
+            } else if (gPaint !== p) {
+              gPaint = null;
+              break;
+            }
+          }
+
+          if (gPaint === null) {
+            // No common color, don't update anything
+            this._paintColor = null;
+            return;
+          }
+          this._paintColor = gPaint;
+          this._paintOpacity = 1;
+          break;
+        } default: {
+          this._paintOpacity = parseFloat(selectedElement.getAttribute(type + '-opacity'));
+          if (isNaN(this._paintOpacity)) {
+            this._paintOpacity = 1.0;
+          }
+
+          const defColor = type === 'fill' ? 'black' : 'none';
+          this._paintColor = selectedElement.getAttribute(type) || defColor;
+        }
       }
 
       if (apply) {
@@ -5184,16 +5484,16 @@ const clickSearchDatabase = async function () {
       this.setPaint(paint);
     }
 
-    prep () {
+    prep() {
       const ptype = this.paint.type;
 
       switch (ptype) {
-      case 'linearGradient':
-      case 'radialGradient': {
-        const paint = new $.jGraduate.Paint({copy: this.paint});
-        svgCanvas.setPaint(this.type, paint);
-        break;
-      }
+        case 'linearGradient':
+        case 'radialGradient': {
+          const paint = new $.jGraduate.Paint({ copy: this.paint });
+          svgCanvas.setPaint(this.type, paint);
+          break;
+        }
       }
     }
   }
@@ -5311,7 +5611,7 @@ const clickSearchDatabase = async function () {
    *
    * @returns {void}
    */
-  function deleteLayer () {
+  function deleteLayer() {
     if (svgCanvas.deleteCurrentLayer()) {
       updateContextPanel();
       populateLayers();
@@ -5327,7 +5627,7 @@ const clickSearchDatabase = async function () {
    *
    * @returns {Promise<void>}
    */
-  async function cloneLayer () {
+  async function cloneLayer() {
     const name = svgCanvas.getCurrentDrawing().getCurrentLayerName() + ' copy';
 
     const newName = await $.prompt(uiStrings.notification.enterUniqueLayerName, name);
@@ -5345,7 +5645,7 @@ const clickSearchDatabase = async function () {
    *
    * @returns {void}
    */
-  function mergeLayer () {
+  function mergeLayer() {
     if ($('#layerlist tr.layersel').index() === svgCanvas.getCurrentDrawing().getNumLayers() - 1) {
       return;
     }
@@ -5358,7 +5658,7 @@ const clickSearchDatabase = async function () {
    * @param {Integer} pos
    * @returns {void}
    */
-  function moveLayer (pos) {
+  function moveLayer(pos) {
     const total = svgCanvas.getCurrentDrawing().getNumLayers();
 
     let curIndex = $('#layerlist tr.layersel').index();
@@ -5486,7 +5786,7 @@ const clickSearchDatabase = async function () {
   /**
    * @type {module:jQuerySpinButton.StepCallback}
    */
-  function stepFontSize (elem, step) {
+  function stepFontSize(elem, step) {
     const origVal = Number(elem.value);
     const sugVal = origVal + step;
     const increasing = sugVal >= origVal;
@@ -5510,7 +5810,7 @@ const clickSearchDatabase = async function () {
   /**
    * @type {module:jQuerySpinButton.StepCallback}
    */
-  function stepZoom (elem, step) {
+  function stepZoom(elem, step) {
     const origVal = Number(elem.value);
     if (origVal === 0) { return 100; }
     const sugVal = origVal + step;
@@ -5586,48 +5886,72 @@ const clickSearchDatabase = async function () {
      * @type {module:SVGEditor.ToolButton[]}
      */
     const toolButtons = [
-      {sel: '#tool_select', fn: clickSelect, evt: 'click', key: ['V', true]},
-      {sel: '#tool_fhpath', fn: clickFHPath, evt: 'click', key: ['Q', true]},
-      {sel: '#tool_line', fn: clickLine, evt: 'click', key: ['L', true],
-        parent: '#tools_line', prepend: true},
-      {sel: '#tool_rect', fn: clickRect, evt: 'mouseup',
-        key: ['R', true], parent: '#tools_rect', icon: 'rect'},
-      {sel: '#tool_square', fn: clickSquare, evt: 'mouseup',
-        parent: '#tools_rect', icon: 'square'},
-      {sel: '#tool_fhrect', fn: clickFHRect, evt: 'mouseup',
-        parent: '#tools_rect', icon: 'fh_rect'},
-      {sel: '#tool_ellipse', fn: clickEllipse, evt: 'mouseup',
-        key: ['E', true], parent: '#tools_ellipse', icon: 'ellipse'},
-      {sel: '#tool_circle', fn: clickCircle, evt: 'mouseup',
-        parent: '#tools_ellipse', icon: 'circle'},
-      {sel: '#tool_fhellipse', fn: clickFHEllipse, evt: 'mouseup',
-        parent: '#tools_ellipse', icon: 'fh_ellipse'},
-      {sel: '#tool_path', fn: clickPath, evt: 'click', key: ['P', true]},
-      {sel: '#tool_text', fn: clickText, evt: 'click', key: ['T', true]},
-      {sel: '#tool_image', fn: clickImage, evt: 'mouseup'},
-      {sel: '#tool_zoom', fn: clickZoom, evt: 'mouseup', key: ['Z', true]},
-      {sel: '#tool_clear', fn: clickClear, evt: 'mouseup', key: ['N', true]},
-      {sel: '#tool_save', fn () {
-        if (editingsource) {
-          saveSourceEditor();
-        } else {
-          clickSave();
-        }
-      }, evt: 'mouseup', key: ['S', true]},
-      {sel: '#tool_save_database', fn () {
-        clickSaveDatabase();
-      }, evt: 'mouseup'},
-      {sel: '#btnSearch', fn () {
-        clickSearchDatabase();
-      }, evt: 'mouseup'},
-      {sel: '#tool_export', fn: clickExport, evt: 'mouseup'},
-      {sel: '#tool_open', fn: clickOpen, evt: 'mouseup', key: ['O', true]},
-      {sel: '#tool_import', fn: clickImport, evt: 'mouseup'},
-      {sel: '#tool_source', fn: showSourceEditor, evt: 'click', key: ['U', true]},
-      {sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true]},
+      { sel: '#tool_select', fn: clickSelect, evt: 'click', key: ['V', true] },
+      { sel: '#tool_fhpath', fn: clickFHPath, evt: 'click', key: ['Q', true] },
+      {
+        sel: '#tool_line', fn: clickLine, evt: 'click', key: ['L', true],
+        parent: '#tools_line', prepend: true
+      },
+      {
+        sel: '#tool_rect', fn: clickRect, evt: 'mouseup',
+        key: ['R', true], parent: '#tools_rect', icon: 'rect'
+      },
+      {
+        sel: '#tool_square', fn: clickSquare, evt: 'mouseup',
+        parent: '#tools_rect', icon: 'square'
+      },
+      {
+        sel: '#tool_fhrect', fn: clickFHRect, evt: 'mouseup',
+        parent: '#tools_rect', icon: 'fh_rect'
+      },
+      {
+        sel: '#tool_ellipse', fn: clickEllipse, evt: 'mouseup',
+        key: ['E', true], parent: '#tools_ellipse', icon: 'ellipse'
+      },
+      {
+        sel: '#tool_circle', fn: clickCircle, evt: 'mouseup',
+        parent: '#tools_ellipse', icon: 'circle'
+      },
+      {
+        sel: '#tool_fhellipse', fn: clickFHEllipse, evt: 'mouseup',
+        parent: '#tools_ellipse', icon: 'fh_ellipse'
+      },
+      { sel: '#tool_path', fn: clickPath, evt: 'click', key: ['P', true] },
+      { sel: '#tool_text', fn: clickText, evt: 'click', key: ['T', true] },
+      { sel: '#tool_image', fn: clickImage, evt: 'mouseup' },
+      { sel: '#tool_zoom', fn: clickZoom, evt: 'mouseup', key: ['Z', true] },
+      { sel: '#tool_clear', fn: clickClear, evt: 'mouseup', key: ['N', true] },
+      {
+        sel: '#tool_save', fn() {
+          if (editingsource) {
+            saveSourceEditor();
+          } else {
+            clickSave();
+          }
+        }, evt: 'mouseup', key: ['S', true]
+      },
+      {
+        sel: '#tool_save_database', fn() {
+          clickSaveDatabase();
+        }, evt: 'mouseup'
+      },
+      {
+        sel: '#btnSearch', fn() {
+          let soTo = $('#txtSoTo').val();
+          let soThua = $('#txtSoThua').val();
+          let maXa = $('#txtCodeDiaChinh').val();
+          clickSearchDatabase(soTo, soThua, maXa);
+        }, evt: 'mouseup'
+      },
+      { sel: '#tool_export', fn: clickExport, evt: 'mouseup' },
+      { sel: '#tool_open', fn: clickOpen, evt: 'mouseup', key: ['O', true] },
+      { sel: '#tool_import', fn: clickImport, evt: 'mouseup' },
+      { sel: '#tool_source', fn: showSourceEditor, evt: 'click', key: ['U', true] },
+      { sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true] },
+      { sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['T', true] },
       {
         key: ['esc', false, false],
-        fn () {
+        fn() {
           if (dialogSelectors.every((sel) => {
             return $(sel + ':hidden').length;
           })) {
@@ -5636,79 +5960,83 @@ const clickSearchDatabase = async function () {
         },
         hidekey: true
       },
-      {sel: dialogSelectors.join(','), fn: cancelOverlays, evt: 'click',
-        key: ['esc', false, false], hidekey: true},
-      {sel: '#tool_source_save', fn: saveSourceEditor, evt: 'click'},
-      {sel: '#tool_docprops_save', fn: saveDocProperties, evt: 'click'},
-      {sel: '#tool_docprops', fn: showDocProperties, evt: 'mouseup'},
-      {sel: '#tool_prefs_save', fn: savePreferences, evt: 'click'},
-      {sel: '#tool_prefs_option', fn () { showPreferences(); return false; }, evt: 'mouseup'},
-      {sel: '#tool_delete,#tool_delete_multi', fn: deleteSelected,
-        evt: 'click', key: ['del/backspace', true]},
-      {sel: '#tool_reorient', fn: reorientPath, evt: 'click'},
-      {sel: '#tool_node_link', fn: linkControlPoints, evt: 'click'},
-      {sel: '#tool_node_clone', fn: clonePathNode, evt: 'click'},
-      {sel: '#tool_node_delete', fn: deletePathNode, evt: 'click'},
-      {sel: '#tool_openclose_path', fn: opencloseSubPath, evt: 'click'},
-      {sel: '#tool_add_subpath', fn: addSubPath, evt: 'click'},
-      {sel: '#tool_move_top', fn: moveToTopSelected, evt: 'click', key: 'ctrl+shift+]'},
-      {sel: '#tool_move_bottom', fn: moveToBottomSelected, evt: 'click', key: 'ctrl+shift+['},
-      {sel: '#tool_topath', fn: convertToPath, evt: 'click'},
-      {sel: '#tool_make_link,#tool_make_link_multi', fn: makeHyperlink, evt: 'click'},
-      {sel: '#tool_undo', fn: clickUndo, evt: 'click'},
-      {sel: '#tool_redo', fn: clickRedo, evt: 'click'},
-      {sel: '#tool_clone,#tool_clone_multi', fn: clickClone, evt: 'click', key: ['D', true]},
-      {sel: '#tool_group_elements', fn: clickGroup, evt: 'click', key: ['G', true]},
-      {sel: '#tool_ungroup', fn: clickGroup, evt: 'click'},
-      {sel: '#tool_unlink_use', fn: clickGroup, evt: 'click'},
-      {sel: '[id^=tool_align]', fn: clickAlign, evt: 'click'},
+      {
+        sel: dialogSelectors.join(','), fn: cancelOverlays, evt: 'click',
+        key: ['esc', false, false], hidekey: true
+      },
+      { sel: '#tool_source_save', fn: saveSourceEditor, evt: 'click' },
+      { sel: '#tool_docprops_save', fn: saveDocProperties, evt: 'click' },
+      { sel: '#tool_docprops', fn: showDocProperties, evt: 'mouseup' },
+      { sel: '#tool_prefs_save', fn: savePreferences, evt: 'click' },
+      { sel: '#tool_prefs_option', fn() { showPreferences(); return false; }, evt: 'mouseup' },
+      {
+        sel: '#tool_delete,#tool_delete_multi', fn: deleteSelected,
+        evt: 'click', key: ['del/backspace', true]
+      },
+      { sel: '#tool_reorient', fn: reorientPath, evt: 'click' },
+      { sel: '#tool_node_link', fn: linkControlPoints, evt: 'click' },
+      { sel: '#tool_node_clone', fn: clonePathNode, evt: 'click' },
+      { sel: '#tool_node_delete', fn: deletePathNode, evt: 'click' },
+      { sel: '#tool_openclose_path', fn: opencloseSubPath, evt: 'click' },
+      { sel: '#tool_add_subpath', fn: addSubPath, evt: 'click' },
+      { sel: '#tool_move_top', fn: moveToTopSelected, evt: 'click', key: 'ctrl+shift+]' },
+      { sel: '#tool_move_bottom', fn: moveToBottomSelected, evt: 'click', key: 'ctrl+shift+[' },
+      { sel: '#tool_topath', fn: convertToPath, evt: 'click' },
+      { sel: '#tool_make_link,#tool_make_link_multi', fn: makeHyperlink, evt: 'click' },
+      { sel: '#tool_undo', fn: clickUndo, evt: 'click' },
+      { sel: '#tool_redo', fn: clickRedo, evt: 'click' },
+      { sel: '#tool_clone,#tool_clone_multi', fn: clickClone, evt: 'click', key: ['D', true] },
+      { sel: '#tool_group_elements', fn: clickGroup, evt: 'click', key: ['G', true] },
+      { sel: '#tool_ungroup', fn: clickGroup, evt: 'click' },
+      { sel: '#tool_unlink_use', fn: clickGroup, evt: 'click' },
+      { sel: '[id^=tool_align]', fn: clickAlign, evt: 'click' },
       // these two lines are required to make Opera work properly with the flyout mechanism
       // {sel: '#tools_rect_show', fn: clickRect, evt: 'click'},
       // {sel: '#tools_ellipse_show', fn: clickEllipse, evt: 'click'},
-      {sel: '#tool_bold', fn: clickBold, evt: 'mousedown'},
-      {sel: '#tool_italic', fn: clickItalic, evt: 'mousedown'},
-      {sel: '#sidepanel_handle', fn: toggleSidePanel, key: ['X']},
-      {sel: '#copy_save_done', fn: cancelOverlays, evt: 'click'},
+      { sel: '#tool_bold', fn: clickBold, evt: 'mousedown' },
+      { sel: '#tool_italic', fn: clickItalic, evt: 'mousedown' },
+      { sel: '#sidepanel_handle', fn: toggleSidePanel, key: ['X'] },
+      { sel: '#copy_save_done', fn: cancelOverlays, evt: 'click' },
 
       // Shortcuts not associated with buttons
 
-      {key: 'ctrl+left', fn () { rotateSelected(0, 1); }},
-      {key: 'ctrl+right', fn () { rotateSelected(1, 1); }},
-      {key: 'ctrl+shift+left', fn () { rotateSelected(0, 5); }},
-      {key: 'ctrl+shift+right', fn () { rotateSelected(1, 5); }},
-      {key: 'shift+O', fn: selectPrev},
-      {key: 'shift+P', fn: selectNext},
-      {key: [modKey + 'up', true], fn () { zoomImage(2); }},
-      {key: [modKey + 'down', true], fn () { zoomImage(0.5); }},
-      {key: [modKey + ']', true], fn () { moveUpDownSelected('Up'); }},
-      {key: [modKey + '[', true], fn () { moveUpDownSelected('Down'); }},
-      {key: ['up', true], fn () { moveSelected(0, -1); }},
-      {key: ['down', true], fn () { moveSelected(0, 1); }},
-      {key: ['left', true], fn () { moveSelected(-1, 0); }},
-      {key: ['right', true], fn () { moveSelected(1, 0); }},
-      {key: 'shift+up', fn () { moveSelected(0, -10); }},
-      {key: 'shift+down', fn () { moveSelected(0, 10); }},
-      {key: 'shift+left', fn () { moveSelected(-10, 0); }},
-      {key: 'shift+right', fn () { moveSelected(10, 0); }},
-      {key: ['alt+up', true], fn () { svgCanvas.cloneSelectedElements(0, -1); }},
-      {key: ['alt+down', true], fn () { svgCanvas.cloneSelectedElements(0, 1); }},
-      {key: ['alt+left', true], fn () { svgCanvas.cloneSelectedElements(-1, 0); }},
-      {key: ['alt+right', true], fn () { svgCanvas.cloneSelectedElements(1, 0); }},
-      {key: ['alt+shift+up', true], fn () { svgCanvas.cloneSelectedElements(0, -10); }},
-      {key: ['alt+shift+down', true], fn () { svgCanvas.cloneSelectedElements(0, 10); }},
-      {key: ['alt+shift+left', true], fn () { svgCanvas.cloneSelectedElements(-10, 0); }},
-      {key: ['alt+shift+right', true], fn () { svgCanvas.cloneSelectedElements(10, 0); }},
-      {key: 'a', fn () { svgCanvas.selectAllInCurrentLayer(); }},
-      {key: modKey + 'a', fn () { svgCanvas.selectAllInCurrentLayer(); }},
+      { key: 'ctrl+left', fn() { rotateSelected(0, 1); } },
+      { key: 'ctrl+right', fn() { rotateSelected(1, 1); } },
+      { key: 'ctrl+shift+left', fn() { rotateSelected(0, 5); } },
+      { key: 'ctrl+shift+right', fn() { rotateSelected(1, 5); } },
+      { key: 'shift+O', fn: selectPrev },
+      { key: 'shift+P', fn: selectNext },
+      { key: [modKey + 'up', true], fn() { zoomImage(2); } },
+      { key: [modKey + 'down', true], fn() { zoomImage(0.5); } },
+      { key: [modKey + ']', true], fn() { moveUpDownSelected('Up'); } },
+      { key: [modKey + '[', true], fn() { moveUpDownSelected('Down'); } },
+      { key: ['up', true], fn() { moveSelected(0, -1); } },
+      { key: ['down', true], fn() { moveSelected(0, 1); } },
+      { key: ['left', true], fn() { moveSelected(-1, 0); } },
+      { key: ['right', true], fn() { moveSelected(1, 0); } },
+      { key: 'shift+up', fn() { moveSelected(0, -10); } },
+      { key: 'shift+down', fn() { moveSelected(0, 10); } },
+      { key: 'shift+left', fn() { moveSelected(-10, 0); } },
+      { key: 'shift+right', fn() { moveSelected(10, 0); } },
+      { key: ['alt+up', true], fn() { svgCanvas.cloneSelectedElements(0, -1); } },
+      { key: ['alt+down', true], fn() { svgCanvas.cloneSelectedElements(0, 1); } },
+      { key: ['alt+left', true], fn() { svgCanvas.cloneSelectedElements(-1, 0); } },
+      { key: ['alt+right', true], fn() { svgCanvas.cloneSelectedElements(1, 0); } },
+      { key: ['alt+shift+up', true], fn() { svgCanvas.cloneSelectedElements(0, -10); } },
+      { key: ['alt+shift+down', true], fn() { svgCanvas.cloneSelectedElements(0, 10); } },
+      { key: ['alt+shift+left', true], fn() { svgCanvas.cloneSelectedElements(-10, 0); } },
+      { key: ['alt+shift+right', true], fn() { svgCanvas.cloneSelectedElements(10, 0); } },
+      { key: 'a', fn() { svgCanvas.selectAllInCurrentLayer(); } },
+      { key: modKey + 'a', fn() { svgCanvas.selectAllInCurrentLayer(); } },
 
       // Standard shortcuts
-      {key: modKey + 'z', fn: clickUndo},
-      {key: modKey + 'shift+z', fn: clickRedo},
-      {key: modKey + 'y', fn: clickRedo},
+      { key: modKey + 'z', fn: clickUndo },
+      { key: modKey + 'shift+z', fn: clickRedo },
+      { key: modKey + 'y', fn: clickRedo },
 
-      {key: modKey + 'x', fn: cutSelected},
-      {key: modKey + 'c', fn: copySelected},
-      {key: modKey + 'v', fn: pasteInCenter}
+      { key: modKey + 'x', fn: cutSelected },
+      { key: modKey + 'c', fn: copySelected },
+      { key: modKey + 'v', fn: pasteInCenter }
     ];
 
     // Tooltips not directly associated with a single function
@@ -5722,7 +6050,7 @@ const clickSearchDatabase = async function () {
       /**
        * @returns {void}
        */
-      setAll () {
+      setAll() {
         const flyouts = {};
 
         $.each(toolButtons, function (i, opts) {
@@ -5773,7 +6101,7 @@ const clickSearchDatabase = async function () {
             }
             keyval = String(keyval);
 
-            const {fn} = opts;
+            const { fn } = opts;
             $.each(keyval.split('/'), function (j, key) {
               $(document).bind('keydown', key, function (e) {
                 fn();
@@ -5830,7 +6158,7 @@ const clickSearchDatabase = async function () {
       /**
        * @returns {void}
        */
-      setTitles () {
+      setTitles() {
         $.each(keyAssocs, function (keyval, sel) {
           const menu = ($(sel).parents('#main_menu').length);
 
@@ -5864,7 +6192,7 @@ const clickSearchDatabase = async function () {
        * @param {string} sel Selector to match
        * @returns {module:SVGEditor.ToolButton}
        */
-      getButtonData (sel) {
+      getButtonData(sel) {
         return Object.values(toolButtons).find((btn) => {
           return btn.sel === sel;
         });
@@ -5941,7 +6269,7 @@ const clickSearchDatabase = async function () {
   $('#zoom').SpinButton({
     min: 0.001, max: 10000, step: 50, stepfunc: stepZoom,
     stateObj, callback: changeZoom
-  // Set default zoom
+    // Set default zoom
   }).val(
     svgCanvas.getZoom() * 100
   );
@@ -5953,45 +6281,45 @@ const clickSearchDatabase = async function () {
     },
     function (action, el, pos) {
       switch (action) {
-      case 'delete':
-        deleteSelected();
-        break;
-      case 'cut':
-        cutSelected();
-        break;
-      case 'copy':
-        copySelected();
-        break;
-      case 'paste':
-        svgCanvas.pasteElements();
-        break;
-      case 'paste_in_place':
-        svgCanvas.pasteElements('in_place');
-        break;
-      case 'group':
-      case 'group_elements':
-        svgCanvas.groupSelectedElements();
-        break;
-      case 'ungroup':
-        svgCanvas.ungroupSelectedElement();
-        break;
-      case 'move_front':
-        moveToTopSelected();
-        break;
-      case 'move_up':
-        moveUpDownSelected('Up');
-        break;
-      case 'move_down':
-        moveUpDownSelected('Down');
-        break;
-      case 'move_back':
-        moveToBottomSelected();
-        break;
-      default:
-        if (hasCustomHandler(action)) {
-          getCustomHandler(action).call();
-        }
-        break;
+        case 'delete':
+          deleteSelected();
+          break;
+        case 'cut':
+          cutSelected();
+          break;
+        case 'copy':
+          copySelected();
+          break;
+        case 'paste':
+          svgCanvas.pasteElements();
+          break;
+        case 'paste_in_place':
+          svgCanvas.pasteElements('in_place');
+          break;
+        case 'group':
+        case 'group_elements':
+          svgCanvas.groupSelectedElements();
+          break;
+        case 'ungroup':
+          svgCanvas.ungroupSelectedElement();
+          break;
+        case 'move_front':
+          moveToTopSelected();
+          break;
+        case 'move_up':
+          moveUpDownSelected('Up');
+          break;
+        case 'move_down':
+          moveUpDownSelected('Down');
+          break;
+        case 'move_back':
+          moveToBottomSelected();
+          break;
+        default:
+          if (hasCustomHandler(action)) {
+            getCustomHandler(action).call();
+          }
+          break;
       }
     }
   );
@@ -6005,20 +6333,20 @@ const clickSearchDatabase = async function () {
   */
   const lmenuFunc = function (action, el, pos) {
     switch (action) {
-    case 'dupe':
+      case 'dupe':
       /* await */ cloneLayer();
-      break;
-    case 'delete':
-      deleteLayer();
-      break;
-    case 'merge_down':
-      mergeLayer();
-      break;
-    case 'merge_all':
-      svgCanvas.mergeAllLayers();
-      updateContextPanel();
-      populateLayers();
-      break;
+        break;
+      case 'delete':
+        deleteLayer();
+        break;
+      case 'merge_down':
+        mergeLayer();
+        break;
+      case 'merge_all':
+        svgCanvas.mergeAllLayers();
+        updateContextPanel();
+        populateLayers();
+        break;
     }
   };
 
@@ -6049,11 +6377,11 @@ const clickSearchDatabase = async function () {
   /**
    * @returns {void}
    */
-  function enableOrDisableClipboard () {
+  function enableOrDisableClipboard() {
     let svgeditClipboard;
     try {
       svgeditClipboard = localStorage.getItem('svgedit_clipboard');
-    } catch (err) {}
+    } catch (err) { }
     canvMenu[(svgeditClipboard ? 'en' : 'dis') + 'ableContextMenuItems'](
       '#paste,#paste_in_place'
     );
@@ -6107,7 +6435,7 @@ const clickSearchDatabase = async function () {
    * @param {Event} e
    * @returns {void}
    */
-  function onDragEnter (e) {
+  function onDragEnter(e) {
     e.stopPropagation();
     e.preventDefault();
     // and indicator should be displayed here, such as "drop files here"
@@ -6118,7 +6446,7 @@ const clickSearchDatabase = async function () {
    * @param {Event} e
    * @returns {void}
    */
-  function onDragOver (e) {
+  function onDragOver(e) {
     e.stopPropagation();
     e.preventDefault();
   }
@@ -6128,7 +6456,7 @@ const clickSearchDatabase = async function () {
    * @param {Event} e
    * @returns {void}
    */
-  function onDragLeave (e) {
+  function onDragLeave(e) {
     e.stopPropagation();
     e.preventDefault();
     // hypothetical indicator should be removed here
@@ -6180,7 +6508,7 @@ const clickSearchDatabase = async function () {
       } else {
         // bitmap handling
         reader = new FileReader();
-        reader.onloadend = function ({target: {result}}) {
+        reader.onloadend = function ({ target: { result } }) {
           /**
           * Insert the new image until we know its dimensions.
           * @param {Float} width
@@ -6234,7 +6562,7 @@ const clickSearchDatabase = async function () {
       if (this.files.length === 1) {
         $.process_cancel(uiStrings.notification.loadingImage);
         const reader = new FileReader();
-        reader.onloadend = async function ({target}) {
+        reader.onloadend = async function ({ target }) {
           await loadSvgString(target.result);
           updateCanvas();
         };
@@ -6296,7 +6624,7 @@ const clickSearchDatabase = async function () {
         return ext.langReady({
           lang,
           uiStrings,
-          importLocale: getImportLocale({defaultLang: lang, defaultName: ext.name})
+          importLocale: getImportLocale({ defaultLang: lang, defaultName: ext.name })
         });
       }));
       // eslint-disable-next-line require-atomic-updates
@@ -6307,7 +6635,7 @@ const clickSearchDatabase = async function () {
           loadedExtensionName,
           'langReady',
           /** @type {module:svgcanvas.SvgCanvas#event:ext_langReady} */ {
-            lang, uiStrings, importLocale: getImportLocale({defaultLang: lang, defaultName: loadedExtensionName})
+            lang, uiStrings, importLocale: getImportLocale({ defaultLang: lang, defaultName: loadedExtensionName })
           }
         );
       });
@@ -6348,7 +6676,7 @@ const clickSearchDatabase = async function () {
       * @todo Can we forego this in favor of `langReady` (or forego `langReady`)?
       * @returns {module:locale.AddLangExtensionLocaleData[]}
       */
-      addLangData (langParam) {
+      addLangData(langParam) {
         return svgCanvas.runExtensions(
           'addLangData',
           /**
@@ -6360,7 +6688,7 @@ const clickSearchDatabase = async function () {
           (name) => { // We pass in a function as we don't know the extension name here when defining this `addLangData` method
             return {
               lang: langParam,
-              importLocale: getImportLocale({defaultLang: langParam, defaultName: name})
+              importLocale: getImportLocale({ defaultLang: langParam, defaultName: name })
             };
           },
           true
@@ -6429,10 +6757,10 @@ editor.runCallbacks = async function () {
 * @param {boolean} [opts.noAlert=false] Option to avoid alert to user and instead get rejected promise
 * @returns {Promise<void>}
 */
-editor.loadFromString = function (str, {noAlert} = {}) {
+editor.loadFromString = function (str, { noAlert } = {}) {
   return editor.ready(async function () {
     try {
-      await loadSvgString(str, {noAlert});
+      await loadSvgString(str, { noAlert });
     } catch (err) {
       if (noAlert) {
         throw err;
@@ -6467,22 +6795,22 @@ editor.disableUI = function (featList) {
 *   the SVG (or upon failure to parse the loaded string) when `noAlert` is
 *   enabled
 */
-editor.loadFromURL = function (url, {cache, noAlert} = {}) {
+editor.loadFromURL = function (url, { cache, noAlert } = {}) {
   return editor.ready(function () {
     return new Promise((resolve, reject) => { // eslint-disable-line promise/avoid-new
       $.ajax({
         url,
         dataType: 'text',
         cache: Boolean(cache),
-        beforeSend () {
+        beforeSend() {
           $.process_cancel(uiStrings.notification.loadingImage);
         },
-        success (str) {
-          resolve(loadSvgString(str, {noAlert}));
+        success(str) {
+          resolve(loadSvgString(str, { noAlert }));
         },
-        error (xhr, stat, err) {
+        error(xhr, stat, err) {
           if (xhr.status !== 404 && xhr.responseText) {
-            resolve(loadSvgString(xhr.responseText, {noAlert}));
+            resolve(loadSvgString(xhr.responseText, { noAlert }));
             return;
           }
           if (noAlert) {
@@ -6492,7 +6820,7 @@ editor.loadFromURL = function (url, {cache, noAlert} = {}) {
           $.alert(uiStrings.notification.URLLoadFail + ': \n' + err);
           resolve();
         },
-        complete () {
+        complete() {
           $('#dialog_box').hide();
         }
       });
@@ -6506,7 +6834,7 @@ editor.loadFromURL = function (url, {cache, noAlert} = {}) {
 * @param {boolean} [opts.noAlert]
 * @returns {Promise<void>} Resolves to `undefined` and rejects if loading SVG string fails and `noAlert` is enabled
 */
-editor.loadFromDataURI = function (str, {noAlert} = {}) {
+editor.loadFromDataURI = function (str, { noAlert } = {}) {
   return editor.ready(function () {
     let base64 = false;
     let pre = str.match(/^data:image\/svg\+xml;base64,/);
@@ -6519,7 +6847,7 @@ editor.loadFromDataURI = function (str, {noAlert} = {}) {
       pre = pre[0];
     }
     const src = str.slice(pre.length);
-    return loadSvgString(base64 ? Utils.decode64(src) : decodeURIComponent(src), {noAlert});
+    return loadSvgString(base64 ? Utils.decode64(src) : decodeURIComponent(src), { noAlert });
   });
 };
 
@@ -6556,9 +6884,9 @@ const messageQueue = [];
  * @fires module:svgcanvas.SvgCanvas#event:message
  * @returns {void}
  */
-const messageListener = ({data, origin}) => { // eslint-disable-line no-shadow
+const messageListener = ({ data, origin }) => { // eslint-disable-line no-shadow
   // console.log('data, origin, extensionsAdded', data, origin, extensionsAdded);
-  const messageObj = {data, origin};
+  const messageObj = { data, origin };
   if (!extensionsAdded) {
     messageQueue.push(messageObj);
   } else {
@@ -6573,13 +6901,13 @@ window.addEventListener('message', messageListener);
 // jQuery(editor.init);
 
 (async () => {
-try {
-  // We wait a micro-task to let the svgEditor variable be defined for module checks
-  await Promise.resolve();
-  editor.init();
-} catch (err) {
-  console.error(err); // eslint-disable-line no-console
-}
+  try {
+    // We wait a micro-task to let the svgEditor variable be defined for module checks
+    await Promise.resolve();
+    editor.init();
+  } catch (err) {
+    console.error(err); // eslint-disable-line no-console
+  }
 })();
 
 export default editor;

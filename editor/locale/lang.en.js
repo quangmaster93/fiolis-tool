@@ -25,7 +25,85 @@ export default {
     pathNodeTooltip: 'Drag node to move it. Double-click node to change segment type',
     pathCtrlPtTooltip: 'Drag control point to adjust curve properties',
     pick_stroke_paint_opacity: 'Pick a Stroke Paint and Opacity',
-    pick_fill_paint_opacity: 'Pick a Fill Paint and Opacity'
+    pick_fill_paint_opacity: 'Pick a Fill Paint and Opacity',
+    pick_solid_color_tab: "Solid Color",
+    pick_linear_gradient_tab: "Linear Gradient",
+    pick_radial_gradient_tab: "Radial Gradient",
+    pick_begin_point: "Begin point",
+    pick_end_point: "End point",
+    pick_center_point: "Center point",
+    pick_focal_point: "Focal point",
+    pick_ok: "OK",
+    pick_cancel: "Cancel",
+    pick_lbl_radius: "Radius:",
+    pick_title_radius: "Click to set radius",
+    pick_title_ellip: "Click to set Ellip",
+    pick_title_angle: "Click to set Angle",
+    pick_title_opac: "Click to set Opac",
+    pick_title_x1: "Enter starting x value between 0.0 and 1.0",
+    pick_title_y1: "Enter starting y value between 0.0 and 1.0",
+    pick_title_x2: "Enter ending x value between 0.0 and 1.0",
+    pick_title_y2: "Enter ending y value between 0.0 and 1.0",
+    pick_title_x3: "Enter x value between 0.0 and 1.0",
+    pick_title_y3: "Enter y value between 0.0 and 1.0",
+    pick_spread_method: "Spread method",
+    pick_option_pad: "Pad",
+    pick_option_reflect: "Reflect",
+    pick_option_repeat: "Repeat",
+    pick_lbl_angle: "Angle:",
+    pick_lbl_opac: "Opac:",
+    pick_lbl_deg: "deg"
+  },
+  localization: {
+    text: {
+      title: 'Drag Markers To Pick A Color',
+      newColor: 'new',
+      currentColor: 'current',
+      ok: 'OK',
+      cancel: 'Cancel'
+    },
+    tooltips: {
+      colors: {
+        newColor: 'New Color - Press &ldquo;OK&rdquo; To Commit',
+        currentColor: 'Click To Revert To Original Color'
+      },
+      buttons: {
+        ok: 'Commit To This Color Selection',
+        cancel: 'Cancel And Revert To Original Color'
+      },
+      hue: {
+        radio: 'Set To &ldquo;Hue&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Hue&rdquo; Value (0-360&deg;)'
+      },
+      saturation: {
+        radio: 'Set To &ldquo;Saturation&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Saturation&rdquo; Value (0-100%)'
+      },
+      value: {
+        radio: 'Set To &ldquo;Value&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Value&rdquo; Value (0-100%)'
+      },
+      red: {
+        radio: 'Set To &ldquo;Red&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Red&rdquo; Value (0-255)'
+      },
+      green: {
+        radio: 'Set To &ldquo;Green&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Green&rdquo; Value (0-255)'
+      },
+      blue: {
+        radio: 'Set To &ldquo;Blue&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Blue&rdquo; Value (0-255)'
+      },
+      alpha: {
+        radio: 'Set To &ldquo;Alpha&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Alpha&rdquo; Value (0-100)'
+      },
+      hex: {
+        textbox: 'Enter A &ldquo;Hex&rdquo; Color Value (#000000-#ffffff)',
+        alpha: 'Enter A &ldquo;Alpha&rdquo; Value (#00-#ff)'
+      }
+    }
   },
   properties: {
     id: 'Identify the element',
@@ -73,6 +151,39 @@ export default {
     italic: 'Italic Text [I]'
   },
   tools: {
+    shape_heart: "Heart",
+    shape_frame: "Frame",
+    shape_donut: "Donut",
+    shape_triangle: "Triangle",
+    shape_right_triangle: "Right triangle",
+    shape_diamond: "Diamond",
+    shape_pentagon: "Pentagon",
+    shape_hexagon: "hexagon",
+    shape_septagon1: "Septagon 1",
+    shape_heptagon: "Heptagon",
+    shape_decagon: "Decagon",
+    shape_dodecagon: "Dodecagon",
+    shape_star_points_5: "Star points 5",
+    shape_trapezoid: "Trapezoid",
+    shape_arrow_up: "Arrow up",
+    shape_vertical_scrool: "Vertical scrool",
+    shape_smiley: "Smiley",
+    shape_left_braket: "Left braket",
+    shape_uml_actor: "UML actor",
+    shape_dialog_balloon_1: "Dialog balloon 1",
+    shape_cylinder: "Cylinder",
+    shape_arrow_u_turn: "Arrow u turn",
+    shape_arrow_left_up: "Arrow left up",
+    shape_maximize: "Maximize",
+    shape_cross: "Cross",
+    shape_plaque: "Plaque",
+    shape_page: "Page",
+    searchSVG: "Search",
+    searchSVG_title: "Search SVG of plot",
+    tool_toggle_adjacent: 'Toogle Adjacent [T]',
+    ma_xa: 'Cadastral code: ',
+    so_to: 'Number of sheets: ',
+    so_thua: 'Number of plots: ',
     main_menu: 'Main Menu',
     bkgnd_color_opac: 'Change background color/opacity',
     connector_no_arrow: 'No arrow',
@@ -90,7 +201,9 @@ export default {
     new_doc: 'New Image',
     open_doc: 'Open SVG',
     export_img: 'Export',
-    save_doc: 'Save Image',
+    prefsopt: 'Editor options',
+    save_doc: 'Save Image',
+    save_database: 'Save to Database',
     import_doc: 'Import Image',
     align_to_page: 'Align Element to Page',
     align_bottom: 'Align Bottom',
@@ -195,6 +308,10 @@ export default {
     QmoveElemsToLayer: 'Move selected elements to layer \'%s\'?',
     QwantToClear: 'Do you want to clear the drawing?\nThis will also erase your undo history!',
     QwantToOpen: 'Do you want to open a new file?\nThis will also erase your undo history!',
+    SaveSuccess: 'Save SVG to database sucess!',
+    SaveFail: 'Save SVG to database fail!',
+    NotFound: 'Not found SVG!',
+    SearchEmpty: 'Please enter value for Number of sheets, Number of plots And Cadastral code!',
     QerrorsRevertToSource: 'There were parsing errors in your SVG source.\nRevert back to original SVG source?',
     QignoreSourceChanges: 'Ignore changes made to SVG source?',
     featNotSupported: 'Feature not supported',

@@ -3898,43 +3898,51 @@ class SvgCanvas {
       call('saved', str);
     };
 
-    this.saveDatabase = function (svgData) {
+    this.saveDatabase = function (svgData, message) {
       // remove the selected outline before serializing
       clearSelection();
       // no need for doctype, see https://jwatt.org/svg/authoring/#doctype-declaration
       const str = this.svgCanvasToString();
-      svgData.Data = str;
+      svgData.dataSVG = str;
+      let checkStatus = "";
       $.ajax({
         type: "POST",
-        url: "http://localhost:8091/api/Service/Save",
-        data: svgData,
-        ContentType: "application/json",
+        url: "https://api-fiolis.map4d.vn/v2/api/land-certificate/save-or-update?key=8bd33b7fd36d68baa96bf446c84011da",
+        data: JSON.stringify(svgData),
+        contentType: "application/json; charset=utf-8",
         dataType: "json",
+        async: false,
         success: function (data) {
-          if(data.type === "Success"){
-            console.log(data.type);
+          if (data !== null) {
+            checkStatus = data.code
           }
         },
         error: function (err) {
           console.log(err)
         }
       });
+
+      if (checkStatus == "ok") {
+        $.alert(message.ok);
+      } else {
+        $.alert(message.error);
+      }
     };
 
-    this.searchDatabase = async function (dataSearch, message) {
+    this.searchDatabase = async function (dataSearch) {
       // remove the selected outline before serializing
       clearSelection();
       var resultSearch = null;
       $.ajax({
         method: "GET",
-        url: "http://localhost:8091/api/Service/GetDataSVGBySoToSoThuaAndCodeDiaChinh",
-        data: {soTo: dataSearch.SoTo, soThua: dataSearch.SoThua, code: dataSearch.CodeDiaChinh},
+        url: "https://api-fiolis.map4d.vn/v2/api/land-certificate/find",
+        data: { SoTo: dataSearch.SoTo, SoThua: dataSearch.SoThua, MaXa: dataSearch.MaXa, key: "8bd33b7fd36d68baa96bf446c84011da" },
         ContentType: "application/json",
         dataType: "json",
-        async:false,
-        success: function (result) {
-          if(result.type === "Success"){
-            resultSearch = result.data.Data;
+        async: false,
+        success: function (data) {
+          if (data.code === "ok" && data.result) {
+            resultSearch = data.result.dataSVG;
           }
         },
         error: function (xhr, stat, err) {
@@ -3942,13 +3950,8 @@ class SvgCanvas {
         }
       });
 
-      if(resultSearch != null){
-        const ok = await $.confirm(message);
-        if (!ok) {
-              return;
-        }
-        this.setSvgString(resultSearch);
-      }
+      return resultSearch;
+
     };
 
     /**

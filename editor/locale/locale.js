@@ -198,13 +198,18 @@ export const readLang = async function (langData) {
     tool_prefs_save: common.ok,
 
     sidepanel_handle: layers.layers.split('').join(' '),
-
+    lblSoTo: tools.so_to,
+    lblSoThua: tools.so_thua,
+    lblCodeDiaChinh: tools.ma_xa,
     tool_clear: tools.new_doc,
+    btnSearch: tools.searchSVG,
     tool_docprops: tools.docprops,
+    tool_prefs_option: tools.prefsopt,
     tool_export: tools.export_img,
     tool_import: tools.import_doc,
     tool_open: tools.open_doc,
     tool_save: tools.save_doc,
+    tool_save_database: tools.save_database,
 
     svginfo_units_rulers: config.units_and_rulers,
     svginfo_rulers_onoff: config.show_rulers,
@@ -242,7 +247,7 @@ export const readLang = async function (langData) {
     zoom_panel: ui.zoom_level,
     stroke_linejoin: properties.linejoin_miter,
     stroke_linecap: properties.linecap_butt,
-    tool_opacity: properties.opacity
+    tool_opacity: properties.opacity,
   }).forEach(([id, value]) => {
     ariaLabels['#' + id + ' button'] = value;
   });
@@ -255,6 +260,7 @@ export const readLang = async function (langData) {
   setStrings('aria-label', ariaLabels);
 
   setStrings('title', {
+    btnSearch: tools.searchSVG_title,
     align_relative_to: tools.align_relative_to,
     circle_cx: properties.circle_cx,
     circle_cy: properties.circle_cy,
@@ -342,7 +348,8 @@ export const readLang = async function (langData) {
     tool_redo: tools.redo,
     tool_reorient: tools.reorient_path,
     tool_select: tools.mode_select,
-    tool_source: tools.source_save,
+    tool_source: tools.tool_source,
+    tool_toggle_adjacent: tools.tool_toggle_adjacent,
     tool_square: tools.mode_square,
     tool_text: tools.mode_text,
     tool_topath: tools.to_path,
