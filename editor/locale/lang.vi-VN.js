@@ -25,8 +25,86 @@ export default {
       pathNodeTooltip: 'Kéo nút để di chuyển nó. Bấm đúp vào nút để thay đổi loại đoạn ',
       pathCtrlPtTooltip: 'Kéo điều khiển điểm để điều chỉnh các thuộc tính đường cong',
       pick_stroke_paint_opacity: 'Chọn màu viền và độ trong suốt',
-      pick_fill_paint_opacity: 'Chọn màu nền và độ trong suốt'
+      pick_fill_paint_opacity: 'Chọn màu nền và độ trong suốt',
+      pick_solid_color_tab: "Màu đơn sắc",
+      pick_linear_gradient_tab: "Gradient tuyến tính",
+      pick_radial_gradient_tab: "Gradient xuyên tâm",
+      pick_begin_point: "Điểm bắt đầu",
+      pick_end_point: "Điểm kết thúc",
+      pick_center_point: "Điểm trung tâm",
+      pick_focal_point: "Tiêu điểm",
+      pick_ok: "OK",
+      pick_cancel: "Hủy bỏ",
+      pick_title_radius: "Nhấn vào đây để đặt bán kính",
+      pick_title_ellip: "Nhấn vào đây để đặt Ellip",
+      pick_title_angle: "Nhấn vào đây để đặt Góc",
+      pick_title_opac: "Nhấn vào đây để đặt độ trong suốt",
+      pick_title_x1: "Nhập giá trị x bắt đầu từ 0.0 đến 1.0",
+      pick_title_y1: "Nhập giá trị y bắt đầu từ 0.0 đến 1.0",
+      pick_title_x2: "Nhập giá trị x kết thúc từ 0.0 đến 1.0",
+      pick_title_y2: "Nhập giá trị y kết thúc từ 0.0 đến 1.0",
+      pick_title_x3: "Nhập giá trị x từ 0.0 đến 1.0",
+      pick_title_y3: "Nhập giá trị y từ 0.0 đến 1.0",
+      pick_spread_method: "Spread phương thức",
+      pick_option_pad: "Đệm lót",
+      pick_option_reflect: "Phản chiếu",
+      pick_option_repeat: "Lặp lại",
+      pick_lbl_angle: "Góc:",
+      pick_lbl_opac: "Độ trong suốt:",
+      pick_lbl_radius: "BKính:",
+      pick_lbl_deg: "độ"
     },
+    localization: {
+      text: {
+        title: 'Kéo điểm đánh dấu để chọn màu',
+        newColor: 'mới',
+        currentColor: 'hiện tại',
+        ok: 'OK',
+        cancel: 'Hủy bỏ'
+      },
+      tooltips: {
+        colors: {
+          newColor: 'Tạo màu mới - Nhấn &ldquo;OK&rdquo; để áp dụng',
+          currentColor: 'Nhấn để quay lại màu gốc'
+        },
+        buttons: {
+          ok: 'Cam kết lựa chọn màu này',
+          cancel: 'Hủy bỏ và quay lại màu gốc'
+        },
+        hue: {
+          radio: 'Đặt &ldquo;Hue&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Hue&rdquo; (0-360&deg;)'
+        },
+        saturation: {
+          radio: 'Đặt &ldquo;Saturation&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Saturation&rdquo; (0-100%)'
+        },
+        value: {
+          radio: 'Đặt &ldquo;Value&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Value&rdquo; (0-100%)'
+        },
+        red: {
+          radio: 'Đặt &ldquo;Red&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Red&rdquo; (0-255)'
+        },
+        green: {
+          radio: 'Đặt &ldquo;Green&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Green&rdquo; (0-255)'
+        },
+        blue: {
+          radio: 'Đặt &ldquo;Blue&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Blue&rdquo; (0-255)'
+        },
+        alpha: {
+          radio: 'Đặt &ldquo;Alpha&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Alpha&rdquo; (0-100)'
+        },
+        hex: {
+          textbox: 'Nhập giá trị màu &ldquo;Hex&rdquo; (#000000-#ffffff)',
+          alpha: 'Nhập giá trị &ldquo;Alpha&rdquo; (#00-#ff)'
+        }
+      }
+    },
     properties: {
       id: 'Xác định thành phần',
       fill_color: 'Thay đổi màu nền',
@@ -234,7 +312,7 @@ export default {
       SaveSuccess: 'Lưu SVG vào cơ sở dữ liệu thành công!',
       SaveFail: 'Lưu SVG vào cơ sở dữ liệu không thành công!',
       NotFound: 'Không tìm thấy SVG!',
-      SearchEmpty: 'Vui lòng nhập giá trị cho SoTo , SoThua và MaXa!',
+      SearchEmpty: 'Vui lòng nhập giá trị cho Số tờ, Số thửa và Mã xã!',
       QerrorsRevertToSource: 'Đã xảy ra lỗi phân tích cú pháp trong nguồn SVG của bạn.\nRevert trở lại nguồn SVG ban đầu?',
       QignoreSourceChanges: 'Bỏ qua các thay đổi được thực hiện đối với nguồn SVG?',
       featNotSupported: 'Tính năng không được hỗ trợ',

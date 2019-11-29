@@ -13,8 +13,9 @@ export default {
     math: 'Toán học',
     music: 'Nhạc',
     misc: 'Hỗn hợp',
-    raphael_1: 'raphaeljs.com set 1',
-    raphael_2: 'raphaeljs.com set 2'
+    raphael_1: 'raphaeljs.com bộ 1',
+    raphael_2: 'raphaeljs.com bộ 2'
+
   },
   buttons: [
     {

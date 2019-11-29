@@ -325,9 +325,9 @@ export default function jQueryPluginJGraduate ($) {
       $this.addClass('jGraduate_Picker');
       $this.html(
         '<ul class="jGraduate_tabs">' +
-          '<li class="jGraduate_tab_color jGraduate_tab_current" data-type="col">Solid Color</li>' +
-          '<li class="jGraduate_tab_lingrad" data-type="lg">Linear Gradient</li>' +
-          '<li class="jGraduate_tab_radgrad" data-type="rg">Radial Gradient</li>' +
+          '<li class="jGraduate_tab_color jGraduate_tab_current" data-type="col">' + $settings.window.solidColor + '</li>' +
+          '<li class="jGraduate_tab_lingrad" data-type="lg">' + $settings.window.linearColor + '</li>' +
+          '<li class="jGraduate_tab_radgrad" data-type="rg">' + $settings.window.radialColor + '</li>' +
         '</ul>' +
         '<div class="jGraduate_colPick"></div>' +
         '<div class="jGraduate_gradPick"></div>' +
@@ -345,88 +345,88 @@ export default function jQueryPluginJGraduate ($) {
         '</div>' +
         '<div class="jGraduate_Form jGraduate_Points jGraduate_lg_field">' +
           '<div class="jGraduate_StopSection">' +
-            '<label class="jGraduate_Form_Heading">Begin Point</label>' +
+            '<label class="jGraduate_Form_Heading">' + $settings.window.beginPoint + '</label>' +
             '<div class="jGraduate_Form_Section">' +
               '<label>x:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_x1" size="3" title="Enter starting x value between 0.0 and 1.0"/>' +
+              '<input type="text" id="' + id + '_jGraduate_x1" size="3" title="' + $settings.window.titleX1 + '"/>' +
               '<label>y:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_y1" size="3" title="Enter starting y value between 0.0 and 1.0"/>' +
+              '<input type="text" id="' + id + '_jGraduate_y1" size="3" title="' + $settings.window.titleY1 + '"/>' +
             '</div>' +
           '</div>' +
           '<div class="jGraduate_StopSection">' +
-            '<label class="jGraduate_Form_Heading">End Point</label>' +
+            '<label class="jGraduate_Form_Heading">' + $settings.window.endPoint + '</label>' +
             '<div class="jGraduate_Form_Section">' +
               '<label>x:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_x2" size="3" title="Enter ending x value between 0.0 and 1.0"/>' +
+              '<input type="text" id="' + id + '_jGraduate_x2" size="3" title="' + $settings.window.titleX2 + '"/>' +
               '<label>y:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_y2" size="3" title="Enter ending y value between 0.0 and 1.0"/>' +
+              '<input type="text" id="' + id + '_jGraduate_y2" size="3" title="' + $settings.window.titleY2 + '"/>' +
             '</div>' +
           '</div>' +
         '</div>' +
         '<div class="jGraduate_Form jGraduate_Points jGraduate_rg_field">' +
           '<div class="jGraduate_StopSection">' +
-            '<label class="jGraduate_Form_Heading">Center Point</label>' +
+            '<label class="jGraduate_Form_Heading">' + $settings.window.centerPoint + '</label>' +
             '<div class="jGraduate_Form_Section">' +
               '<label>x:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_cx" size="3" title="Enter x value between 0.0 and 1.0"/>' +
+              '<input type="text" id="' + id + '_jGraduate_cx" size="3" title="' + $settings.window.titleX3 + '"/>' +
               '<label>y:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_cy" size="3" title="Enter y value between 0.0 and 1.0"/>' +
+              '<input type="text" id="' + id + '_jGraduate_cy" size="3" title="' + $settings.window.titleY3 + '"/>' +
             '</div>' +
           '</div>' +
           '<div class="jGraduate_StopSection">' +
-            '<label class="jGraduate_Form_Heading">Focal Point</label>' +
+            '<label class="jGraduate_Form_Heading">' + $settings.window.focalPoint + '</label>' +
             '<div class="jGraduate_Form_Section">' +
               '<label>Match center: <input type="checkbox" checked="checked" id="' + id + '_jGraduate_match_ctr"/></label><br/>' +
               '<label>x:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_fx" size="3" title="Enter x value between 0.0 and 1.0"/>' +
+              '<input type="text" id="' + id + '_jGraduate_fx" size="3" title="' + $settings.window.titleX3 + '"/>' +
               '<label>y:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_fy" size="3" title="Enter y value between 0.0 and 1.0"/>' +
+              '<input type="text" id="' + id + '_jGraduate_fy" size="3" title="' + $settings.window.titleY3 + '"/>' +
             '</div>' +
           '</div>' +
         '</div>' +
         '<div class="jGraduate_StopSection jGraduate_SpreadMethod">' +
-          '<label class="jGraduate_Form_Heading">Spread method</label>' +
+          '<label class="jGraduate_Form_Heading">' + $settings.window.lblSpreadMethod + '</label>' +
           '<div class="jGraduate_Form_Section">' +
             '<select class="jGraduate_spreadMethod">' +
-              '<option value=pad selected>Pad</option>' +
-              '<option value=reflect>Reflect</option>' +
-              '<option value=repeat>Repeat</option>' +
+              '<option value=pad selected>' + $settings.window.optPad + '</option>' +
+              '<option value=reflect>' + $settings.window.optReflect + '</option>' +
+              '<option value=repeat>' + $settings.window.optRepeat + '</option>' +
             '</select>' +
           '</div>' +
         '</div>' +
         '<div class="jGraduate_Form">' +
           '<div class="jGraduate_Slider jGraduate_RadiusField jGraduate_rg_field">' +
-            '<label class="prelabel">Radius:</label>' +
-            '<div id="' + id + '_jGraduate_Radius" class="jGraduate_SliderBar jGraduate_Radius" title="Click to set radius">' +
+            '<label class="prelabel">' + $settings.window.lblRadius + '</label>' +
+            '<div id="' + id + '_jGraduate_Radius" class="jGraduate_SliderBar jGraduate_Radius" title="' + $settings.window.titleRadius + '">' +
               '<img id="' + id + '_jGraduate_RadiusArrows" class="jGraduate_RadiusArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
             '</div>' +
             '<label><input type="text" id="' + id + '_jGraduate_RadiusInput" size="3" value="100"/>%</label>' +
           '</div>' +
           '<div class="jGraduate_Slider jGraduate_EllipField jGraduate_rg_field">' +
             '<label class="prelabel">Ellip:</label>' +
-            '<div id="' + id + '_jGraduate_Ellip" class="jGraduate_SliderBar jGraduate_Ellip" title="Click to set Ellip">' +
+            '<div id="' + id + '_jGraduate_Ellip" class="jGraduate_SliderBar jGraduate_Ellip" title="' + $settings.window.titleEllip + '">' +
               '<img id="' + id + '_jGraduate_EllipArrows" class="jGraduate_EllipArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
             '</div>' +
             '<label><input type="text" id="' + id + '_jGraduate_EllipInput" size="3" value="0"/>%</label>' +
           '</div>' +
           '<div class="jGraduate_Slider jGraduate_AngleField jGraduate_rg_field">' +
-            '<label class="prelabel">Angle:</label>' +
-            '<div id="' + id + '_jGraduate_Angle" class="jGraduate_SliderBar jGraduate_Angle" title="Click to set Angle">' +
+            '<label class="prelabel">' + $settings.window.lblAngle + '</label>' +
+            '<div id="' + id + '_jGraduate_Angle" class="jGraduate_SliderBar jGraduate_Angle" title="' + $settings.window.titleAngle + '">' +
               '<img id="' + id + '_jGraduate_AngleArrows" class="jGraduate_AngleArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
             '</div>' +
-            '<label><input type="text" id="' + id + '_jGraduate_AngleInput" size="3" value="0"/>deg</label>' +
+            '<label><input type="text" id="' + id + '_jGraduate_AngleInput" size="3" value="0"/>' + $settings.window.lblDeg + '</label>' +
           '</div>' +
           '<div class="jGraduate_Slider jGraduate_OpacField">' +
-            '<label class="prelabel">Opac:</label>' +
-            '<div id="' + id + '_jGraduate_Opac" class="jGraduate_SliderBar jGraduate_Opac" title="Click to set Opac">' +
+            '<label class="prelabel" title="' + $settings.window.lblOpac + '">Opac:</label>' +
+            '<div id="' + id + '_jGraduate_Opac" class="jGraduate_SliderBar jGraduate_Opac" title="' + $settings.window.titleOpac + '">' +
               '<img id="' + id + '_jGraduate_OpacArrows" class="jGraduate_OpacArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
             '</div>' +
             '<label><input type="text" id="' + id + '_jGraduate_OpacInput" size="3" value="100"/>%</label>' +
           '</div>' +
         '</div>' +
         '<div class="jGraduate_OkCancel">' +
-          '<input type="button" id="' + id + '_jGraduate_Ok" class="jGraduate_Ok" value="OK"/>' +
-          '<input type="button" id="' + id + '_jGraduate_Cancel" class="jGraduate_Cancel" value="Cancel"/>' +
+          '<input type="button" id="' + id + '_jGraduate_Ok" class="jGraduate_Ok" value="' + $settings.window.btnOK + '"/>' +
+          '<input type="button" id="' + id + '_jGraduate_Cancel" class="jGraduate_Cancel" value="' + $settings.window.btnCancel + '"/>' +
         '</div>'
       );
 
@@ -1243,7 +1243,35 @@ export default function jQueryPluginJGraduate ($) {
 
       colPicker.jPicker(
         {
-          window: {title: $settings.window.pickerTitle},
+          window: {
+            title: $settings.window.pickerTitle, 
+            btnOK: $settings.window.btnOK, 
+            btnCancel: $settings.window.btnCancel,
+            localization_text_title: $settings.window.localization_text_title,
+            localization_text_newColor: $settings.window.localization_text_newColor,
+            localization_tooltips_colors_currentColor: $settings.window.localization_tooltips_colors_currentColor,
+            localization_text_currentColor: $settings.window.localization_text_currentColor,
+            localization_tooltips_colors_newColor: $settings.window.localization_tooltips_colors_newColor,
+            localization_tooltips_buttons_ok: $settings.window.localization_tooltips_buttons_ok,
+            localization_text_cancel: $settings.window.localization_text_cancel,
+            localization_tooltips_buttons_cancel: $settings.window.localization_tooltips_buttons_cancel,
+            localization_tooltips_hue_radio: $settings.window.localization_tooltips_hue_radio,
+            localization_tooltips_hue_textbox: $settings.window.localization_tooltips_hue_textbox,
+            localization_tooltips_saturation_radio: $settings.window.localization_tooltips_saturation_radio,
+            localization_tooltips_saturation_textbox: $settings.window.localization_tooltips_saturation_textbox,
+            localization_tooltips_value_radio: $settings.window.localization_tooltips_value_radio,
+            localization_tooltips_value_textbox: $settings.window.localization_tooltips_value_textbox,
+            localization_tooltips_red_radio: $settings.window.localization_tooltips_red_radio,
+            localization_tooltips_red_textbox: $settings.window.localization_tooltips_red_textbox,
+            localization_tooltips_green_radio: $settings.window.localization_tooltips_green_radio,
+            localization_tooltips_green_textbox: $settings.window.localization_tooltips_green_textbox,
+            localization_tooltips_blue_radio: $settings.window.localization_tooltips_blue_radio,
+            localization_tooltips_blue_textbox: $settings.window.localization_tooltips_blue_textbox,
+            localization_tooltips_alpha_radio: $settings.window.localization_tooltips_alpha_radio,
+            localization_tooltips_alpha_textbox: $settings.window.localization_tooltips_alpha_textbox,
+            localization_tooltips_hex_textbox: $settings.window.localization_tooltips_hex_textbox,
+            localization_tooltips_hex_alpha: $settings.window.localization_tooltips_hex_alpha,
+          },
           images: {clientPath: $settings.images.clientPath},
           color: {active: color, alphaSupport: true}
         },
