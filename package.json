@@ -75,7 +75,9 @@
     "last 3 and_uc versions",
     "last 3 Samsung versions"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "build-html": "0.0.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.6.2",
     "@babel/node": "^7.6.2",

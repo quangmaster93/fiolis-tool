@@ -5242,6 +5242,19 @@ editor.init = function () {
     const title = picker === 'stroke'
       ? uiStrings.ui.pick_stroke_paint_opacity
       : uiStrings.ui.pick_fill_paint_opacity;
+    const picker_solid_tab = uiStrings.ui.pick_solid_color_tab
+    const picker_linear_tab = uiStrings.ui.pick_linear_gradient_tab
+    const picker_radial_tab = uiStrings.ui.pick_radial_gradient_tab
+    const picker_begin_point = uiStrings.ui.pick_begin_point
+    const picker_center_point = uiStrings.ui.pick_center_point
+    const picker_end_point = uiStrings.ui.pick_end_point
+    const picker_focal_point = uiStrings.ui.pick_focal_point
+    const picker_ok = uiStrings.ui.pick_ok
+    const picker_cancel = uiStrings.ui.pick_cancel
+    const picker_titleRadius = uiStrings.ui.pick_title_radius
+    const picker_titleEllip = uiStrings.ui.pick_title_ellip
+    const picker_titleAngle = uiStrings.ui.pick_title_angle
+    const picker_titleOpac = uiStrings.ui.pick_title_opac
     // let wasNone = false; // Currently unused
     const pos = elem.offset();
     let { paint } = paintBox[picker];
@@ -5254,7 +5267,21 @@ editor.init = function () {
       .jGraduate(
         {
           paint,
-          window: { pickerTitle: title },
+          window: { pickerTitle: title, 
+            solidColor: picker_solid_tab, 
+            linearColor: picker_linear_tab, 
+            radialColor: picker_radial_tab,
+            beginPoint: picker_begin_point,
+            endPoint: picker_end_point,
+            centerPoint: picker_center_point,
+            focalPoint: picker_focal_point,
+            btnOK: picker_ok,
+            btnCancel: picker_cancel,
+            titleRadius: picker_titleRadius,
+            titleEllip: picker_titleEllip,
+            titleAngle: picker_titleAngle,
+            titleOpac: picker_titleOpac,
+           },
           images: { clientPath: curConfig.jGraduatePath },
           newstop: 'inverse'
         },
