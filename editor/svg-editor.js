@@ -4654,7 +4654,7 @@ editor.init = function () {
       searchEmpty: uiStrings.notification.SearchEmpty
     }
 
-    if (dataSave.SoTo & dataSave.SoThua & dataSave.MaXa) {
+    if (dataSave.SoTo && dataSave.SoThua && dataSave.MaXa) {
       let result = await svgCanvas.searchDatabase(dataSave);
       if (result != undefined && result != null) {
         const ok = await $.confirm(message.ok);

@@ -108,8 +108,7 @@ export default {
         icon.find('path').attr('d', pathD);
 
         const iconBtn = icon.wrap('<div class="tool_button">').parent().attr({
-          id: modeId + '_' + id,
-          title: id
+          id: modeId + '_' + id
         });
         // Store for later use
         return iconBtn[0];
