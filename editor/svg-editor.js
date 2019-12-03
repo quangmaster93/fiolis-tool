@@ -560,6 +560,57 @@ const getLandInfo = function (sheetNum, parcelNum, code, done) {
       // Only get geojson with format vn2000
       data.result.features = data.result.features.splice(data.result.features.length / 2);
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
+      let propertiesString = editor.storage.getItem(PROPERTIES_KEY);
+
+      if (propertiesString != null && propertiesString !== ""){
+        let propertiesJson = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
+        $.each( propertiesJson, function(key, value){
+          if(n != null && n !== ""){
+              let name = ""
+              switch(key){
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ThoiDiemBatDau": name = "Thời điểm bắt đầu"; break;
+                case "ThoiDiemKetThuc": name = "Thời điểm kết thúc"; break;
+                case "MaXa": name = "Mã xã"; break;
+                case "MaDoiTuong": name = "Mã đối tượng"; break;
+                case "SoHieuToBanDo": name = "Số hiệu bản đồ"; break;
+                case "SoThuTuThua": name = "Số thứ tự thửa"; break;
+                case "SoHieuToBanDoCu": name = "Số hiệu bản đồ cũ"; break;
+                case "SoThuTuThuaCu": name = "Số thứ tự thửa cũ"; break;
+                case "DienTich": name = "Diện tích"; break;
+                case "DienTichPhapLy": name = "Diện tích pháp lý"; break;
+                case "KyHieuMucDichSuDung": name = "Ký hiệu mục đích sử dụng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+                case "ObjectId": name = "Mã đối tượng"; break;
+                case "Index": name = "Chỉ số"; break;
+              }
+          }
+      });
+      }
+
     } else {
       done('Occur error when request API', null);
     }
