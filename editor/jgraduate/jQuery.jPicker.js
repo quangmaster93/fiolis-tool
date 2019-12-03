@@ -1932,41 +1932,41 @@ const jPicker = function ($) {
           <tbody>
             ${win.expandable ? '<tr><td class="Move" colspan="5">&nbsp;</td></tr>' : ''}
             <tr>
-              <td rowspan="9"><h2 class="Title">${win.title || localization.text.title}</h2><div class="Map"><span class="Map1">&nbsp;</span><span class="Map2">&nbsp;</span><span class="Map3">&nbsp;</span><img src="${images.clientPath + images.colorMap.arrow.file}" class="Arrow"/></div></td>
+              <td rowspan="9"><h2 class="Title">${win.title || win.localization_text_title}</h2><div class="Map"><span class="Map1">&nbsp;</span><span class="Map2">&nbsp;</span><span class="Map3">&nbsp;</span><img src="${images.clientPath + images.colorMap.arrow.file}" class="Arrow"/></div></td>
               <td rowspan="9"><div class="Bar"><span class="Map1">&nbsp;</span><span class="Map2">&nbsp;</span><span class="Map3">&nbsp;</span><span class="Map4">&nbsp;</span><span class="Map5">&nbsp;</span><span class="Map6">&nbsp;</span><img src="${images.clientPath + images.colorBar.arrow.file}" class="Arrow"/></div></td>
-              <td colspan="2" class="Preview">${localization.text.newColor}<div><span class="Active" title="${localization.tooltips.colors.newColor}">&nbsp;</span><span class="Current" title="${localization.tooltips.colors.currentColor}">&nbsp;</span></div>${localization.text.currentColor}</td>
-              <td rowspan="9" class="Button"><input type="button" class="Ok" value="${localization.text.ok}" title="${localization.tooltips.buttons.ok}"/><input type="button" class="Cancel" value="${localization.text.cancel}" title="${localization.tooltips.buttons.cancel}"/><hr/><div class="Grid">&nbsp;</div></td>
+              <td colspan="2" class="Preview">${win.localization_text_newColor}<div><span class="Active" title="${win.localization_tooltips_colors_newColor}">&nbsp;</span><span class="Current" title="${win.localization_tooltips_colors_currentColor}">&nbsp;</span></div>${win.localization_text_currentColor}</td>
+              <td rowspan="9" class="Button"><input type="button" class="Ok" value="${win.btnOK}" title="${win.localization_tooltips_buttons_ok}"/><input type="button" class="Cancel" value="${win.localization_text_cancel}" title="${win.localization_tooltips_buttons_cancel}"/><hr/><div class="Grid">&nbsp;</div></td>
             </tr>
             <tr class="Hue">
-              <td class="Radio"><label title="${localization.tooltips.hue.radio}"><input type="radio" value="h"${settings.color.mode === 'h' ? ' checked="checked"' : ''}/>H:</label></td>
-              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.h : ''}" title="${localization.tooltips.hue.textbox}"/>&nbsp;&deg;</td>
+              <td class="Radio"><label title="${win.localization_tooltips_hue_radio}"><input type="radio" value="h"${settings.color.mode === 'h' ? ' checked="checked"' : ''}/>H:</label></td>
+              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.h : ''}" title="${win.localization_tooltips_hue_textbox}"/>&nbsp;&deg;</td>
             </tr>
             <tr class="Saturation">
-              <td class="Radio"><label title="${localization.tooltips.saturation.radio}"><input type="radio" value="s"${settings.color.mode === 's' ? ' checked="checked"' : ''}/>S:</label></td>
-              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.s : ''}" title="${localization.tooltips.saturation.textbox}"/>&nbsp;%</td>
+              <td class="Radio"><label title="${win.localization_tooltips_saturation_radio}"><input type="radio" value="s"${settings.color.mode === 's' ? ' checked="checked"' : ''}/>S:</label></td>
+              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.s : ''}" title="${win.localization_tooltips_saturation_textbox}"/>&nbsp;%</td>
             </tr>
             <tr class="Value">
-              <td class="Radio"><label title="${localization.tooltips.value.radio}"><input type="radio" value="v"${settings.color.mode === 'v' ? ' checked="checked"' : ''}/>V:</label><br/><br/></td>
-              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.v : ''}" title="${localization.tooltips.value.textbox}"/>&nbsp;%<br/><br/></td>
+              <td class="Radio"><label title="${win.localization_tooltips_value_radio}"><input type="radio" value="v"${settings.color.mode === 'v' ? ' checked="checked"' : ''}/>V:</label><br/><br/></td>
+              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.v : ''}" title="${win.localization_tooltips_value_textbox}"/>&nbsp;%<br/><br/></td>
             </tr>
             <tr class="Red">
-              <td class="Radio"><label title="${localization.tooltips.red.radio}"><input type="radio" value="r"${settings.color.mode === 'r' ? ' checked="checked"' : ''}/>R:</label></td>
-              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.r : ''}" title="${localization.tooltips.red.textbox}"/></td>
+              <td class="Radio"><label title="${win.localization_tooltips_red_radio}"><input type="radio" value="r"${settings.color.mode === 'r' ? ' checked="checked"' : ''}/>R:</label></td>
+              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.r : ''}" title="${win.localization_tooltips_red_textbox}"/></td>
             </tr>
             <tr class="Green">
-              <td class="Radio"><label title="${localization.tooltips.green.radio}"><input type="radio" value="g"${settings.color.mode === 'g' ? ' checked="checked"' : ''}/>G:</label></td>
-              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.g : ''}" title="${localization.tooltips.green.textbox}"/></td>
+              <td class="Radio"><label title="${win.localization_tooltips_green_radio}"><input type="radio" value="g"${settings.color.mode === 'g' ? ' checked="checked"' : ''}/>G:</label></td>
+              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.g : ''}" title="${win.localization_tooltips_green_textbox}"/></td>
             </tr>
             <tr class="Blue">
-              <td class="Radio"><label title="${localization.tooltips.blue.radio}"><input type="radio" value="b"${settings.color.mode === 'b' ? ' checked="checked"' : ''}/>B:</label></td>
-              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.b : ''}" title="${localization.tooltips.blue.textbox}"/></td>
+              <td class="Radio"><label title="${win.localization_tooltips_blue_radio}"><input type="radio" value="b"${settings.color.mode === 'b' ? ' checked="checked"' : ''}/>B:</label></td>
+              <td class="Text"><input type="text" maxlength="3" value="${!isNullish(all) ? all.b : ''}" title="${win.localization_tooltips_blue_textbox}"/></td>
             </tr>
             <tr class="Alpha">
-              <td class="Radio">${win.alphaSupport ? `<label title="${localization.tooltips.alpha.radio}"><input type="radio" value="a"${settings.color.mode === 'a' ? ' checked="checked"' : ''}/>A:</label>` : '&nbsp;'}</td>
-              <td class="Text">${win.alphaSupport ? `<input type="text" maxlength="${3 + win.alphaPrecision}" value="${!isNullish(all) ? toFixedNumeric((all.a * 100) / 255, win.alphaPrecision) : ''}" title="${localization.tooltips.alpha.textbox}"/>&nbsp;%` : '&nbsp;'}</td>
+              <td class="Radio">${win.alphaSupport ? `<label title="${win.localization_tooltips_alpha_radio}"><input type="radio" value="a"${settings.color.mode === 'a' ? ' checked="checked"' : ''}/>A:</label>` : '&nbsp;'}</td>
+              <td class="Text">${win.alphaSupport ? `<input type="text" maxlength="${3 + win.alphaPrecision}" value="${!isNullish(all) ? toFixedNumeric((all.a * 100) / 255, win.alphaPrecision) : ''}" title="${win.localization_tooltips_alpha_textbox}"/>&nbsp;%` : '&nbsp;'}</td>
             </tr>
             <tr class="Hex">
-              <td colspan="2" class="Text"><label title="${localization.tooltips.hex.textbox}">#:<input type="text" maxlength="6" class="Hex" value="${!isNullish(all) ? all.hex : ''}"/></label>${win.alphaSupport ? `<input type="text" maxlength="2" class="AHex" value="${!isNullish(all) ? all.ahex.substring(6) : ''}" title="${localization.tooltips.hex.alpha}"/></td>` : '&nbsp;'}
+              <td colspan="2" class="Text"><label title="${win.localization_tooltips_hex_textbox}">#:<input type="text" maxlength="6" class="Hex" value="${!isNullish(all) ? all.hex : ''}"/></label>${win.alphaSupport ? `<input type="text" maxlength="2" class="AHex" value="${!isNullish(all) ? all.ahex.substring(6) : ''}" title="${win.localization_tooltips_hex_alpha}"/></td>` : '&nbsp;'}
             </tr>
           </tbody></table>`;
         if (win.expandable) {

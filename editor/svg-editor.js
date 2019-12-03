@@ -285,7 +285,7 @@ const callbacks = [],
     showGrid: false, // Set by ext-grid.js
     // EXTENSION-RELATED (STORAGE)
     noStorageOnLoad: false, // Some interaction with ext-storage.js; prevent even the loading of previously saved local storage
-    forceStorage: false, // Some interaction with ext-storage.js; strongly discouraged from modification as it bypasses user privacy by preventing them from choosing whether to keep local storage or not
+    forceStorage: true, // Some interaction with ext-storage.js; strongly discouraged from modification as it bypasses user privacy by preventing them from choosing whether to keep local storage or not
     emptyStorageOnDecline: false, // Used by ext-storage.js; empty any prior storage if the user declines to store
     // EXTENSION (CLIENT VS. SERVER SAVING/OPENING)
     avoidClientSide: false, // Deprecated in favor of `avoidClientSideDownload`
@@ -557,8 +557,8 @@ const getLandInfo = function (sheetNum, parcelNum, code, done) {
 
     if (request.status >= 200 && request.status < 400 &&
       data.result && data.result.features && data.result.features.length > 1) {
-      // Only get geojson with format wgs84
-      data.result.features.length = data.result.features.length / 2;
+      // Only get geojson with format vn2000
+      data.result.features = data.result.features.splice(data.result.features.length / 2);
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
     } else {
       done('Occur error when request API', null);
@@ -578,8 +578,8 @@ const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa
 
     if (request.status >= 200 && request.status < 400 &&
       data.result && data.result.features && data.result.features.length > 1) {
-      // Only get geojson with format wgs84
-      data.result.features.length = data.result.features.length / 2;
+      // Only get geojson with format vn2000
+      data.result.features = data.result.features.splice(data.result.features.length / 2);
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, maXa));
     } else {
       done('Occur error when request API', null);
@@ -1344,8 +1344,7 @@ editor.init = function () {
         docprops: 'document-properties.png',
         source: 'source.png',
         wireframe: 'wireframe.png',
-        toggle_adjacent: 'wireframe.png',
-
+        // toggle_adjacent: 'wireframe.png',
         undo: 'undo.png',
         redo: 'redo.png',
 
@@ -1407,9 +1406,8 @@ editor.init = function () {
         '#tool_import div div': 'import',
         '#tool_source': 'source',
         '#tool_docprops > div': 'docprops',
-        '#tool_wireframe': 'wireframe',
-        '#tool_toggle_adjacent': 'toggle_adjacent',
-
+        '#tool_toggle_adjacent': 'wireframe',
+        // '#tool_toggle_adjacent': 'toggle_adjacent',
         '#tool_undo': 'undo',
         '#tool_redo': 'redo',
 
@@ -4870,17 +4868,16 @@ editor.init = function () {
       svgData = svgData.replace(/\n*/g, '').replace(ADJACENT_REGEX, `${ADJACENT_MAKER}${ADJACENT_MAKER}`);
     } else {
       // Show adjacent
-      svgData = svgData.replace(/\n*/g, '');
-      svgData = svgData.replace(/  /g, '');
-      svgData = svgData.replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
+      svgData = svgData.replace(/\n*/g, '')
+                       .replace(/   /g, '')
+                       .replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
     }
 
     isShowAdjacent = !isShowAdjacent;
 
     // Reload svg source
     editor.loadFromString(svgData);
-
-    clickWireframe();
+    // clickWireframe();
   };
 
   $('#svg_docprops_container, #svg_prefs_container').draggable({
@@ -5255,6 +5252,44 @@ editor.init = function () {
     const picker_titleEllip = uiStrings.ui.pick_title_ellip
     const picker_titleAngle = uiStrings.ui.pick_title_angle
     const picker_titleOpac = uiStrings.ui.pick_title_opac
+    const picker_titleX1 = uiStrings.ui.pick_title_x1
+    const picker_titleY1 = uiStrings.ui.pick_title_y1
+    const picker_titleX2 = uiStrings.ui.pick_title_x2
+    const picker_titleY2 = uiStrings.ui.pick_title_y2
+    const picker_titleX3 = uiStrings.ui.pick_title_x3
+    const picker_titleY3 = uiStrings.ui.pick_title_y3
+    const picker_spreadMethod = uiStrings.ui.pick_spread_method
+    const picker_optionPad = uiStrings.ui.pick_option_pad
+    const picker_optionReflect = uiStrings.ui.pick_option_reflect
+    const picker_optionRepeat = uiStrings.ui.pick_option_repeat
+    const picker_lblAngle = uiStrings.ui.pick_lbl_angle 
+    const picker_lblOpac = uiStrings.ui.pick_lbl_opac
+    const picker_lblRadius = uiStrings.ui.pick_lbl_radius
+    const localization_text_title = uiStrings.localization.text.title
+    const localization_text_newColor = uiStrings.localization.text.newColor
+    const localization_text_currentColor = uiStrings.localization.text.currentColor
+    const localization_tooltips_colors_currentColor = uiStrings.localization.tooltips.colors.currentColor
+    const localization_tooltips_colors_newColor = uiStrings.localization.tooltips.colors.newColor
+    const localization_tooltips_buttons_ok = uiStrings.localization.tooltips.buttons.ok
+    const localization_text_cancel = uiStrings.localization.text.cancel
+    const localization_tooltips_buttons_cancel = uiStrings.localization.tooltips.buttons.cancel
+    const localization_tooltips_hue_radio = uiStrings.localization.tooltips.hue.radio
+    const localization_tooltips_hue_textbox = uiStrings.localization.tooltips.hue.textbox
+    const localization_tooltips_saturation_radio = uiStrings.localization.tooltips.saturation.radio
+    const localization_tooltips_saturation_textbox = uiStrings.localization.tooltips.saturation.textbox
+    const localization_tooltips_value_radio = uiStrings.localization.tooltips.value.radio
+    const localization_tooltips_value_textbox = uiStrings.localization.tooltips.value.textbox
+    const localization_tooltips_red_radio = uiStrings.localization.tooltips.red.radio
+    const localization_tooltips_red_textbox = uiStrings.localization.tooltips.red.textbox
+    const localization_tooltips_green_radio = uiStrings.localization.tooltips.green.radio
+    const localization_tooltips_green_textbox = uiStrings.localization.tooltips.green.textbox
+    const localization_tooltips_blue_radio = uiStrings.localization.tooltips.blue.radio
+    const localization_tooltips_blue_textbox = uiStrings.localization.tooltips.blue.textbox
+    const localization_tooltips_alpha_radio = uiStrings.localization.tooltips.alpha.radio
+    const localization_tooltips_alpha_textbox = uiStrings.localization.tooltips.alpha.textbox
+    const localization_tooltips_hex_textbox = uiStrings.localization.tooltips.hex.textbox
+    const localization_tooltips_hex_alpha = uiStrings.localization.tooltips.hex.alpha
+    const picker_lbl_deg = uiStrings.ui.pick_lbl_deg
     // let wasNone = false; // Currently unused
     const pos = elem.offset();
     let { paint } = paintBox[picker];
@@ -5281,6 +5316,44 @@ editor.init = function () {
             titleEllip: picker_titleEllip,
             titleAngle: picker_titleAngle,
             titleOpac: picker_titleOpac,
+            titleX1: picker_titleX1,
+            titleY1: picker_titleY1,
+            titleX2: picker_titleX2,
+            titleY2: picker_titleY2,
+            titleX3: picker_titleX3,
+            titleY3: picker_titleY3,
+            lblSpreadMethod: picker_spreadMethod,
+            optPad: picker_optionPad,
+            optReflect: picker_optionReflect,
+            optRepeat: picker_optionRepeat,
+            lblAngle: picker_lblAngle,
+            lblOpac: picker_lblOpac,
+            lblRadius: picker_lblRadius,
+            localization_text_title: localization_text_title,
+            localization_text_newColor: localization_text_newColor,
+            localization_tooltips_colors_currentColor: localization_tooltips_colors_currentColor,
+            localization_text_currentColor: localization_text_currentColor,
+            localization_tooltips_colors_newColor: localization_tooltips_colors_newColor,
+            localization_tooltips_buttons_ok: localization_tooltips_buttons_ok,
+            localization_text_cancel: localization_text_cancel,
+            localization_tooltips_buttons_cancel: localization_tooltips_buttons_cancel,
+            localization_tooltips_hue_radio: localization_tooltips_hue_radio,
+            localization_tooltips_hue_textbox: localization_tooltips_hue_textbox,
+            localization_tooltips_saturation_radio: localization_tooltips_saturation_radio,
+            localization_tooltips_saturation_textbox: localization_tooltips_saturation_textbox,
+            localization_tooltips_value_radio: localization_tooltips_value_radio,
+            localization_tooltips_value_textbox: localization_tooltips_value_textbox,
+            localization_tooltips_red_radio: localization_tooltips_red_radio,
+            localization_tooltips_red_textbox: localization_tooltips_red_textbox,
+            localization_tooltips_green_radio: localization_tooltips_green_radio,
+            localization_tooltips_green_textbox: localization_tooltips_green_textbox,
+            localization_tooltips_blue_radio: localization_tooltips_blue_radio,
+            localization_tooltips_blue_textbox: localization_tooltips_blue_textbox,
+            localization_tooltips_alpha_radio: localization_tooltips_alpha_radio,
+            localization_tooltips_alpha_textbox: localization_tooltips_alpha_textbox,
+            localization_tooltips_hex_textbox: localization_tooltips_hex_textbox,
+            localization_tooltips_hex_alpha: localization_tooltips_hex_alpha,
+            lblDeg: picker_lbl_deg
            },
           images: { clientPath: curConfig.jGraduatePath },
           newstop: 'inverse'
@@ -5871,8 +5944,8 @@ editor.init = function () {
       { sel: '#tool_open', fn: clickOpen, evt: 'mouseup', key: ['O', true] },
       { sel: '#tool_import', fn: clickImport, evt: 'mouseup' },
       { sel: '#tool_source', fn: showSourceEditor, evt: 'click', key: ['U', true] },
-      { sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true] },
-      { sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['T', true] },
+      // { sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true] },
+      { sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['F', true] },
       {
         key: ['esc', false, false],
         fn() {

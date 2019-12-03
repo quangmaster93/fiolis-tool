@@ -35,10 +35,75 @@ export default {
     pick_focal_point: "Focal point",
     pick_ok: "OK",
     pick_cancel: "Cancel",
+    pick_lbl_radius: "Radius:",
     pick_title_radius: "Click to set radius",
     pick_title_ellip: "Click to set Ellip",
     pick_title_angle: "Click to set Angle",
     pick_title_opac: "Click to set Opac",
+    pick_title_x1: "Enter starting x value between 0.0 and 1.0",
+    pick_title_y1: "Enter starting y value between 0.0 and 1.0",
+    pick_title_x2: "Enter ending x value between 0.0 and 1.0",
+    pick_title_y2: "Enter ending y value between 0.0 and 1.0",
+    pick_title_x3: "Enter x value between 0.0 and 1.0",
+    pick_title_y3: "Enter y value between 0.0 and 1.0",
+    pick_spread_method: "Spread method",
+    pick_option_pad: "Pad",
+    pick_option_reflect: "Reflect",
+    pick_option_repeat: "Repeat",
+    pick_lbl_angle: "Angle:",
+    pick_lbl_opac: "Opac:",
+    pick_lbl_deg: "deg"
+  },
+  localization: {
+    text: {
+      title: 'Drag Markers To Pick A Color',
+      newColor: 'new',
+      currentColor: 'current',
+      ok: 'OK',
+      cancel: 'Cancel'
+    },
+    tooltips: {
+      colors: {
+        newColor: 'New Color - Press &ldquo;OK&rdquo; To Commit',
+        currentColor: 'Click To Revert To Original Color'
+      },
+      buttons: {
+        ok: 'Commit To This Color Selection',
+        cancel: 'Cancel And Revert To Original Color'
+      },
+      hue: {
+        radio: 'Set To &ldquo;Hue&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Hue&rdquo; Value (0-360&deg;)'
+      },
+      saturation: {
+        radio: 'Set To &ldquo;Saturation&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Saturation&rdquo; Value (0-100%)'
+      },
+      value: {
+        radio: 'Set To &ldquo;Value&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Value&rdquo; Value (0-100%)'
+      },
+      red: {
+        radio: 'Set To &ldquo;Red&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Red&rdquo; Value (0-255)'
+      },
+      green: {
+        radio: 'Set To &ldquo;Green&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Green&rdquo; Value (0-255)'
+      },
+      blue: {
+        radio: 'Set To &ldquo;Blue&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Blue&rdquo; Value (0-255)'
+      },
+      alpha: {
+        radio: 'Set To &ldquo;Alpha&rdquo; Color Mode',
+        textbox: 'Enter A &ldquo;Alpha&rdquo; Value (0-100)'
+      },
+      hex: {
+        textbox: 'Enter A &ldquo;Hex&rdquo; Color Value (#000000-#ffffff)',
+        alpha: 'Enter A &ldquo;Alpha&rdquo; Value (#00-#ff)'
+      }
+    }
   },
   properties: {
     id: 'Identify the element',

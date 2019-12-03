@@ -39,7 +39,72 @@ export default {
       pick_title_ellip: "Nhấn vào đây để đặt Ellip",
       pick_title_angle: "Nhấn vào đây để đặt Góc",
       pick_title_opac: "Nhấn vào đây để đặt độ trong suốt",
+      pick_title_x1: "Nhập giá trị x bắt đầu từ 0.0 đến 1.0",
+      pick_title_y1: "Nhập giá trị y bắt đầu từ 0.0 đến 1.0",
+      pick_title_x2: "Nhập giá trị x kết thúc từ 0.0 đến 1.0",
+      pick_title_y2: "Nhập giá trị y kết thúc từ 0.0 đến 1.0",
+      pick_title_x3: "Nhập giá trị x từ 0.0 đến 1.0",
+      pick_title_y3: "Nhập giá trị y từ 0.0 đến 1.0",
+      pick_spread_method: "Spread phương thức",
+      pick_option_pad: "Đệm lót",
+      pick_option_reflect: "Phản chiếu",
+      pick_option_repeat: "Lặp lại",
+      pick_lbl_angle: "Góc:",
+      pick_lbl_opac: "Độ trong suốt:",
+      pick_lbl_radius: "BKính:",
+      pick_lbl_deg: "độ"
     },
+    localization: {
+      text: {
+        title: 'Kéo điểm đánh dấu để chọn màu',
+        newColor: 'mới',
+        currentColor: 'hiện tại',
+        ok: 'OK',
+        cancel: 'Hủy bỏ'
+      },
+      tooltips: {
+        colors: {
+          newColor: 'Tạo màu mới - Nhấn &ldquo;OK&rdquo; để áp dụng',
+          currentColor: 'Nhấn để quay lại màu gốc'
+        },
+        buttons: {
+          ok: 'Cam kết lựa chọn màu này',
+          cancel: 'Hủy bỏ và quay lại màu gốc'
+        },
+        hue: {
+          radio: 'Đặt &ldquo;Hue&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Hue&rdquo; (0-360&deg;)'
+        },
+        saturation: {
+          radio: 'Đặt &ldquo;Saturation&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Saturation&rdquo; (0-100%)'
+        },
+        value: {
+          radio: 'Đặt &ldquo;Value&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Value&rdquo; (0-100%)'
+        },
+        red: {
+          radio: 'Đặt &ldquo;Red&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Red&rdquo; (0-255)'
+        },
+        green: {
+          radio: 'Đặt &ldquo;Green&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Green&rdquo; (0-255)'
+        },
+        blue: {
+          radio: 'Đặt &ldquo;Blue&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Blue&rdquo; (0-255)'
+        },
+        alpha: {
+          radio: 'Đặt &ldquo;Alpha&rdquo; thành chế độ màu',
+          textbox: 'Nhập giá trị &ldquo;Alpha&rdquo; (0-100)'
+        },
+        hex: {
+          textbox: 'Nhập giá trị màu &ldquo;Hex&rdquo; (#000000-#ffffff)',
+          alpha: 'Nhập giá trị &ldquo;Alpha&rdquo; (#00-#ff)'
+        }
+      }
+    },
     properties: {
       id: 'Xác định thành phần',
       fill_color: 'Thay đổi màu nền',
@@ -164,7 +229,8 @@ export default {
       undo: 'Hoàn tác [Z]',
       redo: 'Làm lại [Y]',
       tool_source: 'Chỉnh sửa nguồn [U]',
-      wireframe_mode: 'Chế độ khung dây [F]',
+      // wireframe_mode: 'Chế độ khung dây [F]',
+      toggle_adjacent_mode: 'Ẩn hiện thửa liền kề  [F]',
       clone: 'Nhân bản phần tử (nhiều) [D]',
       del: 'Xóa phần tử [Xóa/Xóa lùi]',
       group_elements: 'Nhóm phần tử [G]',
