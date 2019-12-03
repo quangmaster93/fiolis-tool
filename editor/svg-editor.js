@@ -339,9 +339,12 @@ let svgCanvas, urldata,
  *   falsey, though only until after the `alert` is closed); rejects if SVG
  *   loading fails and `noAlert` is truthy.
  */
-async function loadSvgString(str, { noAlert } = {}) {
+async function loadSvgString(str, { noAlert } = {}, isFirstLoad = false) {
   const success = svgCanvas.setSvgString(str) !== false;
   if (success) {
+    if (isFirstLoad) {
+      svgCanvas.zoomChanged(window, 'layer');
+    }
     return;
   }
 
@@ -491,12 +494,12 @@ editor.loadContentAndPrefs = function () {
 
         if (svgData) {
           properties = svgData.properties;
-          editor.loadFromString(svgData.mainLand);
+          editor.loadFromString(svgData.mainLand, {}, true);
         } else {
           const name = 'svgedit-' + curConfig.canvasName;
           const cached = editor.storage.getItem(name);
           if (cached) {
-            editor.loadFromString(cached);
+            editor.loadFromString(cached, {}, true);
           }
         }
       });
@@ -504,7 +507,7 @@ editor.loadContentAndPrefs = function () {
       const name = 'svgedit-' + curConfig.canvasName;
       const cached = editor.storage.getItem(name);
       if (cached) {
-        editor.loadFromString(cached);
+        editor.loadFromString(cached, {}, true);
       }
     }
   }
@@ -6754,10 +6757,10 @@ editor.runCallbacks = async function () {
 * @param {boolean} [opts.noAlert=false] Option to avoid alert to user and instead get rejected promise
 * @returns {Promise<void>}
 */
-editor.loadFromString = function (str, { noAlert } = {}) {
+editor.loadFromString = function (str, { noAlert } = {}, isFirstLoad = false) {
   return editor.ready(async function () {
     try {
-      await loadSvgString(str, { noAlert });
+      await loadSvgString(str, { noAlert }, isFirstLoad);
     } catch (err) {
       if (noAlert) {
         throw err;
