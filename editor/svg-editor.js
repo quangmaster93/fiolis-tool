@@ -482,6 +482,7 @@ editor.loadContentAndPrefs = function () {
         document.cookie.match(/(?:^|;\s*)svgeditstore=prefsAndContent/))
     )
   ) {
+
     const landParams = getLandParams() || {};
     if (landParams.sheetNum && landParams.parcelNum && landParams.code) {
       getLandInfo(landParams.sheetNum, landParams.parcelNum, landParams.code, (err, svgData) => {
@@ -508,8 +509,6 @@ editor.loadContentAndPrefs = function () {
       }
     }
   }
-
-
 
   // LOAD PREFS
   Object.keys(defaultPrefs).forEach((key) => {
@@ -560,57 +559,6 @@ const getLandInfo = function (sheetNum, parcelNum, code, done) {
       // Only get geojson with format vn2000
       data.result.features = data.result.features.splice(data.result.features.length / 2);
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
-      let propertiesString = editor.storage.getItem(PROPERTIES_KEY);
-
-      if (propertiesString != null && propertiesString !== ""){
-        let propertiesJson = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
-        $.each( propertiesJson, function(key, value){
-          if(n != null && n !== ""){
-              let name = ""
-              switch(key){
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ThoiDiemBatDau": name = "Thời điểm bắt đầu"; break;
-                case "ThoiDiemKetThuc": name = "Thời điểm kết thúc"; break;
-                case "MaXa": name = "Mã xã"; break;
-                case "MaDoiTuong": name = "Mã đối tượng"; break;
-                case "SoHieuToBanDo": name = "Số hiệu bản đồ"; break;
-                case "SoThuTuThua": name = "Số thứ tự thửa"; break;
-                case "SoHieuToBanDoCu": name = "Số hiệu bản đồ cũ"; break;
-                case "SoThuTuThuaCu": name = "Số thứ tự thửa cũ"; break;
-                case "DienTich": name = "Diện tích"; break;
-                case "DienTichPhapLy": name = "Diện tích pháp lý"; break;
-                case "KyHieuMucDichSuDung": name = "Ký hiệu mục đích sử dụng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-                case "ObjectId": name = "Mã đối tượng"; break;
-                case "Index": name = "Chỉ số"; break;
-              }
-          }
-      });
-      }
-
     } else {
       done('Occur error when request API', null);
     }
@@ -639,6 +587,61 @@ const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa
 
   request.send();
 };
+
+const SetDrawProperty = function () {
+  $("#ddlProperty").empty();
+  let o = new Option("Chọn thuộc tính", "");
+  $(o).html("Chọn thuộc tính");
+  $("#ddlProperty").append(o);
+  let propertiesString = editor.storage.getItem(PROPERTIES_KEY);
+  if (propertiesString != null && propertiesString !== "") {
+    let propertiesJson = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
+    $.each(propertiesJson, function (key, value) {
+      if (value != null && value !== "" && key !== "Id" && key !== "UUID") {
+        let name = ""
+        switch (key) {
+          case "ObjectId": name = "Id đối tượng"; break;
+          case "Index": name = "Chỉ số"; break;
+          case "ThoiDiemBatDau": name = "Thời điểm bắt đầu"; break;
+          case "ThoiDiemKetThuc": name = "Thời điểm kết thúc"; break;
+          case "MaXa": name = "Mã xã"; break;
+          case "MaDoiTuong": name = "Mã đối tượng"; break;
+          case "SoHieuToBanDo": name = "Số hiệu bản đồ"; break;
+          case "SoThuTuThua": name = "Số thứ tự thửa"; break;
+          case "SoHieuToBanDoCu": name = "Số hiệu bản đồ cũ"; break;
+          case "SoThuTuThuaCu": name = "Số thứ tự thửa cũ"; break;
+          case "DienTich": name = "Diện tích"; break;
+          case "DienTichPhapLy": name = "Diện tích pháp lý"; break;
+          case "KyHieuMucDichSuDung": name = "Ký hiệu mục đích sử dụng"; break;
+          case "KyHieuDoiTuong": name = "Ký hiệu đối tượng"; break;
+          case "TenChu": name = "Tên chử"; break;
+          case "DiaChi": name = "Địa chỉ"; break;
+          case "DaCapGCN": name = "Đã cấp giấy chứng nhận"; break;
+          case "TenChu2": name = "Tên chủ 2"; break;
+          case "NamSinhC1": name = "NamSinhC1"; break;
+          case "SoHieuGCN": name = "Số hiệu giấy chứng nhận"; break;
+          case "SoVaoSo": name = "Số vào sổ"; break;
+          case "NgayVaoSo": name = "Ngày vào sổ"; break;
+          case "SoBienNhan": name = "Số biên nhận"; break;
+          case "NguoiNhanHS": name = "Người nhận hồ sơ"; break;
+          case "CoQuanThuLy": name = "Cơ quan thụ lý"; break;
+          case "LoaiHS": name = "Loại hồ sơ"; break;
+          case "MaLienKet": name = "Mã liên kết"; break;
+          case "info": name = "Thông tin"; break;
+          case "Tags": name = "Thẻ"; break;
+          case "CreatedDate": name = "Ngày tạo"; break;
+          case "UpdatedDate": name = "Ngày cập nhật"; break;
+        }
+
+        if (name !== "") {
+          let o = new Option(name, value);
+          $(o).html(name);
+          $("#ddlProperty").append(o);
+        }
+      }
+    });
+  }
+}
 
 /**
 * Allows setting of preferences or configuration (including extensions).
@@ -2334,7 +2337,7 @@ editor.init = function () {
     const buttonsNeedingStroke = ['#tool_fhpath', '#tool_line'];
     const buttonsNeedingFillAndStroke = [
       '#tools_rect .tool_button', '#tools_ellipse .tool_button',
-      '#tool_text', '#tool_path'
+      '#tool_text', '#tool_property', '#tool_path'
     ];
 
     if (bNoStroke) {
@@ -4405,6 +4408,18 @@ editor.init = function () {
   *
   * @returns {void}
   */
+  const clickTextProperty = function () {
+    if (toolButtonClick('#tool_property')) {
+      SetDrawProperty()
+      $(".selectProperty").css('display', 'block');
+      svgCanvas.setMode('text_property');
+    }
+  };
+
+  /**
+  *
+  * @returns {void}
+  */
   const clickPath = function () {
     if (toolButtonClick('#tool_path')) {
       svgCanvas.setMode('path');
@@ -4920,8 +4935,8 @@ editor.init = function () {
     } else {
       // Show adjacent
       svgData = svgData.replace(/\n*/g, '')
-                       .replace(/   /g, '')
-                       .replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
+        .replace(/   /g, '')
+        .replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
     }
 
     isShowAdjacent = !isShowAdjacent;
@@ -5313,7 +5328,7 @@ editor.init = function () {
     const picker_optionPad = uiStrings.ui.pick_option_pad
     const picker_optionReflect = uiStrings.ui.pick_option_reflect
     const picker_optionRepeat = uiStrings.ui.pick_option_repeat
-    const picker_lblAngle = uiStrings.ui.pick_lbl_angle 
+    const picker_lblAngle = uiStrings.ui.pick_lbl_angle
     const picker_lblOpac = uiStrings.ui.pick_lbl_opac
     const picker_lblRadius = uiStrings.ui.pick_lbl_radius
     const localization_text_title = uiStrings.localization.text.title
@@ -5353,9 +5368,10 @@ editor.init = function () {
       .jGraduate(
         {
           paint,
-          window: { pickerTitle: title, 
-            solidColor: picker_solid_tab, 
-            linearColor: picker_linear_tab, 
+          window: {
+            pickerTitle: title,
+            solidColor: picker_solid_tab,
+            linearColor: picker_linear_tab,
             radialColor: picker_radial_tab,
             beginPoint: picker_begin_point,
             endPoint: picker_end_point,
@@ -5405,7 +5421,7 @@ editor.init = function () {
             localization_tooltips_hex_textbox: localization_tooltips_hex_textbox,
             localization_tooltips_hex_alpha: localization_tooltips_hex_alpha,
             lblDeg: picker_lbl_deg
-           },
+          },
           images: { clientPath: curConfig.jGraduatePath },
           newstop: 'inverse'
         },
@@ -5966,6 +5982,7 @@ editor.init = function () {
       },
       { sel: '#tool_path', fn: clickPath, evt: 'click', key: ['P', true] },
       { sel: '#tool_text', fn: clickText, evt: 'click', key: ['T', true] },
+      { sel: '#tool_property', fn: clickTextProperty, evt: 'click' },
       { sel: '#tool_image', fn: clickImage, evt: 'mouseup' },
       { sel: '#tool_zoom', fn: clickZoom, evt: 'mouseup', key: ['Z', true] },
       { sel: '#tool_clear', fn: clickClear, evt: 'mouseup', key: ['N', true] },

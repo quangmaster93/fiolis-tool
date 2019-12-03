@@ -2047,6 +2047,29 @@ class SvgCanvas {
             });
             // newText.textContent = 'text';
             break;
+          case 'text_property':
+            let propertySelected = $("#ddlProperty option:selected").val()
+            if (propertySelected != undefined && propertySelected != null && propertySelected !== "") {
+              started = true;
+              const newText = addSVGElementFromJson({
+                element: 'text',
+                curStyles: true,
+                attr: {
+                  x,
+                  y,
+                  id: getNextId(),
+                  fill: curText.fill,
+                  'stroke-width': curText.stroke_width,
+                  'font-size': curText.font_size,
+                  'font-family': curText.font_family,
+                  'text-anchor': 'middle',
+                  'xml:space': 'preserve',
+                  opacity: curShape.opacity
+                }
+              });
+              newText.textContent = $("#ddlProperty option:selected").val();
+            }
+            break;
           case 'path':
           // Fall through
           case 'pathedit':
@@ -2747,6 +2770,9 @@ class SvgCanvas {
             keep = true;
             selectOnly([element]);
             textActions.start(element);
+            break;
+          case 'text_property':
+            keep = true;
             break;
           case 'path': {
             // set element to null here so that it is not removed nor finalized
