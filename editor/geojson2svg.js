@@ -99,6 +99,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
     let midPoint = [];
 
+    let transform = '';
+
     const move = -10;
 
     const textFormat = `<text fill="#000" font-family="serif" font-size="14" stroke="#000"
@@ -114,8 +116,11 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
             midPoint = getMidpointCoordinate(points[index], points[index + 1]);
 
+            transform = `transform="rotate(${angleBetweenPoints(points[index], points[index + 1])} ${midPoint[0]} ${midPoint[1]})"`;
+
+            debugger
             // Render edge labels of polygon
-            edgeLabels += `${textFormat} x="${midPoint[0] + move}" y="${midPoint[1] + move}">${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
+            edgeLabels += `${textFormat} x="${midPoint[0] + move}" y="${midPoint[1] + move}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
         }
     }
 
@@ -129,6 +134,10 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         verticeLabels: verticeLabels,
         edgeLabels: edgeLabels
     };
+  }
+
+  function angleBetweenPoints(point1, point2) {
+    return Math.atan2(point2[1] - point1[1], point2[0] - point1[0]) * 180 / Math.PI;
   }
 
   function renderCordinateTable(points, edgeLabels) {
