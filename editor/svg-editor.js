@@ -339,10 +339,10 @@ let svgCanvas, urldata,
  *   falsey, though only until after the `alert` is closed); rejects if SVG
  *   loading fails and `noAlert` is truthy.
  */
-async function loadSvgString(str, { noAlert } = {}, isFirstLoad = false) {
+async function loadSvgString(str, { noAlert } = {}, isReload = false) {
   const success = svgCanvas.setSvgString(str) !== false;
   if (success) {
-    if (isFirstLoad) {
+    if (isReload) {
       svgCanvas.zoomChanged(window, 'layer');
     }
     return;
@@ -4675,7 +4675,7 @@ editor.init = function () {
               return;
             }
             properties = svgData.properties;
-            editor.loadFromString(svgData.mainLand);
+            editor.loadFromString(svgData.mainLand, {}, true);
           } else {
             $.alert(message.error);
           }
@@ -6757,10 +6757,10 @@ editor.runCallbacks = async function () {
 * @param {boolean} [opts.noAlert=false] Option to avoid alert to user and instead get rejected promise
 * @returns {Promise<void>}
 */
-editor.loadFromString = function (str, { noAlert } = {}, isFirstLoad = false) {
+editor.loadFromString = function (str, { noAlert } = {}, isReload = false) {
   return editor.ready(async function () {
     try {
-      await loadSvgString(str, { noAlert }, isFirstLoad);
+      await loadSvgString(str, { noAlert }, isReload);
     } catch (err) {
       if (noAlert) {
         throw err;

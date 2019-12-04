@@ -107,6 +107,11 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
         style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
 
+    const centerPoint = getCenterPointCoordinate(points);
+    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua})</text>`;
+    centerLabels += `<line fill="none" stroke="#000" stroke-width="1" x1="${centerPoint[0] - 20}" x2="${centerPoint[0] + 20}" y1="${centerPoint[1]}" y2="${centerPoint[1]}"/>`;
+    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] + 15}">${properties.DienTich}</text>`;
+
     // Render vertice labels and edge labels of polygon
     for (let index = 0; index < (points || []).length; index++) {
         if (index < points.length - 1) {
@@ -116,18 +121,13 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
             midPoint = getMidpointCoordinate(points[index], points[index + 1]);
 
-            transform = `transform="rotate(${angleBetweenPoints(points[index], points[index + 1])} ${midPoint[0]} ${midPoint[1]})"`;
+            transform = `transform="rotate(${angleBetweenPoints(points[index], points[index + 1], midPoint, centerPoint)} ${midPoint[0]} ${midPoint[1]})"`;
 
             debugger
             // Render edge labels of polygon
-            edgeLabels += `${textFormat} x="${midPoint[0] + move}" y="${midPoint[1] + move}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
+            edgeLabels += `${textFormat} x="${midPoint[0] + move}" y="${midPoint[1] + move}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
         }
     }
-
-    const centerPoint = getCenterPointCoordinate(points);
-    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua})</text>`;
-    centerLabels += `<line fill="none" stroke="#000" stroke-width="1" x1="${centerPoint[0] - 20}" x2="${centerPoint[0] + 20}" y1="${centerPoint[1]}" y2="${centerPoint[1]}"/>`;
-    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] + 15}">${properties.DienTich}</text>`;
 
     return {
         centerLabels: centerLabels,
@@ -136,8 +136,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
     };
   }
 
-  function angleBetweenPoints(point1, point2) {
-    return Math.atan2(point2[1] - point1[1], point2[0] - point1[0]) * 180 / Math.PI;
+  function angleBetweenPoints(point1, point2, midPoint, centerPoint) {
+    let rotate = centerPoint[1] - midPoint[1] < 0 ? 180 : 0;
+    return (Math.atan2(point2[1] - point1[1], point2[0] - point1[0]) * 180 / Math.PI) + rotate;
   }
 
   function renderCordinateTable(points, edgeLabels) {
@@ -209,9 +210,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
       const landInfo =
         `
-        <g class="layer" id="land-info" transform="translate(20, 20)" xmlns="http://www.w3.org/2000/svg">
+        <g class="layer" id="land-info" transform="translate(40, 40)" xmlns="http://www.w3.org/2000/svg">
             <title>Land info</title>
-            <text fill="#4a84e3" font-size="20px" font-weight="bold" text-anchor="right" x="10" y="10">
+            <text fill="#4a84e3" font-size="20px" font-weight="bold" text-anchor="right" x="40" y="40">
               ${landInfoText.toUpperCase()}
             </text>
         </g>
