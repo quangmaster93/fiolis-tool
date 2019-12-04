@@ -63,13 +63,16 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
       let layerBreak = '';
 
+      let landInfo = '';
+
       if (isMainLand) {
         mainLandItems = getMainLandItems(points);
         svgStyle = `<g class="layer" id="main-land"><title>Main layer</title>${svgStyle}`;
         layerBreak = `</g>`;
+        landInfo = renderLandInfo(properties);
       }
 
-      return `${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${layerBreak}`;
+      return `${landInfo}${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${layerBreak}`;
   }
 
   // parse svg string to svg element
@@ -128,7 +131,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
     };
   }
 
-  function drawCordinateTable(points, edgeLabels) {
+  function renderCordinateTable(points, edgeLabels) {
       let raws = '';
       let yAxesStart = 30;
       let yAxes = 30;
@@ -179,6 +182,33 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         </g>
       `
       return table;
+  }
+
+  function renderLandInfo(properties) {
+      if (properties.capHanhChinh && properties.capHanhChinh.length < 4) {
+        return '';
+      }
+
+      const capHanhChinh = properties.capHanhChinh;
+
+      const landInfoText =
+        `LÔ ĐẤT SỐ : ${properties.SoThuTuThua}, TỜ BẢN ĐỒ SỐ : ${properties.SoHieuToBanDo},
+        ${capHanhChinh[0].description}: ${capHanhChinh[0].name},
+        ${capHanhChinh[1].description}: ${capHanhChinh[1].name},
+        ${capHanhChinh[2].description}: ${capHanhChinh[2].name}
+        `;
+
+      const landInfo =
+        `
+        <g class="layer" id="land-info" transform="translate(20, 20)" xmlns="http://www.w3.org/2000/svg">
+            <title>Land info</title>
+            <text fill="#4a84e3" font-size="20px" font-weight="bold" text-anchor="right" x="10" y="10">
+              ${landInfoText.toUpperCase()}
+            </text>
+        </g>
+        `;
+
+      return landInfo;
   }
 
   function getMidpointCoordinate(firstPoint, secondPoint) {
@@ -370,7 +400,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           let pixelPoints = points.map(pt => geoPointToPixelPoint(pt, geometrySize, xRes, yRes, res, extent, origin, option.padding));
 
           if (isMainLand) {
-              cordinateTable = drawCordinateTable(points, properties.calculate[0][0][0].distances)
+              cordinateTable = renderCordinateTable(points, properties.calculate[0][0][0].distances)
           }
           // the first polygon is outer polygon
           if (index == 0 || Array.isArray(geojson)) {
