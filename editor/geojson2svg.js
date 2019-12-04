@@ -123,7 +123,6 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
             transform = `transform="rotate(${angleBetweenPoints(points[index], points[index + 1], midPoint, centerPoint)} ${midPoint[0]} ${midPoint[1]})"`;
 
-            debugger
             // Render edge labels of polygon
             edgeLabels += `${textFormat} x="${midPoint[0] + move}" y="${midPoint[1] + move}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
         }
