@@ -49,6 +49,7 @@ import loadStylesheets from './external/load-stylesheets/index-es.js';
 const editor = {};
 
 let isShowAdjacent = false;
+let isShowLandInfo = true;
 let properties = {};
 const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
 const MAIN_LAND_KEY = 'main-land';
@@ -342,9 +343,12 @@ let svgCanvas, urldata,
  *   falsey, though only until after the `alert` is closed); rejects if SVG
  *   loading fails and `noAlert` is truthy.
  */
-async function loadSvgString(str, { noAlert } = {}) {
+async function loadSvgString(str, { noAlert } = {}, isReload = false) {
   const success = svgCanvas.setSvgString(str) !== false;
   if (success) {
+    if (isReload) {
+      svgCanvas.zoomChanged(window, 'layer');
+    }
     return;
   }
 
@@ -495,12 +499,12 @@ editor.loadContentAndPrefs = function () {
 
         if (svgData) {
           properties = svgData.properties;
-          editor.loadFromString(svgData.mainLand);
+          editor.loadFromString(svgData.mainLand, {}, true);
         } else {
           const name = 'svgedit-' + curConfig.canvasName;
           const cached = editor.storage.getItem(name);
           if (cached) {
-            editor.loadFromString(cached);
+            editor.loadFromString(cached, {}, true);
           }
         }
       });
@@ -508,7 +512,7 @@ editor.loadContentAndPrefs = function () {
       const name = 'svgedit-' + curConfig.canvasName;
       const cached = editor.storage.getItem(name);
       if (cached) {
-        editor.loadFromString(cached);
+        editor.loadFromString(cached, {}, true);
       }
     }
   }
@@ -4778,7 +4782,7 @@ editor.init = function () {
               return;
             }
             properties = svgData.properties;
-            editor.loadFromString(svgData.mainLand);
+            editor.loadFromString(svgData.mainLand, {}, true);
           } else {
             $.alert(message.error);
           }
@@ -4956,6 +4960,35 @@ editor.init = function () {
   };
 
   /**
+  * Handle when click toggle land info
+  * @returns {void}
+  */
+ const clickToggleLandInfo = function () {
+    // $('#toggle_land_info').toggleClass('push_button_pressed toggle_land_info');
+    const LAYER_REGEX = /<path id="land-info".*?>.*?<path id="adjacent-marker".*?>/igm;
+    toggleLayer(!isShowLandInfo, 'land-info');
+    isShowLandInfo = !isShowLandInfo;
+  };
+
+  /**
+  * Handle toggle layer with layer id
+  * @returns {void}
+  */
+  const toggleLayer = function (isShowLayer, layerId) {
+    // Get svg data
+    let svgData = svgCanvas.getSvgString();
+
+    if (isShowLayer) {
+      svgData = svgData.replace(`display="none" id="${layerId}"`, `id="${layerId}"`);
+    } else {
+      svgData = svgData.replace(`id="${layerId}"`, `display="none" id="${layerId}"`);
+    }
+
+    // Reload svg source
+    editor.loadFromString(svgData, {}, true);
+  }
+
+  /**
   * Handle toggle adjacent
   * @returns {void}
   */
@@ -4982,7 +5015,7 @@ editor.init = function () {
     isShowAdjacent = !isShowAdjacent;
 
     // Reload svg source
-    editor.loadFromString(svgData);
+    editor.loadFromString(svgData, {}, true);
     // clickWireframe();
   };
 
@@ -6054,6 +6087,7 @@ editor.init = function () {
       { sel: '#tool_source', fn: showSourceEditor, evt: 'click', key: ['U', true] },
       // { sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true] },
       { sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['F', true] },
+      { sel: '#toggle_land_info', fn: clickToggleLandInfo, evt: 'click', key: ['A', true] },
       {
         key: ['esc', false, false],
         fn() {
@@ -6862,10 +6896,10 @@ editor.runCallbacks = async function () {
 * @param {boolean} [opts.noAlert=false] Option to avoid alert to user and instead get rejected promise
 * @returns {Promise<void>}
 */
-editor.loadFromString = function (str, { noAlert } = {}) {
+editor.loadFromString = function (str, { noAlert } = {}, isReload = false) {
   return editor.ready(async function () {
     try {
-      await loadSvgString(str, { noAlert });
+      await loadSvgString(str, { noAlert }, isReload);
     } catch (err) {
       if (noAlert) {
         throw err;

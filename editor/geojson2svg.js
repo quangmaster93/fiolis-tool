@@ -63,13 +63,16 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
       let layerBreak = '';
 
+      let landInfo = '';
+
       if (isMainLand) {
         mainLandItems = getMainLandItems(points);
         svgStyle = `<g class="layer" id="main-land"><title>Main layer</title>${svgStyle}`;
         layerBreak = `</g>`;
+        landInfo = renderLandInfo(properties);
       }
 
-      return `${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${layerBreak}`;
+      return `${landInfo}${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${layerBreak}`;
   }
 
   // parse svg string to svg element
@@ -96,11 +99,18 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
     let midPoint = [];
 
+    let transform = '';
+
     const move = -10;
 
     const textFormat = `<text fill="#000" font-family="serif" font-size="14" stroke="#000"
         stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
         style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
+
+    const centerPoint = getCenterPointCoordinate(points);
+    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua})</text>`;
+    centerLabels += `<line fill="none" stroke="#000" stroke-width="1" x1="${centerPoint[0] - 20}" x2="${centerPoint[0] + 20}" y1="${centerPoint[1]}" y2="${centerPoint[1]}"/>`;
+    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] + 15}">${properties.DienTich}</text>`;
 
     // Render vertice labels and edge labels of polygon
     for (let index = 0; index < (points || []).length; index++) {
@@ -111,15 +121,12 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
             midPoint = getMidpointCoordinate(points[index], points[index + 1]);
 
+            transform = `transform="rotate(${angleBetweenPoints(points[index], points[index + 1], midPoint, centerPoint)} ${midPoint[0]} ${midPoint[1]})"`;
+
             // Render edge labels of polygon
-            edgeLabels += `${textFormat} x="${midPoint[0] + move}" y="${midPoint[1] + move}">${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
+            edgeLabels += `${textFormat} x="${midPoint[0] + move}" y="${midPoint[1] + move}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
         }
     }
-
-    const centerPoint = getCenterPointCoordinate(points);
-    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua})</text>`;
-    centerLabels += `<line fill="none" stroke="#000" stroke-width="1" x1="${centerPoint[0] - 20}" x2="${centerPoint[0] + 20}" y1="${centerPoint[1]}" y2="${centerPoint[1]}"/>`;
-    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] + 15}">${properties.DienTich}</text>`;
 
     return {
         centerLabels: centerLabels,
@@ -128,7 +135,12 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
     };
   }
 
-  function drawCordinateTable(points, edgeLabels) {
+  function angleBetweenPoints(point1, point2, midPoint, centerPoint) {
+    let rotate = centerPoint[1] - midPoint[1] < 0 ? 180 : 0;
+    return (Math.atan2(point2[1] - point1[1], point2[0] - point1[0]) * 180 / Math.PI) + rotate;
+  }
+
+  function renderCordinateTable(points, edgeLabels) {
       let raws = '';
       let yAxesStart = 30;
       let yAxes = 30;
@@ -179,6 +191,33 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         </g>
       `
       return table;
+  }
+
+  function renderLandInfo(properties) {
+      if (properties.capHanhChinh && properties.capHanhChinh.length < 4) {
+        return '';
+      }
+
+      const capHanhChinh = properties.capHanhChinh;
+
+      const landInfoText =
+        `LÔ ĐẤT SỐ : ${properties.SoThuTuThua}, TỜ BẢN ĐỒ SỐ : ${properties.SoHieuToBanDo},
+        ${capHanhChinh[0].description}: ${capHanhChinh[0].name},
+        ${capHanhChinh[1].description}: ${capHanhChinh[1].name},
+        ${capHanhChinh[2].description}: ${capHanhChinh[2].name}
+        `;
+
+      const landInfo =
+        `
+        <g class="layer" id="land-info" transform="translate(40, 40)" xmlns="http://www.w3.org/2000/svg">
+            <title>Land info</title>
+            <text fill="#4a84e3" font-size="20px" font-weight="bold" text-anchor="right" x="40" y="40">
+              ${landInfoText.toUpperCase()}
+            </text>
+        </g>
+        `;
+
+      return landInfo;
   }
 
   function getMidpointCoordinate(firstPoint, secondPoint) {
@@ -370,7 +409,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           let pixelPoints = points.map(pt => geoPointToPixelPoint(pt, geometrySize, xRes, yRes, res, extent, origin, option.padding));
 
           if (isMainLand) {
-              cordinateTable = drawCordinateTable(points, properties.calculate[0][0][0].distances)
+              cordinateTable = renderCordinateTable(points, properties.calculate[0][0][0].distances)
           }
           // the first polygon is outer polygon
           if (index == 0 || Array.isArray(geojson)) {

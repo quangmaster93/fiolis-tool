@@ -454,6 +454,12 @@ div.palette_item:first-child {
 
 /*—————————————————————————————*/
 
+.toggle_land_info {
+  height: 30px;
+  margin-right: -39px !important;
+  cursor: pointer;
+}
+
 .tool_button:hover,
 .push_button:hover,
 .buttonup:hover,
