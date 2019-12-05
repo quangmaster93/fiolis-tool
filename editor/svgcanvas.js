@@ -238,7 +238,7 @@ class SvgCanvas {
     * Float displaying the current zoom level (1 = 100%, .5 = 50%, etc)
     * @type {Float}
     */
-    let currentZoom = 1;
+    let currentZoom = 0.4;
 
     // pointer to current group (for in-group editing)
     let currentGroup = null;
