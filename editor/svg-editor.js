@@ -55,6 +55,9 @@ const MAIN_LAND_KEY = 'main-land';
 const ADJACENT_LANDS_KEY = 'adjacent_lands';
 const PROPERTIES_KEY = 'properties_land';
 const SVG_EDIT_DATA_KEY = 'svgedit-data';
+const MA_XA = 'ma_xa';
+const SO_TO = 'so_to';
+const SO_THUA = 'so_thua';
 const ADJACENT_REGEX = /<path id="adjacent-marker".*?>.*?<path id="adjacent-marker".*?>/igm;
 
 const $ = [
@@ -558,6 +561,10 @@ const getLandInfo = function (sheetNum, parcelNum, code, done) {
       data.result && data.result.features && data.result.features.length > 1) {
       // Only get geojson with format vn2000
       data.result.features = data.result.features.splice(data.result.features.length / 2);
+      // Save svg data into local storage
+      editor.storage.setItem(MA_XA, code);
+      editor.storage.setItem(SO_TO, sheetNum);
+      editor.storage.setItem(SO_THUA, parcelNum);
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
     } else {
       done('Occur error when request API', null);
@@ -577,6 +584,10 @@ const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa
 
     if (request.status >= 200 && request.status < 400 &&
       data.result && data.result.features && data.result.features.length > 1) {
+      // Save svg data into local storage
+      editor.storage.setItem(MA_XA, maXa);
+      editor.storage.setItem(SO_TO, sheetNum);
+      editor.storage.setItem(SO_THUA, parcelNum);
       // Only get geojson with format vn2000
       data.result.features = data.result.features.splice(data.result.features.length / 2);
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, maXa));
@@ -589,58 +600,74 @@ const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa
 };
 
 const SetDrawProperty = function () {
-  $("#ddlProperty").empty();
-  let o = new Option("Chọn thuộc tính", "");
-  $(o).html("Chọn thuộc tính");
-  $("#ddlProperty").append(o);
-  let propertiesString = editor.storage.getItem(PROPERTIES_KEY);
-  if (propertiesString != null && propertiesString !== "") {
-    let propertiesJson = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
-    $.each(propertiesJson, function (key, value) {
-      if (value != null && value !== "" && key !== "Id" && key !== "UUID") {
-        let name = ""
-        switch (key) {
-          case "ObjectId": name = "Id đối tượng"; break;
-          case "Index": name = "Chỉ số"; break;
-          case "ThoiDiemBatDau": name = "Thời điểm bắt đầu"; break;
-          case "ThoiDiemKetThuc": name = "Thời điểm kết thúc"; break;
-          case "MaXa": name = "Mã xã"; break;
-          case "MaDoiTuong": name = "Mã đối tượng"; break;
-          case "SoHieuToBanDo": name = "Số hiệu bản đồ"; break;
-          case "SoThuTuThua": name = "Số thứ tự thửa"; break;
-          case "SoHieuToBanDoCu": name = "Số hiệu bản đồ cũ"; break;
-          case "SoThuTuThuaCu": name = "Số thứ tự thửa cũ"; break;
-          case "DienTich": name = "Diện tích"; break;
-          case "DienTichPhapLy": name = "Diện tích pháp lý"; break;
-          case "KyHieuMucDichSuDung": name = "Ký hiệu mục đích sử dụng"; break;
-          case "KyHieuDoiTuong": name = "Ký hiệu đối tượng"; break;
-          case "TenChu": name = "Tên chử"; break;
-          case "DiaChi": name = "Địa chỉ"; break;
-          case "DaCapGCN": name = "Đã cấp giấy chứng nhận"; break;
-          case "TenChu2": name = "Tên chủ 2"; break;
-          case "NamSinhC1": name = "NamSinhC1"; break;
-          case "SoHieuGCN": name = "Số hiệu giấy chứng nhận"; break;
-          case "SoVaoSo": name = "Số vào sổ"; break;
-          case "NgayVaoSo": name = "Ngày vào sổ"; break;
-          case "SoBienNhan": name = "Số biên nhận"; break;
-          case "NguoiNhanHS": name = "Người nhận hồ sơ"; break;
-          case "CoQuanThuLy": name = "Cơ quan thụ lý"; break;
-          case "LoaiHS": name = "Loại hồ sơ"; break;
-          case "MaLienKet": name = "Mã liên kết"; break;
-          case "info": name = "Thông tin"; break;
-          case "Tags": name = "Thẻ"; break;
-          case "CreatedDate": name = "Ngày tạo"; break;
-          case "UpdatedDate": name = "Ngày cập nhật"; break;
-        }
+  var request = new XMLHttpRequest();
+  const key = `8bd33b7fd36d68baa96bf446c84011da`;
+  let maXa = editor.storage.getItem(MA_XA);
+  let sheetNum = editor.storage.getItem(SO_TO);
+  let parcelNum = editor.storage.getItem(SO_THUA);
+  request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/properties?maXa=${maXa}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
+  request.onload = function () {
+    // Begin accessing JSON data here
+    var data = JSON.parse(this.response);
 
-        if (name !== "") {
-          let o = new Option(name, value);
-          $(o).html(name);
-          $("#ddlProperty").append(o);
+    if (request.status >= 200 && request.status < 400 && data.result) {
+      $("#ddlProperty").empty();
+      let o = new Option(uiStrings.ui.selectProperty, "");
+      $(o).html(uiStrings.ui.selectProperty);
+      $("#ddlProperty").append(o);
+      let propertiesString = editor.storage.getItem(PROPERTIES_KEY);
+      let propertiesJson = data.result;
+      $.each(propertiesJson, function (key, value) {
+        if (value != null && value !== "" && key !== "Id" && key !== "UUID") {
+          let name = ""
+          switch (key.toLowerCase()) {
+            case ("objectId").toLowerCase(): name = uiStrings.ui.ObjectId; break;
+            case ("Index").toLowerCase(): name = uiStrings.ui.Index; break;
+            case ("ThoiDiemBatDau").toLowerCase(): name = uiStrings.ui.ThoiDiemBatDau; break;
+            case ("ThoiDiemKetThuc").toLowerCase(): name = uiStrings.ui.ThoiDiemKetThuc; break;
+            case ("MaXa").toLowerCase(): name = uiStrings.ui.MaXa; break;
+            case ("MaDoiTuong").toLowerCase(): name = uiStrings.ui.MaDoiTuong; break;
+            case ("SoHieuToBanDo").toLowerCase(): name = uiStrings.ui.SoHieuToBanDo; break;
+            case ("SoThuTuThua").toLowerCase(): name = uiStrings.ui.SoThuTuThua; break;
+            case ("SoHieuToBanDoCu").toLowerCase(): name = uiStrings.ui.SoHieuToBanDoCu; break;
+            case ("SoThuTuThuaCu").toLowerCase(): name = uiStrings.ui.SoThuTuThuaCu; break;
+            case ("DienTich").toLowerCase(): name = uiStrings.ui.DienTich; break;
+            case ("DienTichPhapLy").toLowerCase(): name = uiStrings.ui.DienTichPhapLy; break;
+            case ("KyHieuMucDichSuDung").toLowerCase(): name = uiStrings.ui.KyHieuMucDichSuDung; break;
+            case ("KyHieuDoiTuong").toLowerCase(): name = uiStrings.ui.KyHieuDoiTuong; break;
+            case ("TenChu").toLowerCase(): name = uiStrings.ui.TenChu; break;
+            case ("DiaChi").toLowerCase(): name = uiStrings.ui.DiaChi; break;
+            case ("DaCapGCN").toLowerCase(): name = uiStrings.ui.DaCapGCN; break;
+            case ("TenChu2").toLowerCase(): name = uiStrings.ui.TenChu2; break;
+            case ("NamSinhC1").toLowerCase(): name = uiStrings.ui.NamSinhC1; break;
+            case ("SoHieuGCN").toLowerCase(): name = uiStrings.ui.SoHieuGCN; break;
+            case ("SoVaoSo").toLowerCase(): name = uiStrings.ui.SoVaoSo; break;
+            case ("NgayVaoSo").toLowerCase(): name = uiStrings.ui.NgayVaoSo; break;
+            case ("SoBienNhan").toLowerCase(): name = uiStrings.ui.SoBienNhan; break;
+            case ("NguoiNhanHS").toLowerCase(): name = uiStrings.ui.NguoiNhanHS; break;
+            case ("CoQuanThuLy").toLowerCase(): name = uiStrings.ui.CoQuanThuLy; break;
+            case ("LoaiHS").toLowerCase(): name = uiStrings.ui.LoaiHS; break;
+            case ("MaLienKet").toLowerCase(): name = uiStrings.ui.MaLienKet; break;
+            case ("info").toLowerCase(): name = uiStrings.ui.info; break;
+            case ("Tags").toLowerCase(): name = uiStrings.ui.Tags; break;
+            case ("CreatedDate").toLowerCase(): name = uiStrings.ui.CreatedDate; break;
+            case ("UpdatedDate").toLowerCase(): name = uiStrings.ui.UpdatedDate; break;
+          }
+
+          if (name !== "") {
+            let o = new Option(name, value);
+            $(o).html(name);
+            $("#ddlProperty").append(o);
+          }
         }
-      }
-    });
+      });
+    } else {
+      done('Occur error when request API', null);
+    }
   }
+
+  request.send();
+
 }
 
 /**
@@ -1697,6 +1724,9 @@ editor.init = function () {
   const setSelectMode = function () {
     const curr = $('.tool_button_current');
     if (curr.length && curr[0].id !== 'tool_select') {
+      if(curr[0].id == 'tool_property'){
+        $(".selectProperty").css('display', 'none');
+      }
       curr.removeClass('tool_button_current').addClass('tool_button');
       $('#tool_select').addClass('tool_button_current').removeClass('tool_button');
       $('#styleoverrides').text(`
@@ -1840,6 +1870,9 @@ editor.init = function () {
     $('#tools_bottom_2,#tools_bottom_3').toggle(!editmode);
     if (editmode) {
       // Change select icon
+      if($('.tool_button_current').length > 0 && $('.tool_button_current')[0].id == 'tool_property'){
+        $(".selectProperty").css('display', 'none');
+      }
       $('.tool_button_current').removeClass('tool_button_current').addClass('tool_button');
       $('#tool_select').addClass('tool_button_current').removeClass('tool_button');
       setIcon('#tool_select', 'select_node');
@@ -1995,6 +2028,9 @@ editor.init = function () {
     }
     $('#styleoverrides').text('');
     workarea.css('cursor', 'auto');
+    if($('.tool_button_current').length > 0 && $('.tool_button_current')[0].id == 'tool_property'){
+      $(".selectProperty").css('display', 'none');
+    }
     $('.tool_button_current').removeClass('tool_button_current').addClass('tool_button');
     $(button).addClass('tool_button_current').removeClass('tool_button');
     return true;
@@ -4723,6 +4759,10 @@ editor.init = function () {
         if (!ok) {
           return;
         }
+        // Save svg data into local storage
+        editor.storage.setItem(MA_XA, dataSave.MaXa);
+        editor.storage.setItem(SO_TO, dataSave.SoTo);
+        editor.storage.setItem(SO_THUA, dataSave.SoThua);
         svgCanvas.setSvgString(result);
 
       } else {

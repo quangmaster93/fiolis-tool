@@ -210,6 +210,7 @@ export const readLang = async function (langData) {
     tool_open: tools.open_doc,
     tool_save: tools.save_doc,
     tool_save_database: tools.save_database,
+    lblDrawProperty: tools.lbl_select_property,
 
     svginfo_units_rulers: config.units_and_rulers,
     svginfo_rulers_onoff: config.show_rulers,
@@ -260,6 +261,7 @@ export const readLang = async function (langData) {
   setStrings('aria-label', ariaLabels);
 
   setStrings('title', {
+    tool_button: tools.title_draw_property,
     btnSearch: tools.searchSVG_title,
     align_relative_to: tools.align_relative_to,
     circle_cx: properties.circle_cx,

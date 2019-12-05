@@ -34,6 +34,11 @@ hr {
   border-bottom: 1px solid #808080;
 }
 
+.draw_property{
+  position: absolute;
+  margin-top: 24px;
+}
+
 select {
   margin-top: 4px;
 }
