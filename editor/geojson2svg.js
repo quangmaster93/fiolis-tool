@@ -518,6 +518,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       localStorage.setItem(SVG_EDIT_DEFAULT_KEY, fullSvgStr);
       localStorage.setItem(ADJACENT_LANDS_KEY, adjacentLands);
       localStorage.setItem(PROPERTIES_KEY, JSON.stringify(properties));
+      $("#txtSoTo").val(properties.SoHieuToBanDo);
+      $("#txtSoThua").val(properties.SoThuTuThua);
+      $("#txtCodeDiaChinh").val(properties.MaXa);
       return {
           mainLand: fullSvgStr,
           adjacentLands: adjacentLands,

@@ -3968,7 +3968,7 @@ class SvgCanvas {
         async: false,
         success: function (data) {
           if (data.code === "ok" && data.result) {
-            resultSearch = data.result.dataSVG;
+            resultSearch = data.result;
           }
         },
         error: function (xhr, stat, err) {

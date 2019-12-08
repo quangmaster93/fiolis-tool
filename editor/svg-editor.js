@@ -578,30 +578,30 @@ const getLandInfo = function (sheetNum, parcelNum, code, done) {
   request.send();
 };
 
-const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa, done) {
-  var request = new XMLHttpRequest();
-  const key = `8bd33b7fd36d68baa96bf446c84011da`;
-  request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${maXa}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
-  request.onload = function () {
-    // Begin accessing JSON data here
-    var data = JSON.parse(this.response);
+// const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa, done) {
+//   var request = new XMLHttpRequest();
+//   const key = `8bd33b7fd36d68baa96bf446c84011da`;
+//   request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${maXa}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
+//   request.onload = function () {
+//     // Begin accessing JSON data here
+//     var data = JSON.parse(this.response);
 
-    if (request.status >= 200 && request.status < 400 &&
-      data.result && data.result.features && data.result.features.length > 1) {
-      // Save svg data into local storage
-      editor.storage.setItem(MA_XA, maXa);
-      editor.storage.setItem(SO_TO, sheetNum);
-      editor.storage.setItem(SO_THUA, parcelNum);
-      // Only get geojson with format vn2000
-      data.result.features = data.result.features.splice(data.result.features.length / 2);
-      done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, maXa));
-    } else {
-      done('Occur error when request API', null);
-    }
-  }
+//     if (request.status >= 200 && request.status < 400 &&
+//       data.result && data.result.features && data.result.features.length > 1) {
+//       // Save svg data into local storage
+//       editor.storage.setItem(MA_XA, maXa);
+//       editor.storage.setItem(SO_TO, sheetNum);
+//       editor.storage.setItem(SO_THUA, parcelNum);
+//       // Only get geojson with format vn2000
+//       data.result.features = data.result.features.splice(data.result.features.length / 2);
+//       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, maXa));
+//     } else {
+//       done('Occur error when request API', null);
+//     }
+//   }
 
-  request.send();
-};
+//   request.send();
+// };
 
 const SetDrawProperty = function () {
   var request = new XMLHttpRequest();
@@ -4719,6 +4719,12 @@ editor.init = function () {
     };
     svgCanvas.save(saveOpts);
   };
+  const propertiesDefault = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
+    if (propertiesDefault != null) {
+      $("#txtSoTo").val(properties.SoTo);
+      $("#txtSoThua").val(properties.SoThua);
+      $("#txtCodeDiaChinh").val(properties.MaXa);
+    }
   /**
   *
   * @returns {void}
@@ -4764,13 +4770,20 @@ editor.init = function () {
           return;
         }
         // Save svg data into local storage
+        let properties = {
+          ObjectId: result.objectId,
+          SoHieuToBanDo: result.soTo,
+          SoThuTuThua: result.soThua,
+          MaXa: result.maXa
+        }
+        editor.storage.setItem(PROPERTIES_KEY, JSON.stringify(properties))
         editor.storage.setItem(MA_XA, dataSave.MaXa);
         editor.storage.setItem(SO_TO, dataSave.SoTo);
         editor.storage.setItem(SO_THUA, dataSave.SoThua);
-        svgCanvas.setSvgString(result);
+        svgCanvas.setSvgString(result.dataSVG);
 
       } else {
-        getLandInfoByMaXaSoToAndSoThua(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
+        getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
           if (err) {
             $.alert(message.error);
             throw err;
