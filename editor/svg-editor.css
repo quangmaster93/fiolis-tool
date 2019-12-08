@@ -39,6 +39,10 @@ hr {
   margin-top: 24px;
 }
 
+#view_grid{
+  margin: 0px -7.5px -7.5px 2px !important;
+}
+
 select {
   margin-top: 4px;
 }
