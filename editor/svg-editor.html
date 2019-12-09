@@ -142,9 +142,12 @@
       <div id="tools_top" class="tools_panel">
         <div id="editor_panel">
           <div class="tool_sep"></div>
-          <div class="push_button" id="tool_source" title="Edit Source [U]"></div>
+          <!-- <div class="push_button" id="tool_source" title="Edit Source [U]"></div> -->
           <!-- <div class="tool_button" id="tool_wireframe" title="Wireframe Mode [F]"></div> -->
-          <div class="tool_button" id="tool_toggle_adjacent" title="Toogle Adjacent [F]"></div>
+          <!-- <div class="tool_button" id="tool_toggle_adjacent" title="Toogle Adjacent [F]"></div> -->
+          <button class="tool_toggle_adjacent" id="tool_toggle_adjacent" title="Ẩn/Hiện thửa liền kề" type="button">
+            Ẩn/Hiện thửa liền kề
+          </button>
           <button class="toggle_land_info" id="toggle_land_info" title="Ẩn/Hiện thông tin lô đất" type="button">
             Ẩn/Hiện thông tin lô đất
           </button>
@@ -159,7 +162,7 @@
           <div class="push_button tool_button_disabled" id="tool_redo" title="Redo [Y]"></div>
         </div>
         <!-- Search database buttons -->
-        <div class="search_panel" style="width: 668px">
+        <div class="search_panel" style="width: 840px">
           <label id="lblSoTo">
             Số tờ:
             <input id="txtSoTo" class="attr_changer" data-attr="soTo" size="10" type="number" />

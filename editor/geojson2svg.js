@@ -469,7 +469,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           option[key] = option[key] || defaultOption[key];
       }
       let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '" >';
-      fullSvgStr += `<g class="layer"><g class="layer" id="adjacent-lands"><title>Adjacent lands</title>`;
+      fullSvgStr += `<g class="layer"><g class="layer" display="none" id="adjacent-lands"><title>Adjacent lands</title>`;
 
       // Add metadata for svg
       // fullSvgStr += `<metadata>${JSON.stringify(metadata)}</metadata>`;
@@ -510,13 +510,15 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
       convert(geojson, option, commonOpt);
 
-      fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}</g>`;
+      // fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}</g>`;
+      fullSvgStr += `${adjacentLands}</g>`;
+
       fullSvgStr += `${cordinateTable}`;
       fullSvgStr += `${mainLand}</g></svg>`;
 
       // Save svg data into local storage
       localStorage.setItem(SVG_EDIT_DEFAULT_KEY, fullSvgStr);
-      localStorage.setItem(ADJACENT_LANDS_KEY, adjacentLands);
+      // localStorage.setItem(ADJACENT_LANDS_KEY, adjacentLands);
       localStorage.setItem(PROPERTIES_KEY, JSON.stringify(properties));
       $("#txtSoTo").val(properties.SoHieuToBanDo);
       $("#txtSoThua").val(properties.SoThuTuThua);
