@@ -458,10 +458,23 @@ div.palette_item:first-child {
 
 /*—————————————————————————————*/
 
+.tool_toggle_adjacent,
+.toggle_coordinates,
 .toggle_land_info {
   height: 30px;
-  margin-right: -39px !important;
   cursor: pointer;
+}
+
+.toggle_land_info {
+  margin-right: -35px !important;
+}
+
+.tool_toggle_adjacent {
+  margin-right: -31px !important;
+}
+
+.toggle_coordinates {
+  margin-right: -38px !important;
 }
 
 .tool_button:hover,
@@ -751,7 +764,7 @@ span.zoom_tool {
 }
 
 .tool_sep {
-  width: 1px;
+  width: 0px;
   background: #888;
   border-left: 1px outset #EEE;
   margin: 2px 3px;

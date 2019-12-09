@@ -50,6 +50,7 @@ const editor = {};
 
 let isShowAdjacent = false;
 let isShowLandInfo = true;
+let isShowCoordinates = true;
 let properties = {};
 const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
 const MAIN_LAND_KEY = 'main-land';
@@ -1491,7 +1492,7 @@ editor.init = function () {
         '#tool_import div div': 'import',
         '#tool_source': 'source',
         '#tool_docprops > div': 'docprops',
-        '#tool_toggle_adjacent': 'wireframe',
+        // '#tool_toggle_adjacent': 'wireframe',
         // '#tool_toggle_adjacent': 'toggle_adjacent',
         '#tool_undo': 'undo',
         '#tool_redo': 'redo',
@@ -4816,7 +4817,8 @@ editor.init = function () {
       // See http://kangax.github.io/jstests/toDataUrl_mime_type_test/ for a useful list of MIME types and browser support
       // 'ICO', // Todo: Find a way to preserve transparency in SVG-Edit if not working presently and do full packaging for x-icon; then switch back to position after 'PNG'
       'PNG',
-      'JPEG', 'BMP', 'WEBP', 'PDF'
+      'JPEG', 'BMP', 'WEBP'
+      // , 'PDF'
     ], function () {
       const sel = $(this);
       if (sel.val() === 'JPEG' || sel.val() === 'WEBP') {
@@ -4976,12 +4978,20 @@ editor.init = function () {
   * Handle when click toggle land info
   * @returns {void}
   */
- const clickToggleLandInfo = function () {
+  const clickToggleLandInfo = function () {
     // $('#toggle_land_info').toggleClass('push_button_pressed toggle_land_info');
-    const LAYER_REGEX = /<path id="land-info".*?>.*?<path id="adjacent-marker".*?>/igm;
     toggleLayer(!isShowLandInfo, 'land-info');
     isShowLandInfo = !isShowLandInfo;
   };
+
+  /**
+  * Handle when click toggle Coordinates table
+  * @returns {void}
+  */
+  const clickToggleCoordinates = function () {
+    toggleLayer(!isShowCoordinates, 'cordinates-table');
+    isShowCoordinates = !isShowCoordinates;
+  }
 
   /**
   * Handle toggle layer with layer id
@@ -5006,30 +5016,43 @@ editor.init = function () {
   * @returns {void}
   */
   const clickToggleAdjacent = function () {
-    $('#tool_toggle_adjacent').toggleClass('push_button_pressed tool_button');
+    // $('#tool_toggle_adjacent').toggleClass('push_button_pressed tool_button');
 
-    // Get svg data
-    let svgData = svgCanvas.getSvgString();
-    // let svgData = editor.storage.getItem(`svgedit-default`);
-
-    // const mainLand = editor.storage.getItem(MAIN_LAND_KEY);
-    const adjacentLands = editor.storage.getItem(ADJACENT_LANDS_KEY);
-
-    if (isShowAdjacent) {
-      // Hide adjacent
-      svgData = svgData.replace(/\n*/g, '').replace(ADJACENT_REGEX, `${ADJACENT_MAKER}${ADJACENT_MAKER}`);
-    } else {
-      // Show adjacent
-      svgData = svgData.replace(/\n*/g, '')
-        .replace(/   /g, '')
-        .replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
-    }
-
+    toggleLayer(!isShowAdjacent, 'adjacent-lands');
     isShowAdjacent = !isShowAdjacent;
 
-    // Reload svg source
-    editor.loadFromString(svgData, {}, true);
-    // clickWireframe();
+    // // Get svg data
+    // let svgData = svgCanvas.getSvgString();
+    // // let svgData = editor.storage.getItem(`svgedit-default`);
+
+    // // const mainLand = editor.storage.getItem(MAIN_LAND_KEY);
+    // const adjacentLands = editor.storage.getItem(ADJACENT_LANDS_KEY);
+
+    // if (isShowAdjacent) {
+    //   // Hide adjacent
+    //   svgData = svgData.replace(/\n*/g, '').replace(ADJACENT_REGEX, `${ADJACENT_MAKER}${ADJACENT_MAKER}`);
+    // } else {
+    //   // Show adjacent
+    //   svgData = svgData.replace(/\n*/g, '')
+    //     .replace(/   /g, '')
+    //     .replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
+    // }
+
+    // isShowAdjacent = !isShowAdjacent;
+
+    // // Reload svg source
+    // editor.loadFromString(svgData, {}, true);
+    // // clickWireframe();
+  };
+
+  /**
+  * Handle reset toogle flags
+  * @returns {void}
+  */
+  const resetToogleFlags = function () {
+    isShowAdjacent = isShowAdjacent ? !isShowAdjacent : isShowAdjacent;
+    isShowCoordinates = !isShowCoordinates ? !isShowCoordinates : isShowCoordinates;
+    isShowLandInfo = !isShowLandInfo ? !isShowLandInfo : isShowLandInfo;
   };
 
   $('#svg_docprops_container, #svg_prefs_container').draggable({
@@ -6092,6 +6115,7 @@ editor.init = function () {
           let soThua = $('#txtSoThua').val();
           let maXa = $('#txtCodeDiaChinh').val();
           clickSearchDatabase(soTo, soThua, maXa);
+          resetToogleFlags();
         }, evt: 'mouseup'
       },
       { sel: '#tool_export', fn: clickExport, evt: 'mouseup' },
@@ -6101,6 +6125,7 @@ editor.init = function () {
       // { sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true] },
       { sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['F', true] },
       { sel: '#toggle_land_info', fn: clickToggleLandInfo, evt: 'click', key: ['A', true] },
+      { sel: '#toggle_coordinates', fn: clickToggleCoordinates, evt: 'click', key: ['C', true] },
       {
         key: ['esc', false, false],
         fn() {
@@ -6715,7 +6740,7 @@ editor.init = function () {
         $.process_cancel(uiStrings.notification.loadingImage);
         const reader = new FileReader();
         reader.onloadend = async function ({ target }) {
-          await loadSvgString(target.result);
+          await loadSvgString(target.result, {}, true);
           updateCanvas();
         };
         reader.readAsText(this.files[0]);
