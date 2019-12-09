@@ -458,10 +458,14 @@ div.palette_item:first-child {
 
 /*—————————————————————————————*/
 
+.toggle_coordinates,
 .toggle_land_info {
   height: 30px;
-  margin-right: -39px !important;
   cursor: pointer;
+}
+
+.toggle_land_info {
+  margin-right: -39px !important;
 }
 
 .tool_button:hover,

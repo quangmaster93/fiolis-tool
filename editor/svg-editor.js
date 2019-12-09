@@ -50,6 +50,7 @@ const editor = {};
 
 let isShowAdjacent = false;
 let isShowLandInfo = true;
+let isShowCoordinates = true;
 let properties = {};
 const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
 const MAIN_LAND_KEY = 'main-land';
@@ -4976,12 +4977,16 @@ editor.init = function () {
   * Handle when click toggle land info
   * @returns {void}
   */
- const clickToggleLandInfo = function () {
+  const clickToggleLandInfo = function () {
     // $('#toggle_land_info').toggleClass('push_button_pressed toggle_land_info');
-    const LAYER_REGEX = /<path id="land-info".*?>.*?<path id="adjacent-marker".*?>/igm;
     toggleLayer(!isShowLandInfo, 'land-info');
     isShowLandInfo = !isShowLandInfo;
   };
+
+  const clickToggleCoordinates = function () {
+    toggleLayer(!isShowCoordinates, 'cordinates-table');
+    isShowCoordinates = !isShowCoordinates;
+  }
 
   /**
   * Handle toggle layer with layer id
@@ -6101,6 +6106,7 @@ editor.init = function () {
       // { sel: '#tool_wireframe', fn: clickWireframe, evt: 'click', key: ['F', true] },
       { sel: '#tool_toggle_adjacent', fn: clickToggleAdjacent, evt: 'click', key: ['F', true] },
       { sel: '#toggle_land_info', fn: clickToggleLandInfo, evt: 'click', key: ['A', true] },
+      { sel: '#toggle_coordinates', fn: clickToggleCoordinates, evt: 'click', key: ['C', true] },
       {
         key: ['esc', false, false],
         fn() {
