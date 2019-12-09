@@ -4817,7 +4817,8 @@ editor.init = function () {
       // See http://kangax.github.io/jstests/toDataUrl_mime_type_test/ for a useful list of MIME types and browser support
       // 'ICO', // Todo: Find a way to preserve transparency in SVG-Edit if not working presently and do full packaging for x-icon; then switch back to position after 'PNG'
       'PNG',
-      'JPEG', 'BMP', 'WEBP', 'PDF'
+      'JPEG', 'BMP', 'WEBP'
+      // , 'PDF'
     ], function () {
       const sel = $(this);
       if (sel.val() === 'JPEG' || sel.val() === 'WEBP') {
