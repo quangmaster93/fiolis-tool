@@ -345,6 +345,7 @@ export default {
       QwantToOpen: 'Bạn có muốn mở một tệp mới không?\nĐiều này cũng sẽ xóa lịch sử hoàn tác của bạn!',
       SaveSuccess: 'Lưu SVG vào cơ sở dữ liệu thành công!',
       SaveFail: 'Lưu SVG vào cơ sở dữ liệu không thành công!',
+      SearchLoDat: 'Lô đất bạn đang tìm với số tờ là \'%sto\', số thửa là \'%sth\' và mã xã \'%mxa\' đã lưu trong cơ sở dữ liệu.\nBạn có muốn mở bản đã lưu không?\nChọn "OK" để mở bản đã lưu\nChọn "Hủy bỏ" để tạo bản mới',
       NotFound: 'Không tìm thấy SVG!',
       SearchEmpty: 'Vui lòng nhập giá trị cho Số tờ, Số thửa và Mã xã!',
       QerrorsRevertToSource: 'Đã xảy ra lỗi phân tích cú pháp trong nguồn SVG của bạn.\nRevert trở lại nguồn SVG ban đầu?',

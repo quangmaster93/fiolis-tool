@@ -4758,6 +4758,7 @@ editor.init = function () {
       MaXa: maXa,
     };
     const message = {
+      SearchLoDat: uiStrings.notification.SearchLoDat,
       ok: uiStrings.notification.QwantToOpen,
       error: uiStrings.notification.NotFound,
       searchEmpty: uiStrings.notification.SearchEmpty
@@ -4766,10 +4767,23 @@ editor.init = function () {
     if (dataSave.SoTo && dataSave.SoThua && dataSave.MaXa) {
       let result = await svgCanvas.searchDatabase(dataSave);
       if (result != undefined && result != null) {
-        const ok = await $.confirm(message.ok);
+        const ok = await $.confirm(message.SearchLoDat.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa));
         if (!ok) {
-          return;
+          getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
+            if (err) {
+              $.alert(message.error);
+              throw err;
+            }
+  
+            if (svgData) {
+              properties = svgData.properties;
+              editor.loadFromString(svgData.mainLand, {}, true);
+            } else {
+              $.alert(message.error);
+            }
+          });
         }
+        
         // Save svg data into local storage
         let properties = {
           ObjectId: result.objectId,
@@ -5354,7 +5368,7 @@ editor.init = function () {
   // behave more like buttons being pressed-in and not images
   (function () {
     const toolnames = [
-      'clear', 'open', 'save', 'source', 'delete',
+      'clear', 'open', 'save', 'save_database', 'source', 'delete',
       'delete_multi', 'paste', 'clone', 'clone_multi',
       'move_top', 'move_bottom'
     ];
@@ -6105,10 +6119,7 @@ editor.init = function () {
         }, evt: 'mouseup', key: ['S', true]
       },
       {
-        sel: '#tool_save_database', fn() {
-          clickSaveDatabase();
-        }, evt: 'mouseup'
-      },
+        sel: '#tool_save_database', fn: clickSaveDatabase, evt: 'mouseup'},
       {
         sel: '#btnSearch', fn() {
           let soTo = $('#txtSoTo').val();

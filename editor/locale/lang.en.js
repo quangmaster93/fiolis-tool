@@ -345,6 +345,7 @@ export default {
     SaveSuccess: 'Save SVG to database sucess!',
     SaveFail: 'Save SVG to database fail!',
     NotFound: 'Not found SVG!',
+    SearchLoDat: 'The parcel you are looking for with the sheet number is \'%sto\', the parcel number is \'%sth\' and the commune code \'%mxa\' has been saved in the database. \nDo you want to open a saved? ? \nSelect "OK" to open the saved \nSelect "Cancel" to create a new version ',
     SearchEmpty: 'Please enter value for Number of sheets, Number of plots And Cadastral code!',
     QerrorsRevertToSource: 'There were parsing errors in your SVG source.\nRevert back to original SVG source?',
     QignoreSourceChanges: 'Ignore changes made to SVG source?',
