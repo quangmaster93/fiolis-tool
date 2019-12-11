@@ -1018,8 +1018,8 @@ editor.init = function () {
     const { langParam, langData } = await editor.putLocale(null, goodLangs, curConfig);
     await setLang(langParam, langData);
 
-    const { ok, cancel } = uiStrings.common;
-    jQueryPluginDBox($, { ok, cancel });
+    const { ok, cancel, edit, new_svg } = uiStrings.common;
+    jQueryPluginDBox($, { ok, cancel, edit, new_svg });
 
     setIcons(); // Wait for dbox as needed for i18n
 
