@@ -543,8 +543,8 @@ const convertGeojsonToSvg = function (geojson, sheetNum, parcelNum) {
     precision: 3,               // svg coordinates precision
     stroke: '#000',             // stroke color
     strokeWidth: '1px',         // stroke width
-    background: '#ccc',         // svg background color, and as the fill color of polygon hole
-    fill: '#fff',               // fill color
+    background: '#fff',         // svg background color, and as the fill color of polygon hole
+    fill: 'none',               // fill color
     fillOpacity: 1,             // fill opacity
     radius: 5                   // only for `Point`, `MultiPoint`
   };

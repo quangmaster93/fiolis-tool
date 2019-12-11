@@ -67,7 +67,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
       if (isMainLand) {
         mainLandItems = getMainLandItems(points);
-        svgStyle = `<g class="layer" id="main-land"><title>Main layer</title>${svgStyle}`;
+        svgStyle = `<g class="layer" id="main-land"><title>Thửa chính</title>${svgStyle}`;
         layerBreak = `</g>`;
         landInfo = renderLandInfo(properties);
       }
@@ -168,7 +168,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       const table =
       `
         <g class="layer" id="cordinates-table">
-            <title>Cordinates table</title>
+            <title>Bảng tọa độ góc ranh</title>
             <g class="layer" id="table" transform="translate(${svgSize[0] - 400}, ${svgSize[1] - endPointY - 50})" xmlns="http://www.w3.org/2000/svg">
                 <text fill="#000" font-size="16px" font-weight="bold" text-anchor="middle" x="175" y="5">
                 BẢNG LIỆT KÊ TỌA ĐỘ GÓC RANH
@@ -210,7 +210,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       const landInfo =
         `
         <g class="layer" id="land-info" transform="translate(40, 40)" xmlns="http://www.w3.org/2000/svg">
-            <title>Land info</title>
+            <title>Thông tin thửa đất</title>
             <text fill="#4a84e3" font-size="20px" font-weight="bold" text-anchor="right" x="40" y="40">
               ${landInfoText.toUpperCase()}
             </text>
@@ -335,7 +335,11 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       let geometryWidth = svgWidth - paddingLeft - paddingRight;
       let geometryHeight = svgHeight - paddingTop - paddingBottom;
       // get the extent
-      let extent = getExtent(getAllPoints(geojson));
+      const geojsonConverted = {
+        ...geojson,
+        features: (geojson.features || []).slice(0, 1)
+      }
+      let extent = getExtent(getAllPoints(geojsonConverted));
       // calculate resolution
       let xRes = (extent[2] - extent[0]) / geometryWidth;  // x resolution
       let yRes = (extent[3] - extent[1]) / geometryHeight; // y resolution
@@ -468,8 +472,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       for (let key in defaultOption) {
           option[key] = option[key] || defaultOption[key];
       }
-      let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '" >';
-      fullSvgStr += `<g class="layer"><g class="layer" display="none" id="adjacent-lands"><title>Adjacent lands</title>`;
+      let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '" overflow="hidden">';
+      fullSvgStr += `<g class="layer" display="none" id="adjacent-lands"><title>Thửa liền kề</title>`;
 
       // Add metadata for svg
       // fullSvgStr += `<metadata>${JSON.stringify(metadata)}</metadata>`;
@@ -514,7 +518,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       fullSvgStr += `${adjacentLands}</g>`;
 
       fullSvgStr += `${cordinateTable}`;
-      fullSvgStr += `${mainLand}</g></svg>`;
+      fullSvgStr += `${mainLand}</svg>`;
 
       // Save svg data into local storage
       localStorage.setItem(SVG_EDIT_DEFAULT_KEY, fullSvgStr);
