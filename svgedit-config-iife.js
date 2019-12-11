@@ -29882,10 +29882,12 @@
                 return setLang(langParam, langData);
 
               case 7:
-                _uiStrings$common = uiStrings$1.common, ok = _uiStrings$common.ok, cancel = _uiStrings$common.cancel;
+                _uiStrings$common = uiStrings$1.common, ok = _uiStrings$common.ok, cancel = _uiStrings$common.cancel, edit=_uiStrings$common.edit, new_svg=_uiStrings$common.new_svg;
                 jQueryPluginDBox($$b, {
                   ok: ok,
-                  cancel: cancel
+                  cancel: cancel,
+                  edit: edit,
+                  new_svg: new_svg
                 });
                 setIcons(); // Wait for dbox as needed for i18n
 

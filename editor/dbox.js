@@ -8,7 +8,7 @@
 * @param {PlainObject} [strings.cancel]
 * @returns {external:jQuery}
 */
-export default function jQueryPluginDBox ($, strings = {ok: 'Ok', cancel: 'Cancel'}) {
+export default function jQueryPluginDBox ($, strings = {ok: 'Ok', cancel: 'Cancel', edit: 'Edit', new_svg: "New"}) {
   // This sets up alternative dialog boxes. They mostly work the same way as
   // their UI counterparts, expect instead of returning the result, a callback
   // needs to be included that returns the result as its first parameter.
@@ -139,6 +139,78 @@ export default function jQueryPluginDBox ($, strings = {ok: 'Ok', cancel: 'Cance
     });
   }
 
+  function dboxcustom (type, msg, defaultVal, opts, changeListener, checkbox) {
+    dialogContent.html('<p>' + msg.replace(/\n/g, '</p><p>') + '</p>')
+      .toggleClass('prompt', (type === 'prompt'));
+    btnHolder.empty();
+
+    const ok = $('<input type="button" data-ok="" value="' + strings.edit + '">').appendTo(btnHolder);
+
+    return new Promise((resolve, reject) => { // eslint-disable-line promise/avoid-new
+      if (type !== 'alert') {
+        $('<input type="button" value="' + strings.new_svg + '">')
+          .appendTo(btnHolder)
+          .click(function () {
+            box.hide();
+            resolve(false);
+          });
+      }
+
+      let ctrl, chkbx;
+      if (type === 'prompt') {
+        ctrl = $('<input type="text">').prependTo(btnHolder);
+        ctrl.val(defaultVal || '');
+        ctrl.bind('keydown', 'return', function () { ok.click(); });
+      } else if (type === 'select') {
+        const div = $('<div style="text-align:center;">');
+        ctrl = $(`<select aria-label="${msg}">`).appendTo(div);
+        if (checkbox) {
+          const label = $('<label>').text(checkbox.label);
+          chkbx = $('<input type="checkbox">').appendTo(label);
+          chkbx.val(checkbox.value);
+          if (checkbox.tooltip) {
+            label.attr('title', checkbox.tooltip);
+          }
+          chkbx.prop('checked', Boolean(checkbox.checked));
+          div.append($('<div>').append(label));
+        }
+        $.each(opts || [], function (opt, val) {
+          if (typeof val === 'object') {
+            ctrl.append($('<option>').val(val.value).html(val.text));
+          } else {
+            ctrl.append($('<option>').html(val));
+          }
+        });
+        dialogContent.append(div);
+        if (defaultVal) {
+          ctrl.val(defaultVal);
+        }
+        if (changeListener) {
+          ctrl.bind('change', 'return', changeListener);
+        }
+        ctrl.bind('keydown', 'return', function () { ok.click(); });
+      } else if (type === 'process') {
+        ok.hide();
+      }
+
+      box.show();
+
+      ok.click(function () {
+        box.hide();
+        const response = (type === 'prompt' || type === 'select') ? ctrl.val() : true;
+        if (chkbx) {
+          resolve({response, checked: chkbx.prop('checked')});
+          return;
+        }
+        resolve(response);
+      }).focus();
+
+      if (type === 'prompt' || type === 'select') {
+        ctrl.focus();
+      }
+    });
+  }
+
   /**
   * @param {string} msg Message to alert
   * @returns {jQueryPluginDBox.ResultPromise}
@@ -153,6 +225,13 @@ export default function jQueryPluginDBox ($, strings = {ok: 'Ok', cancel: 'Cance
   $.confirm = function (msg) {
     return dbox('confirm', msg);
   };
+  /**
+  * @param {string} msg Message for which to ask confirmation
+  * @returns {jQueryPluginDBox.ResultPromise}
+  */
+ $.confirm_custom = function (msg) {
+  return dboxcustom('confirm', msg);
+};
   /**
   * @param {string} msg Message to indicate upon cancelable indicator
   * @returns {jQueryPluginDBox.ResultPromise}

@@ -4767,7 +4767,7 @@ editor.init = function () {
     if (dataSave.SoTo && dataSave.SoThua && dataSave.MaXa) {
       let result = await svgCanvas.searchDatabase(dataSave);
       if (result != undefined && result != null) {
-        const ok = await $.confirm(message.SearchLoDat.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa));
+        const ok = await $.confirm_custom(message.SearchLoDat.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa));
         if (!ok) {
           getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
             if (err) {
