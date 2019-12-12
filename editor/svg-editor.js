@@ -448,6 +448,15 @@ editor.setStrings = setStrings;
 * @returns {void}
 */
 editor.loadContentAndPrefs = function () {
+  const { ok, cancel, edit, new_svg } = {
+    ok: 'OK',
+    cancel: 'Hủy bỏ',
+    edit: "Chỉnh sửa",
+    new_svg: "Tạo mới"
+  };
+
+  jQueryPluginDBox($, { ok, cancel, edit, new_svg });
+
   const getLandParams = function () {
     const pageURL = window.location.search.substring(1);
     const urlVariables = pageURL.split('&');
@@ -539,7 +548,7 @@ editor.loadContentAndPrefs = function () {
 const convertGeojsonToSvg = function (geojson, sheetNum, parcelNum) {
   var option = {
     size: [1500, 1500],           // size[0] is svg width, size[1] is svg height
-    padding: [250, 250, 250, 250],  // paddingTop, paddingRight, paddingBottom, paddingLeft, respectively
+    padding: [500, 500, 500, 500],  // paddingTop, paddingRight, paddingBottom, paddingLeft, respectively
     output: 'element',          // output type: 'string' | 'element'(only supported in browser)
     precision: 3,               // svg coordinates precision
     stroke: '#000',             // stroke color
@@ -595,22 +604,35 @@ const searchLandInfo = async function (soTo, soThua, maXa) {
 
   if (dataSave.SoTo && dataSave.SoThua && dataSave.MaXa) {
     let result = await findLandInfoFromDB(dataSave);
+    if (result && result.error) {
+      $.alert('Không thể kết nối đến máy chủ, vui lòng thử lại');
+      return;
+    }
+
     if (result) {
-      const isAccepted = await $.confirm_custom(message.searchLandInfo.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa));
-      if (isAccepted) {
-        editor.loadFromString(result.dataSVG, {}, true);
-      } else {
+      const ok = await $.confirm(message.searchLandInfo.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa));
+      if (!ok) {
         getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
           if (err) {
             $.alert(err);
           }
 
           if (svgData) {
+            properties = svgData.properties;
             editor.loadFromString(svgData.mainLand, {}, true);
           } else {
             $.alert(message.error);
           }
         });
+        return;
+      } else {
+        properties = {
+          ObjectId: result.objectId,
+          SoHieuToBanDo: result.soTo,
+          SoThuTuThua: result.soThua,
+          MaXa: result.maXa
+        };
+        editor.loadFromString(result.dataSVG, {}, true);
       }
     } else {
       getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
@@ -619,6 +641,7 @@ const searchLandInfo = async function (soTo, soThua, maXa) {
         }
 
         if (svgData) {
+          properties = svgData.properties;
           editor.loadFromString(svgData.mainLand, {}, true);
         } else {
           $.alert(message.error);
@@ -629,9 +652,7 @@ const searchLandInfo = async function (soTo, soThua, maXa) {
 };
 
 const findLandInfoFromDB = async function (searchData) {
-  // remove the selected outline before serializing
-  clearSelection();
-  var searchResult = null;
+  let searchResult = null;
   $.ajax({
     method: "GET",
     url: "https://api-fiolis.map4d.vn/v2/api/land-certificate/find",
@@ -645,11 +666,37 @@ const findLandInfoFromDB = async function (searchData) {
       }
     },
     error: function (xhr, stat, err) {
-      console.log(err)
+      searchResult = { error: err };
     }
   });
 
   return searchResult;
+  // let request = new XMLHttpRequest();
+  // let url = new URL('https://api-fiolis.map4d.vn/v2/api/land-certificate/find');
+  // url.searchParams.set('SoTo', searchData.SoTo);
+  // url.searchParams.set('SoThua', searchData.SoThua);
+  // url.searchParams.set('MaXa', searchData.MaXa);
+  // const key = `8bd33b7fd36d68baa96bf446c84011da`;
+  // request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${code}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
+  // request.onload = function () {
+  //   // Begin accessing JSON data here
+  //   var data = JSON.parse(this.response);
+
+  //   if (request.status >= 200 && request.status < 400 &&
+  //     data.result && data.result.features && data.result.features.length > 1) {
+  //     // Only get geojson with format vn2000
+  //     data.result.features = data.result.features.splice(data.result.features.length / 2);
+  //     // Save svg data into local storage
+  //     editor.storage.setItem(MA_XA, code);
+  //     editor.storage.setItem(SO_TO, sheetNum);
+  //     editor.storage.setItem(SO_THUA, parcelNum);
+  //     done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
+  //   } else {
+  //     done('Không thể kết nối đến máy chủ, vui lòng thử lại', null);
+  //   }
+  // }
+
+  // request.send();
 };
 
 // const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa, done) {
