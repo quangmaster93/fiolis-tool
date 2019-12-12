@@ -493,22 +493,23 @@ editor.loadContentAndPrefs = function () {
 
     const landParams = getLandParams() || {};
     if (landParams.sheetNum && landParams.parcelNum && landParams.code) {
-      getLandInfo(landParams.sheetNum, landParams.parcelNum, landParams.code, (err, svgData) => {
-        if (err) {
-          throw err;
-        }
+      // getLandInfo(landParams.sheetNum, landParams.parcelNum, landParams.code, (err, svgData) => {
+      //   if (err) {
+      //     $.alert(err);
+      //   }
 
-        if (svgData) {
-          properties = svgData.properties;
-          editor.loadFromString(svgData.mainLand, {}, true);
-        } else {
-          const name = 'svgedit-' + curConfig.canvasName;
-          const cached = editor.storage.getItem(name);
-          if (cached) {
-            editor.loadFromString(cached, {}, true);
-          }
-        }
-      });
+      //   if (svgData) {
+      //     properties = svgData.properties;
+      //     editor.loadFromString(svgData.mainLand, {}, true);
+      //   } else {
+      //     const name = 'svgedit-' + curConfig.canvasName;
+      //     const cached = editor.storage.getItem(name);
+      //     if (cached) {
+      //       editor.loadFromString(cached, {}, true);
+      //     }
+      //   }
+      // });
+      searchLandInfo(landParams.sheetNum, landParams.parcelNum, landParams.code);
     } else {
       const name = 'svgedit-' + curConfig.canvasName;
       const cached = editor.storage.getItem(name);
@@ -572,11 +573,83 @@ const getLandInfo = function (sheetNum, parcelNum, code, done) {
       editor.storage.setItem(SO_THUA, parcelNum);
       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
     } else {
-      done('Occur error when request API', null);
+      done('Không thể kết nối đến máy chủ, vui lòng thử lại', null);
     }
   }
 
   request.send();
+};
+
+const searchLandInfo = async function (soTo, soThua, maXa) {
+  // In the future, more options can be provided here
+  const dataSave = {
+    SoTo: soTo,
+    SoThua: soThua,
+    MaXa: maXa,
+  };
+  const message = {
+    searchLandInfo: `Lô đất bạn đang tìm với số tờ là '%sto', số thửa là '%sth' và mã xã là '%mxa' đã lưu trong cơ sở dữ liệu.\nBạn muốn chỉnh sửa bản đã lưu hay tạo mới?`,
+    ok: 'Bạn có muốn mở lô đất mới không?\nĐiều này sẽ làm mất dữ liệu lô đất hiện tại!',
+    error: 'Không tìm thấy dữ liệu lô đất'
+  }
+
+  if (dataSave.SoTo && dataSave.SoThua && dataSave.MaXa) {
+    let result = await findLandInfoFromDB(dataSave);
+    if (result) {
+      const isAccepted = await $.confirm_custom(message.searchLandInfo.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa));
+      if (isAccepted) {
+        editor.loadFromString(result.dataSVG, {}, true);
+      } else {
+        getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
+          if (err) {
+            $.alert(err);
+          }
+
+          if (svgData) {
+            editor.loadFromString(svgData.mainLand, {}, true);
+          } else {
+            $.alert(message.error);
+          }
+        });
+      }
+    } else {
+      getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
+        if (err) {
+          $.alert(err);
+        }
+
+        if (svgData) {
+          editor.loadFromString(svgData.mainLand, {}, true);
+        } else {
+          $.alert(message.error);
+        }
+      });
+    }
+  }
+};
+
+const findLandInfoFromDB = async function (searchData) {
+  // remove the selected outline before serializing
+  clearSelection();
+  var searchResult = null;
+  $.ajax({
+    method: "GET",
+    url: "https://api-fiolis.map4d.vn/v2/api/land-certificate/find",
+    data: { SoTo: searchData.SoTo, SoThua: searchData.SoThua, MaXa: searchData.MaXa, key: "8bd33b7fd36d68baa96bf446c84011da" },
+    ContentType: "application/json",
+    dataType: "json",
+    async: false,
+    success: function (data) {
+      if (data.code === "ok" && data.result) {
+        searchResult = data.result;
+      }
+    },
+    error: function (xhr, stat, err) {
+      console.log(err)
+    }
+  });
+
+  return searchResult;
 };
 
 // const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa, done) {
