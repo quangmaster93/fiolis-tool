@@ -348,7 +348,8 @@ async function loadSvgString(str, { noAlert } = {}, isReload = false) {
   const success = svgCanvas.setSvgString(str) !== false;
   if (success) {
     if (isReload) {
-      svgCanvas.zoomChanged(window, 'canvas');
+      svgCanvas.zoomChanged(window, 'content');
+      // changeZoom({ value: 50 });
     }
     return;
   }
@@ -531,8 +532,8 @@ editor.loadContentAndPrefs = function () {
 
 const convertGeojsonToSvg = function (geojson, sheetNum, parcelNum) {
   var option = {
-    size: [1500, 1500],           // size[0] is svg width, size[1] is svg height
-    padding: [500, 500, 500, 500],  // paddingTop, paddingRight, paddingBottom, paddingLeft, respectively
+    size: [900, 1000],           // size[0] is svg width, size[1] is svg height
+    padding: [300, 300, 400, 300],  // paddingTop, paddingRight, paddingBottom, paddingLeft, respectively
     output: 'element',          // output type: 'string' | 'element'(only supported in browser)
     precision: 3,               // svg coordinates precision
     stroke: '#000',             // stroke color
@@ -5036,6 +5037,9 @@ editor.init = function () {
 
     toggleLayer(!isShowAdjacent, 'adjacent-lands');
     isShowAdjacent = !isShowAdjacent;
+    saveDocProperties('', true);
+    svgCanvas.zoomChanged(window, 'content');
+    // changeZoom({ value: 50 });
 
     // // Get svg data
     // let svgData = svgCanvas.getSvgString();
@@ -5196,15 +5200,15 @@ editor.init = function () {
   *
   * @returns {boolean} Whether there were problems saving the document properties
   */
-  const saveDocProperties = function () {
+  const saveDocProperties = function ($evt, isFitToContent) {
     // set title
     const newTitle = $('#canvas_title').val();
     updateTitle(newTitle);
     svgCanvas.setDocumentTitle(newTitle);
 
     // update resolution
-    const width = $('#canvas_width'), w = width.val();
-    const height = $('#canvas_height'), h = height.val();
+    const width = $('#canvas_width'), w = isFitToContent ? 'fit' : width.val();
+    const height = $('#canvas_height'), h = isFitToContent ? 'fit' : height.val();
 
     if (w !== 'fit' && !isValidUnit('width', w)) {
       width.parent().addClass('error');
