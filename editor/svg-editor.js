@@ -503,7 +503,10 @@ editor.loadContentAndPrefs = function () {
 
     const landParams = getLandParams() || {};
     if (landParams.sheetNum && landParams.parcelNum && landParams.code) {
-      editor.loadFromDB(landParams.sheetNum, landParams.parcelNum, landParams.code);
+      showIndicator();
+      editor.loadFromDB(landParams.sheetNum, landParams.parcelNum, landParams.code).then(
+        () => hideIndicator()
+      );
     } else {
       const name = 'svgedit-' + curConfig.canvasName;
       const cached = editor.storage.getItem(name);
@@ -4753,6 +4756,7 @@ editor.init = function () {
     }
   };
   const clickSearchDatabase = async function (soTo, soThua, maXa) {
+    showIndicator();
     // In the future, more options can be provided here
     const dataSave = {
       SoTo: soTo,
@@ -4774,14 +4778,18 @@ editor.init = function () {
           getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
             if (err) {
               $.alert(message.error);
+              hideIndicator();
               return;
             }
   
             if (svgData) {
               properties = svgData.properties;
-              editor.loadFromString(svgData.mainLand, {}, true);
+              editor.loadFromString(svgData.mainLand, {}, true).then(
+                () => hideIndicator()
+              );
             } else {
               $.alert(message.error);
+              hideIndicator();
             }
           });
           return;
@@ -4799,28 +4807,35 @@ editor.init = function () {
         editor.storage.setItem(SO_TO, dataSave.SoTo);
         editor.storage.setItem(SO_THUA, dataSave.SoThua);
         svgCanvas.setSvgString(result.dataSVG);
+        hideIndicator();
 
       } else {
         getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
           if (err) {
             $.alert(message.error);
+            hideIndicator();
             return;
           }
 
           if (svgData) {
             const ok = await $.confirm(message.ok);
             if (!ok) {
+              hideIndicator();
               return;
             }
             properties = svgData.properties;
-            editor.loadFromString(svgData.mainLand, {}, true);
+            editor.loadFromString(svgData.mainLand, {}, true).then(
+              () => hideIndicator()
+            );
           } else {
             $.alert(message.error);
+            hideIndicator();
           }
         });
       }
     } else {
       $.alert(message.searchEmpty);
+      hideIndicator();
     }
   };
 
@@ -6110,6 +6125,7 @@ editor.init = function () {
           let soTo = $('#txtSoTo').val();
           let soThua = $('#txtSoThua').val();
           let maXa = $('#txtCodeDiaChinh').val();
+
           clickSearchDatabase(soTo, soThua, maXa);
           resetToogleFlags();
         }, evt: 'mouseup'
@@ -7025,10 +7041,13 @@ editor.loadFromDB = async function (soTo, soThua, maXa) {
                     $.alert(err);
                     return;
                   }
-    
+
                   if (svgData) {
                     properties = svgData.properties;
-                    editor.loadFromString(svgData.mainLand, {}, true);
+                    showIndicator();
+                    editor.loadFromString(svgData.mainLand, {}, true).then(
+                      () => hideIndicator()
+                    );
                   } else {
                     $.alert(message.error);
                   }
@@ -7051,7 +7070,10 @@ editor.loadFromDB = async function (soTo, soThua, maXa) {
                 $("#txtSoThua").val(properties.SoThuTuThua);
                 $("#txtCodeDiaChinh").val(properties.MaXa);
 
-                editor.loadFromString(result.dataSVG, {}, true);
+                showIndicator();
+                editor.loadFromString(result.dataSVG, {}, true).then(
+                  () => hideIndicator()
+                );
               }
             }
           );
@@ -7064,7 +7086,11 @@ editor.loadFromDB = async function (soTo, soThua, maXa) {
 
             if (svgData) {
               properties = svgData.properties;
-              loadSvgString(svgData.mainLand, { }, true);
+
+              showIndicator();
+              loadSvgString(svgData.mainLand, { }, true).then(
+                () => hideIndicator()
+              );
             } else {
               $.alert(message.error);
             }

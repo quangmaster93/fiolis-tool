@@ -1,0 +1,27 @@
+/* [THE LOADING SPINNER] */
+#spinner-front, #spinner-back{
+  position: fixed;
+  visibility: hidden;
+  opacity: 0;
+  width: 100%;
+  transition: all 1s;
+}
+#spinner-front{
+  z-index: 999;
+  margin-top: 45vh;
+  color: #fff;
+  text-align: center;
+}
+#spinner-back{
+  z-index: 998;
+  height: 100vh;
+  background: #fff;
+}
+#spinner-front.show{
+  visibility: visible;
+  opacity: 1;
+}
+#spinner-back.show{
+  visibility: visible;
+  opacity: 0.5;
+}

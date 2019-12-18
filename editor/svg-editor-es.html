@@ -8,9 +8,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <!-- STYLESHEETS (others loaded dynamically) -->
   <style id="styleoverrides" media="screen"></style>
+  <link rel="stylesheet" type="text/css" href="./spinner/spinner.css">
 
   <!-- SCRIPTS -->
-
+  <script src="./spinner/spinner.js"></script>
   <!-- As yet no ES6 Module support -->
   <!--{if jquery_release}>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -46,6 +47,11 @@
 </head>
 
 <body>
+  <!-- THE SPINNER -->
+  <div id="spinner-front">
+    <img src="./spinner/spinner.gif"/>
+  </div>
+  <div id="spinner-back"></div>
 
   <div id="svg_container" style="visibility: hidden;">
     <div id="svg_editor" role="main">
