@@ -51,6 +51,7 @@ const editor = {};
 let isShowAdjacent = false;
 let isShowLandInfo = true;
 let isShowCoordinates = true;
+let isFitToContent = false;
 let properties;
 const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
 const MAIN_LAND_KEY = 'main-land';
@@ -348,8 +349,7 @@ async function loadSvgString(str, { noAlert } = {}, isReload = false) {
   const success = svgCanvas.setSvgString(str) !== false;
   if (success) {
     if (isReload) {
-      svgCanvas.zoomChanged(window, 'content');
-      // changeZoom({ value: 50 });
+      svgCanvas.zoomChanged(window, 'canvas');
     }
     return;
   }
@@ -5037,32 +5037,11 @@ editor.init = function () {
 
     toggleLayer(!isShowAdjacent, 'adjacent-lands');
     isShowAdjacent = !isShowAdjacent;
-    saveDocProperties('', true);
-    svgCanvas.zoomChanged(window, 'content');
-    // changeZoom({ value: 50 });
-
-    // // Get svg data
-    // let svgData = svgCanvas.getSvgString();
-    // // let svgData = editor.storage.getItem(`svgedit-default`);
-
-    // // const mainLand = editor.storage.getItem(MAIN_LAND_KEY);
-    // const adjacentLands = editor.storage.getItem(ADJACENT_LANDS_KEY);
-
-    // if (isShowAdjacent) {
-    //   // Hide adjacent
-    //   svgData = svgData.replace(/\n*/g, '').replace(ADJACENT_REGEX, `${ADJACENT_MAKER}${ADJACENT_MAKER}`);
-    // } else {
-    //   // Show adjacent
-    //   svgData = svgData.replace(/\n*/g, '')
-    //     .replace(/   /g, '')
-    //     .replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
-    // }
-
-    // isShowAdjacent = !isShowAdjacent;
-
-    // // Reload svg source
-    // editor.loadFromString(svgData, {}, true);
-    // // clickWireframe();
+    if (!isFitToContent) {
+      isFitToContent = false;
+      saveDocProperties('', true);
+      svgCanvas.zoomChanged(window, 'canvas');
+    }
   };
 
   /**
