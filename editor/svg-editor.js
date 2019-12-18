@@ -7045,6 +7045,12 @@ editor.loadFromDB = async function (soTo, soThua, maXa) {
                 editor.storage.setItem(MA_XA, dataSave.SoTo);
                 editor.storage.setItem(SO_TO, dataSave.SoThua);
                 editor.storage.setItem(SO_THUA, dataSave.MaXa);
+
+                // Load value for search box
+                $("#txtSoTo").val(properties.SoHieuToBanDo);
+                $("#txtSoThua").val(properties.SoThuTuThua);
+                $("#txtCodeDiaChinh").val(properties.MaXa);
+
                 editor.loadFromString(result.dataSVG, {}, true);
               }
             }

@@ -101,7 +101,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
     let transform = '';
 
-    const move = -4;
+    const moveVerticeLabels = 5;
+
+    const moveEdgeLabels = -4;
 
     const textFormat = `<text fill="#000" font-family="serif" font-size="10px" stroke="#000"
         stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
@@ -117,14 +119,14 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         if (index < points.length - 1) {
 
             // Render vertice labels of polygon
-            verticeLabels += `${textFormat} x="${points[index][0] + move}" y="${points[index][1] + move}">${index + 1}</text>`;
+            verticeLabels += `${textFormat} x="${points[index][0] + moveVerticeLabels}" y="${points[index][1] + moveVerticeLabels}">${index + 1}</text>`;
 
             midPoint = getMidpointCoordinate(points[index], points[index + 1]);
 
             transform = `transform="rotate(${angleBetweenPoints(points[index], points[index + 1], midPoint, centerPoint)} ${midPoint[0]} ${midPoint[1]})"`;
 
             // Render edge labels of polygon
-            edgeLabels += `${textFormat} x="${midPoint[0] + move}" y="${midPoint[1] + move}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
+            edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
         }
     }
 
