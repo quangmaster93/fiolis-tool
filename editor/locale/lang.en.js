@@ -366,6 +366,7 @@ export default {
     exportNoBlur: 'Blurred elements will appear as un-blurred',
     exportNoforeignObject: 'foreignObject elements will not appear',
     exportNoDashArray: 'Strokes will appear filled',
-    exportNoText: 'Text may not appear as expected'
+    exportNoText: 'Text may not appear as expected',
+    cannotConnectToServer: 'Something went wrong, please try again.'
   }
 };

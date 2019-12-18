@@ -51,7 +51,7 @@ const editor = {};
 let isShowAdjacent = false;
 let isShowLandInfo = true;
 let isShowCoordinates = true;
-let properties = {};
+let properties;
 const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
 const MAIN_LAND_KEY = 'main-land';
 const ADJACENT_LANDS_KEY = 'adjacent_lands';
@@ -348,7 +348,7 @@ async function loadSvgString(str, { noAlert } = {}, isReload = false) {
   const success = svgCanvas.setSvgString(str) !== false;
   if (success) {
     if (isReload) {
-      svgCanvas.zoomChanged(window, 'layer');
+      svgCanvas.zoomChanged(window, 'canvas');
     }
     return;
   }
@@ -502,23 +502,7 @@ editor.loadContentAndPrefs = function () {
 
     const landParams = getLandParams() || {};
     if (landParams.sheetNum && landParams.parcelNum && landParams.code) {
-      // getLandInfo(landParams.sheetNum, landParams.parcelNum, landParams.code, (err, svgData) => {
-      //   if (err) {
-      //     $.alert(err);
-      //   }
-
-      //   if (svgData) {
-      //     properties = svgData.properties;
-      //     editor.loadFromString(svgData.mainLand, {}, true);
-      //   } else {
-      //     const name = 'svgedit-' + curConfig.canvasName;
-      //     const cached = editor.storage.getItem(name);
-      //     if (cached) {
-      //       editor.loadFromString(cached, {}, true);
-      //     }
-      //   }
-      // });
-      searchLandInfo(landParams.sheetNum, landParams.parcelNum, landParams.code);
+      editor.loadFromDB(landParams.sheetNum, landParams.parcelNum, landParams.code);
     } else {
       const name = 'svgedit-' + curConfig.canvasName;
       const cached = editor.storage.getItem(name);
@@ -565,164 +549,56 @@ const convertGeojsonToSvg = function (geojson, sheetNum, parcelNum) {
 }
 
 const getLandInfo = function (sheetNum, parcelNum, code, done) {
-  var request = new XMLHttpRequest();
   const key = `8bd33b7fd36d68baa96bf446c84011da`;
-  request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${code}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
-  request.onload = function () {
-    // Begin accessing JSON data here
-    var data = JSON.parse(this.response);
 
-    if (request.status >= 200 && request.status < 400 &&
-      data.result && data.result.features && data.result.features.length > 1) {
-      // Only get geojson with format vn2000
-      data.result.features = data.result.features.splice(data.result.features.length / 2);
-      // Save svg data into local storage
-      editor.storage.setItem(MA_XA, code);
-      editor.storage.setItem(SO_TO, sheetNum);
-      editor.storage.setItem(SO_THUA, parcelNum);
-      done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
-    } else {
-      done('Không thể kết nối đến máy chủ, vui lòng thử lại', null);
-    }
-  }
-
-  request.send();
-};
-
-const searchLandInfo = async function (soTo, soThua, maXa) {
-  // In the future, more options can be provided here
-  const dataSave = {
-    SoTo: soTo,
-    SoThua: soThua,
-    MaXa: maXa,
-  };
-  const message = {
-    searchLandInfo: `Lô đất bạn đang tìm với số tờ là '%sto', số thửa là '%sth' và mã xã là '%mxa' đã lưu trong cơ sở dữ liệu.\nBạn muốn chỉnh sửa bản đã lưu hay tạo mới?`,
-    ok: 'Bạn có muốn mở lô đất mới không?\nĐiều này sẽ làm mất dữ liệu lô đất hiện tại!',
-    error: 'Không tìm thấy dữ liệu lô đất'
-  }
-
-  if (dataSave.SoTo && dataSave.SoThua && dataSave.MaXa) {
-    let result = await findLandInfoFromDB(dataSave);
-    if (result && result.error) {
-      $.alert('Không thể kết nối đến máy chủ, vui lòng thử lại');
-      return;
-    }
-
-    if (result) {
-      const ok = await $.confirm(message.searchLandInfo.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa));
-      if (!ok) {
-        getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
-          if (err) {
-            $.alert(err);
-          }
-
-          if (svgData) {
-            properties = svgData.properties;
-            editor.loadFromString(svgData.mainLand, {}, true);
-          } else {
-            $.alert(message.error);
-          }
-        });
-        return;
-      } else {
-        properties = {
-          ObjectId: result.objectId,
-          SoHieuToBanDo: result.soTo,
-          SoThuTuThua: result.soThua,
-          MaXa: result.maXa
-        };
-        editor.loadFromString(result.dataSVG, {}, true);
-      }
-    } else {
-      getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
-        if (err) {
-          $.alert(err);
-        }
-
-        if (svgData) {
-          properties = svgData.properties;
-          editor.loadFromString(svgData.mainLand, {}, true);
-        } else {
-          $.alert(message.error);
-        }
-      });
-    }
-  }
-};
-
-const findLandInfoFromDB = async function (searchData) {
-  let searchResult = null;
   $.ajax({
     method: "GET",
-    url: "https://api-fiolis.map4d.vn/v2/api/land-certificate/find",
-    data: { SoTo: searchData.SoTo, SoThua: searchData.SoThua, MaXa: searchData.MaXa, key: "8bd33b7fd36d68baa96bf446c84011da" },
+    url: "https://api-fiolis.map4d.vn/v2/api/land/adjacent",
+    data: { SoTo: sheetNum, SoThua: parcelNum, MaXa: code, key: key },
     ContentType: "application/json",
     dataType: "json",
     async: false,
-    success: function (data) {
-      if (data.code === "ok" && data.result) {
-        searchResult = data.result;
+    success(data) {
+      if (data.result && data.result.features && data.result.features.length > 1) {
+        // Only get geojson with format vn2000
+        data.result.features = data.result.features.splice(data.result.features.length / 2);
+        // Save svg data into local storage
+        editor.storage.setItem(MA_XA, code);
+        editor.storage.setItem(SO_TO, sheetNum);
+        editor.storage.setItem(SO_THUA, parcelNum);
+
+        done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
+      } else {
+        console.log((data || {}).message);
+        
+        done(uiStrings.notification.cannotConnectToServer, null);
       }
     },
     error: function (xhr, stat, err) {
-      searchResult = { error: err };
+      done(uiStrings.notification.cannotConnectToServer, null);
     }
   });
-
-  return searchResult;
-  // let request = new XMLHttpRequest();
-  // let url = new URL('https://api-fiolis.map4d.vn/v2/api/land-certificate/find');
-  // url.searchParams.set('SoTo', searchData.SoTo);
-  // url.searchParams.set('SoThua', searchData.SoThua);
-  // url.searchParams.set('MaXa', searchData.MaXa);
-  // const key = `8bd33b7fd36d68baa96bf446c84011da`;
-  // request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${code}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
-  // request.onload = function () {
-  //   // Begin accessing JSON data here
-  //   var data = JSON.parse(this.response);
-
-  //   if (request.status >= 200 && request.status < 400 &&
-  //     data.result && data.result.features && data.result.features.length > 1) {
-  //     // Only get geojson with format vn2000
-  //     data.result.features = data.result.features.splice(data.result.features.length / 2);
-  //     // Save svg data into local storage
-  //     editor.storage.setItem(MA_XA, code);
-  //     editor.storage.setItem(SO_TO, sheetNum);
-  //     editor.storage.setItem(SO_THUA, parcelNum);
-  //     done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
-  //   } else {
-  //     done('Không thể kết nối đến máy chủ, vui lòng thử lại', null);
-  //   }
-  // }
-
-  // request.send();
 };
 
-// const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa, done) {
-//   var request = new XMLHttpRequest();
-//   const key = `8bd33b7fd36d68baa96bf446c84011da`;
-//   request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${maXa}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
-//   request.onload = function () {
-//     // Begin accessing JSON data here
-//     var data = JSON.parse(this.response);
-
-//     if (request.status >= 200 && request.status < 400 &&
-//       data.result && data.result.features && data.result.features.length > 1) {
-//       // Save svg data into local storage
-//       editor.storage.setItem(MA_XA, maXa);
-//       editor.storage.setItem(SO_TO, sheetNum);
-//       editor.storage.setItem(SO_THUA, parcelNum);
-//       // Only get geojson with format vn2000
-//       data.result.features = data.result.features.splice(data.result.features.length / 2);
-//       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, maXa));
-//     } else {
-//       done('Occur error when request API', null);
-//     }
-//   }
-
-//   request.send();
-// };
+const findLandInfoFromDB = function (searchData) {
+  return new Promise((resolve, reject) => {
+    const key = '8bd33b7fd36d68baa96bf446c84011da';
+    $.ajax({
+      method: "GET",
+      url: "https://api-fiolis.map4d.vn/v2/api/land-certificate/find",
+      data: { SoTo: searchData.SoTo, SoThua: searchData.SoThua, MaXa: searchData.MaXa, key: key },
+      ContentType: "application/json",
+      dataType: "json",
+      async: false,
+      success(data) {
+        resolve(data.result);
+      },
+      error: function (xhr, stat, err) {
+        reject({ error: err });
+      }
+    });
+  });
+};
 
 const SetDrawProperty = function () {
   var request = new XMLHttpRequest();
@@ -2484,7 +2360,7 @@ editor.init = function () {
     }
 
     if (urldata.storagePrompt !== true && editor.storagePromptState === 'ignore') {
-      $('#dialog_box').hide();
+      // $('#dialog_box').hide();
     }
   };
 
@@ -4840,12 +4716,17 @@ editor.init = function () {
     };
     svgCanvas.save(saveOpts);
   };
-  const propertiesDefault = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
-    if (propertiesDefault != null) {
-      $("#txtSoTo").val(properties.SoTo);
-      $("#txtSoThua").val(properties.SoThua);
-      $("#txtCodeDiaChinh").val(properties.MaXa);
-    }
+  // const propertiesDefault = properties || JSON.parse(editor.storage.getItem(PROPERTIES_KEY)) ;
+  //   if (propertiesDefault) {
+  //     $("#txtSoTo").val(propertiesDefault.SoHieuToBanDo);
+  //     $("#txtSoThua").val(propertiesDefault.SoThuTuThua);
+  //     $("#txtCodeDiaChinh").val(propertiesDefault.MaXa);
+  //   }
+  if (properties) {
+    $("#txtSoTo").val(properties.SoHieuToBanDo);
+    $("#txtSoThua").val(properties.SoThuTuThua);
+    $("#txtCodeDiaChinh").val(properties.MaXa);
+  }
   /**
   *
   * @returns {void}
@@ -4892,7 +4773,7 @@ editor.init = function () {
           getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
             if (err) {
               $.alert(message.error);
-              throw err;
+              return;
             }
   
             if (svgData) {
@@ -4902,16 +4783,17 @@ editor.init = function () {
               $.alert(message.error);
             }
           });
+          return;
         }
         
         // Save svg data into local storage
-        let properties = {
+        let props = {
           ObjectId: result.objectId,
           SoHieuToBanDo: result.soTo,
           SoThuTuThua: result.soThua,
           MaXa: result.maXa
         }
-        editor.storage.setItem(PROPERTIES_KEY, JSON.stringify(properties))
+        editor.storage.setItem(PROPERTIES_KEY, JSON.stringify(props))
         editor.storage.setItem(MA_XA, dataSave.MaXa);
         editor.storage.setItem(SO_TO, dataSave.SoTo);
         editor.storage.setItem(SO_THUA, dataSave.SoThua);
@@ -4921,7 +4803,7 @@ editor.init = function () {
         getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
           if (err) {
             $.alert(message.error);
-            throw err;
+            return;
           }
 
           if (svgData) {
@@ -7133,6 +7015,78 @@ editor.loadFromURL = function (url, { cache, noAlert } = {}) {
         }
       });
     });
+  });
+};
+
+editor.loadFromDB = async function (soTo, soThua, maXa) {
+  return editor.ready(function () {
+    const dataSave = {
+      SoTo: soTo,
+      SoThua: soThua,
+      MaXa: maXa,
+    };
+    const message = {
+      searchLandInfo: uiStrings.notification.SearchLoDat,
+      ok: uiStrings.notification.QwantToOpen,
+      error: uiStrings.notification.NotFound
+    }
+
+    if (dataSave.SoTo && dataSave.SoThua && dataSave.MaXa) {
+      findLandInfoFromDB(dataSave).then((result) => {
+        if (result) {
+          $.confirm(message.searchLandInfo.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa)).then(
+            ok => {
+              if (!ok) {
+                getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
+                  if (err) {
+                    $.alert(err);
+                    return;
+                  }
+    
+                  if (svgData) {
+                    properties = svgData.properties;
+                    editor.loadFromString(svgData.mainLand, {}, true);
+                  } else {
+                    $.alert(message.error);
+                  }
+                });
+                return;
+              } else {
+                properties = {
+                  ObjectId: result.objectId,
+                  SoHieuToBanDo: result.soTo,
+                  SoThuTuThua: result.soThua,
+                  MaXa: result.maXa
+                };
+                editor.storage.setItem(PROPERTIES_KEY, JSON.stringify(properties))
+                editor.storage.setItem(MA_XA, dataSave.SoTo);
+                editor.storage.setItem(SO_TO, dataSave.SoThua);
+                editor.storage.setItem(SO_THUA, dataSave.MaXa);
+                editor.loadFromString(result.dataSVG, {}, true);
+              }
+            }
+          );
+        } else {
+          getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
+            if (err) {
+              $.alert(err);
+              return;
+            }
+
+            if (svgData) {
+              properties = svgData.properties;
+              loadSvgString(svgData.mainLand, { }, true);
+            } else {
+              $.alert(message.error);
+            }
+          });
+          return;
+        }
+      },
+      error => {
+        $.alert(error);
+      });
+    }
   });
 };
 

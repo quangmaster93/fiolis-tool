@@ -367,6 +367,7 @@ export default {
       exportNoBlur: 'Các phần tử mờ sẽ xuất hiện dưới dạng không mờ',
       exportNoforeignObject: 'phần tử ngoài đối tượng sẽ không xuất hiện',
       exportNoDashArray: 'Viền sẽ hiện đầy đủ',
-      exportNoText: 'Văn bản có thể không xuất hiện như mong đợi'
+      exportNoText: 'Văn bản có thể không xuất hiện như mong đợi',
+      cannotConnectToServer: 'Đã xảy ra lỗi, vui lòng thử lại.'
     }
   };
