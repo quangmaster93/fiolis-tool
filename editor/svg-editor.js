@@ -4756,6 +4756,7 @@ editor.init = function () {
     }
   };
   const clickSearchDatabase = async function (soTo, soThua, maXa) {
+    isFitToContent = false;
     showIndicator();
     // In the future, more options can be provided here
     const dataSave = {
@@ -5053,9 +5054,13 @@ editor.init = function () {
     toggleLayer(!isShowAdjacent, 'adjacent-lands');
     isShowAdjacent = !isShowAdjacent;
     if (!isFitToContent) {
-      isFitToContent = false;
-      saveDocProperties('', true);
-      svgCanvas.zoomChanged(window, 'canvas');
+      showIndicator();
+      setTimeout(() => {
+        isFitToContent = true;
+        saveDocProperties('', true);
+        svgCanvas.zoomChanged(window, 'canvas');
+        hideIndicator();
+      }, 1000);
     }
   };
 
