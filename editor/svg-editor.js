@@ -51,7 +51,8 @@ const editor = {};
 let isShowAdjacent = false;
 let isShowLandInfo = true;
 let isShowCoordinates = true;
-let properties = {};
+let isFitToContent = false;
+let properties;
 const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
 const MAIN_LAND_KEY = 'main-land';
 const ADJACENT_LANDS_KEY = 'adjacent_lands';
@@ -348,8 +349,7 @@ async function loadSvgString(str, { noAlert } = {}, isReload = false) {
   const success = svgCanvas.setSvgString(str) !== false;
   if (success) {
     if (isReload) {
-      svgCanvas.zoomChanged(window, 'content');
-      // changeZoom({ value: 50 });
+      svgCanvas.zoomChanged(window, 'canvas');
     }
     return;
   }
@@ -449,6 +449,15 @@ editor.setStrings = setStrings;
 * @returns {void}
 */
 editor.loadContentAndPrefs = function () {
+  const { ok, cancel, edit, new_svg } = {
+    ok: 'OK',
+    cancel: 'Hủy bỏ',
+    edit: "Chỉnh sửa",
+    new_svg: "Tạo mới"
+  };
+
+  jQueryPluginDBox($, { ok, cancel, edit, new_svg });
+
   const getLandParams = function () {
     const pageURL = window.location.search.substring(1);
     const urlVariables = pageURL.split('&');
@@ -494,22 +503,7 @@ editor.loadContentAndPrefs = function () {
 
     const landParams = getLandParams() || {};
     if (landParams.sheetNum && landParams.parcelNum && landParams.code) {
-      getLandInfo(landParams.sheetNum, landParams.parcelNum, landParams.code, (err, svgData) => {
-        if (err) {
-          throw err;
-        }
-
-        if (svgData) {
-          properties = svgData.properties;
-          editor.loadFromString(svgData.mainLand, {}, true);
-        } else {
-          const name = 'svgedit-' + curConfig.canvasName;
-          const cached = editor.storage.getItem(name);
-          if (cached) {
-            editor.loadFromString(cached, {}, true);
-          }
-        }
-      });
+      editor.loadFromDB(landParams.sheetNum, landParams.parcelNum, landParams.code);
     } else {
       const name = 'svgedit-' + curConfig.canvasName;
       const cached = editor.storage.getItem(name);
@@ -556,54 +550,56 @@ const convertGeojsonToSvg = function (geojson, sheetNum, parcelNum) {
 }
 
 const getLandInfo = function (sheetNum, parcelNum, code, done) {
-  var request = new XMLHttpRequest();
   const key = `8bd33b7fd36d68baa96bf446c84011da`;
-  request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${code}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
-  request.onload = function () {
-    // Begin accessing JSON data here
-    var data = JSON.parse(this.response);
 
-    if (request.status >= 200 && request.status < 400 &&
-      data.result && data.result.features && data.result.features.length > 1) {
-      // Only get geojson with format vn2000
-      data.result.features = data.result.features.splice(data.result.features.length / 2);
-      // Save svg data into local storage
-      editor.storage.setItem(MA_XA, code);
-      editor.storage.setItem(SO_TO, sheetNum);
-      editor.storage.setItem(SO_THUA, parcelNum);
-      done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
-    } else {
-      done('Occur error when request API', null);
+  $.ajax({
+    method: "GET",
+    url: "https://api-fiolis.map4d.vn/v2/api/land/adjacent",
+    data: { SoTo: sheetNum, SoThua: parcelNum, MaXa: code, key: key },
+    ContentType: "application/json",
+    dataType: "json",
+    async: false,
+    success(data) {
+      if (data.result && data.result.features && data.result.features.length > 1) {
+        // Only get geojson with format vn2000
+        data.result.features = data.result.features.splice(data.result.features.length / 2);
+        // Save svg data into local storage
+        editor.storage.setItem(MA_XA, code);
+        editor.storage.setItem(SO_TO, sheetNum);
+        editor.storage.setItem(SO_THUA, parcelNum);
+
+        done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, code));
+      } else {
+        console.log((data || {}).message);
+        
+        done(uiStrings.notification.cannotConnectToServer, null);
+      }
+    },
+    error: function (xhr, stat, err) {
+      done(uiStrings.notification.cannotConnectToServer, null);
     }
-  }
-
-  request.send();
+  });
 };
 
-// const getLandInfoByMaXaSoToAndSoThua = async function (sheetNum, parcelNum, maXa, done) {
-//   var request = new XMLHttpRequest();
-//   const key = `8bd33b7fd36d68baa96bf446c84011da`;
-//   request.open('GET', `https://api-fiolis.map4d.vn/v2/api/land/adjacent?maXa=${maXa}&soTo=${sheetNum}&soThua=${parcelNum}&key=${key}`, true);
-//   request.onload = function () {
-//     // Begin accessing JSON data here
-//     var data = JSON.parse(this.response);
-
-//     if (request.status >= 200 && request.status < 400 &&
-//       data.result && data.result.features && data.result.features.length > 1) {
-//       // Save svg data into local storage
-//       editor.storage.setItem(MA_XA, maXa);
-//       editor.storage.setItem(SO_TO, sheetNum);
-//       editor.storage.setItem(SO_THUA, parcelNum);
-//       // Only get geojson with format vn2000
-//       data.result.features = data.result.features.splice(data.result.features.length / 2);
-//       done(null, convertGeojsonToSvg(data.result, sheetNum, parcelNum, maXa));
-//     } else {
-//       done('Occur error when request API', null);
-//     }
-//   }
-
-//   request.send();
-// };
+const findLandInfoFromDB = function (searchData) {
+  return new Promise((resolve, reject) => {
+    const key = '8bd33b7fd36d68baa96bf446c84011da';
+    $.ajax({
+      method: "GET",
+      url: "https://api-fiolis.map4d.vn/v2/api/land-certificate/find",
+      data: { SoTo: searchData.SoTo, SoThua: searchData.SoThua, MaXa: searchData.MaXa, key: key },
+      ContentType: "application/json",
+      dataType: "json",
+      async: false,
+      success(data) {
+        resolve(data.result);
+      },
+      error: function (xhr, stat, err) {
+        reject({ error: err });
+      }
+    });
+  });
+};
 
 const SetDrawProperty = function () {
   var request = new XMLHttpRequest();
@@ -2365,7 +2361,7 @@ editor.init = function () {
     }
 
     if (urldata.storagePrompt !== true && editor.storagePromptState === 'ignore') {
-      $('#dialog_box').hide();
+      // $('#dialog_box').hide();
     }
   };
 
@@ -4721,12 +4717,17 @@ editor.init = function () {
     };
     svgCanvas.save(saveOpts);
   };
-  const propertiesDefault = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
-    if (propertiesDefault != null) {
-      $("#txtSoTo").val(properties.SoTo);
-      $("#txtSoThua").val(properties.SoThua);
-      $("#txtCodeDiaChinh").val(properties.MaXa);
-    }
+  // const propertiesDefault = properties || JSON.parse(editor.storage.getItem(PROPERTIES_KEY)) ;
+  //   if (propertiesDefault) {
+  //     $("#txtSoTo").val(propertiesDefault.SoHieuToBanDo);
+  //     $("#txtSoThua").val(propertiesDefault.SoThuTuThua);
+  //     $("#txtCodeDiaChinh").val(propertiesDefault.MaXa);
+  //   }
+  if (properties) {
+    $("#txtSoTo").val(properties.SoHieuToBanDo);
+    $("#txtSoThua").val(properties.SoThuTuThua);
+    $("#txtCodeDiaChinh").val(properties.MaXa);
+  }
   /**
   *
   * @returns {void}
@@ -4773,7 +4774,7 @@ editor.init = function () {
           getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
             if (err) {
               $.alert(message.error);
-              throw err;
+              return;
             }
   
             if (svgData) {
@@ -4783,16 +4784,17 @@ editor.init = function () {
               $.alert(message.error);
             }
           });
+          return;
         }
         
         // Save svg data into local storage
-        let properties = {
+        let props = {
           ObjectId: result.objectId,
           SoHieuToBanDo: result.soTo,
           SoThuTuThua: result.soThua,
           MaXa: result.maXa
         }
-        editor.storage.setItem(PROPERTIES_KEY, JSON.stringify(properties))
+        editor.storage.setItem(PROPERTIES_KEY, JSON.stringify(props))
         editor.storage.setItem(MA_XA, dataSave.MaXa);
         editor.storage.setItem(SO_TO, dataSave.SoTo);
         editor.storage.setItem(SO_THUA, dataSave.SoThua);
@@ -4802,7 +4804,7 @@ editor.init = function () {
         getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
           if (err) {
             $.alert(message.error);
-            throw err;
+            return;
           }
 
           if (svgData) {
@@ -5035,32 +5037,11 @@ editor.init = function () {
 
     toggleLayer(!isShowAdjacent, 'adjacent-lands');
     isShowAdjacent = !isShowAdjacent;
-    saveDocProperties('', true);
-    svgCanvas.zoomChanged(window, 'content');
-    // changeZoom({ value: 50 });
-
-    // // Get svg data
-    // let svgData = svgCanvas.getSvgString();
-    // // let svgData = editor.storage.getItem(`svgedit-default`);
-
-    // // const mainLand = editor.storage.getItem(MAIN_LAND_KEY);
-    // const adjacentLands = editor.storage.getItem(ADJACENT_LANDS_KEY);
-
-    // if (isShowAdjacent) {
-    //   // Hide adjacent
-    //   svgData = svgData.replace(/\n*/g, '').replace(ADJACENT_REGEX, `${ADJACENT_MAKER}${ADJACENT_MAKER}`);
-    // } else {
-    //   // Show adjacent
-    //   svgData = svgData.replace(/\n*/g, '')
-    //     .replace(/   /g, '')
-    //     .replace(`${ADJACENT_MAKER}${ADJACENT_MAKER}`, `${ADJACENT_MAKER}${adjacentLands}${ADJACENT_MAKER}`);
-    // }
-
-    // isShowAdjacent = !isShowAdjacent;
-
-    // // Reload svg source
-    // editor.loadFromString(svgData, {}, true);
-    // // clickWireframe();
+    if (!isFitToContent) {
+      isFitToContent = false;
+      saveDocProperties('', true);
+      svgCanvas.zoomChanged(window, 'canvas');
+    }
   };
 
   /**
@@ -7017,6 +6998,78 @@ editor.loadFromURL = function (url, { cache, noAlert } = {}) {
         }
       });
     });
+  });
+};
+
+editor.loadFromDB = async function (soTo, soThua, maXa) {
+  return editor.ready(function () {
+    const dataSave = {
+      SoTo: soTo,
+      SoThua: soThua,
+      MaXa: maXa,
+    };
+    const message = {
+      searchLandInfo: uiStrings.notification.SearchLoDat,
+      ok: uiStrings.notification.QwantToOpen,
+      error: uiStrings.notification.NotFound
+    }
+
+    if (dataSave.SoTo && dataSave.SoThua && dataSave.MaXa) {
+      findLandInfoFromDB(dataSave).then((result) => {
+        if (result) {
+          $.confirm(message.searchLandInfo.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa)).then(
+            ok => {
+              if (!ok) {
+                getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
+                  if (err) {
+                    $.alert(err);
+                    return;
+                  }
+    
+                  if (svgData) {
+                    properties = svgData.properties;
+                    editor.loadFromString(svgData.mainLand, {}, true);
+                  } else {
+                    $.alert(message.error);
+                  }
+                });
+                return;
+              } else {
+                properties = {
+                  ObjectId: result.objectId,
+                  SoHieuToBanDo: result.soTo,
+                  SoThuTuThua: result.soThua,
+                  MaXa: result.maXa
+                };
+                editor.storage.setItem(PROPERTIES_KEY, JSON.stringify(properties))
+                editor.storage.setItem(MA_XA, dataSave.SoTo);
+                editor.storage.setItem(SO_TO, dataSave.SoThua);
+                editor.storage.setItem(SO_THUA, dataSave.MaXa);
+                editor.loadFromString(result.dataSVG, {}, true);
+              }
+            }
+          );
+        } else {
+          getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {
+            if (err) {
+              $.alert(err);
+              return;
+            }
+
+            if (svgData) {
+              properties = svgData.properties;
+              loadSvgString(svgData.mainLand, { }, true);
+            } else {
+              $.alert(message.error);
+            }
+          });
+          return;
+        }
+      },
+      error => {
+        $.alert(error);
+      });
+    }
   });
 };
 
