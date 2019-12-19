@@ -292,7 +292,13 @@ export default {
     move_front: 'Bring to Front',
     move_up: 'Bring Forward',
     move_down: 'Send Backward',
-    move_back: 'Send to Back'
+    move_back: 'Send to Back',
+    tool_toggle_adjacent: 'Toggle adjacent lands',
+    toggle_land_info: `Toggle land info`,
+    toggle_coordinates: `Toggle coordinates table`,
+    tool_toggle_adjacent_title: 'Toggle adjacent lands',
+    toggle_land_info_title: `Toggle land info`,
+    toggle_coordinates_title: `Toggle coordinates table`
   },
   layers: {
     layer: 'Layer',

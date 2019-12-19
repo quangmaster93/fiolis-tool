@@ -7038,7 +7038,7 @@ editor.loadFromDB = async function (soTo, soThua, maXa) {
     if (dataSave.SoTo && dataSave.SoThua && dataSave.MaXa) {
       findLandInfoFromDB(dataSave).then((result) => {
         if (result) {
-          $.confirm(message.searchLandInfo.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa)).then(
+          $.confirm_custom(message.searchLandInfo.replace('%sto', dataSave.SoTo).replace('%sth', dataSave.SoThua).replace('%mxa', dataSave.MaXa)).then(
             ok => {
               if (!ok) {
                 getLandInfo(dataSave.SoTo, dataSave.SoThua, dataSave.MaXa, async (err, svgData) => {

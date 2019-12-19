@@ -185,8 +185,8 @@ export default {
       italic: 'Chữ in nghiêng [I]'
     },
     tools: {
-    title_draw_property: "Vẽ thuộc tính lô đất",
-    lbl_select_property: "Chọn thuộc tính:",
+      title_draw_property: "Vẽ thuộc tính lô đất",
+      lbl_select_property: "Chọn thuộc tính:",
       shape_heart: "Trái tim",
       shape_frame: "Khung",
       shape_donut: "Hình bánh donut",
@@ -293,7 +293,13 @@ export default {
       move_front: 'Chuyển lớp lên trên cùng',
       move_up: 'Chuyển lớp lên trên',
       move_down: 'Chuyển lớp xuống dưới',
-      move_back: 'Chuyển lớp xuống dưới cùng'
+      move_back: 'Chuyển lớp xuống dưới cùng',
+      tool_toggle_adjacent: 'Ẩn/Hiện thửa liền kề',
+      toggle_land_info: `Ẩn/Hiện thông tin lô đất`,
+      toggle_coordinates: `Ẩn/Hiện tọa độ góc ranh`,
+      tool_toggle_adjacent_title: 'Ẩn/Hiện thửa liền kề',
+      toggle_land_info_title: `Ẩn/Hiện thông tin lô đất`,
+      toggle_coordinates_title: `Ẩn/Hiện tọa độ góc ranh`
     },
     layers: {
       layer: 'Lớp',

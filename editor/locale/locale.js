@@ -211,6 +211,9 @@ export const readLang = async function (langData) {
     tool_save: tools.save_doc,
     tool_save_database: tools.save_database,
     lblDrawProperty: tools.lbl_select_property,
+    tool_toggle_adjacent: tools.tool_toggle_adjacent,
+    toggle_land_info: tools.toggle_land_info,
+    toggle_coordinates: tools.toggle_coordinates,
 
     svginfo_units_rulers: config.units_and_rulers,
     svginfo_rulers_onoff: config.show_rulers,
@@ -360,7 +363,10 @@ export const readLang = async function (langData) {
     // tool_wireframe: tools.wireframe_mode,
     tool_toggle_adjacent: tools.toggle_adjacent_mode,
     tool_zoom: tools.mode_zoom,
-    url_notice: tools.no_embed
+    url_notice: tools.no_embed,
+    tool_toggle_adjacent: tools.tool_toggle_adjacent_title,
+    toggle_land_info: tools.toggle_land_info_title,
+    toggle_coordinates: tools.toggle_coordinates_title,
 
   }, true);
 
