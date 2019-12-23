@@ -25,7 +25,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
   const PROPERTIES_KEY = 'properties_land';
   const SVG_EDIT_DEFAULT_KEY = 'svgedit-default';
   const SVG_EDIT_DATA_KEY = 'svgedit-data';
-  const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
+  const ADJACENT_MAKER = '<metadata id="adjacent-marker"/>';
 
   svg.style = function (svgStr, option) {
       const { fill, fillOpacity, stroke, strokeWidth } = option;
@@ -476,7 +476,6 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           option[key] = option[key] || defaultOption[key];
       }
       let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '" overflow="hidden">';
-      fullSvgStr += `<g class="layer" display="none" id="adjacent-lands"><title>Thửa liền kề</title>`;
 
       // Add metadata for svg
       // fullSvgStr += `<metadata>${JSON.stringify(metadata)}</metadata>`;
@@ -504,28 +503,17 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         geojson.features[0].properties.isMainLand = true;
       }
 
-      // geojson.features.map(
-      //     feature => {
-      //       if(feature.properties &&
-      //           feature.properties.SoHieuToBanDo === parseInt(sheetNum) &&
-      //           feature.properties.SoThuTuThua === parseInt(parcelNum)) {
-      //               properties = feature.properties;
-      //               return feature.properties.isMainLand = true;
-      //       }
-      //     }
-      // )
-
       convert(geojson, option, commonOpt);
 
-      // fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}</g>`;
-      fullSvgStr += `${adjacentLands}</g>`;
+      adjacentLands = `<g class="layer" display="none" id="adjacent-lands"><title>Thửa liền kề</title>${adjacentLands}</g>`;
+      fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}`;
 
       fullSvgStr += `${cordinateTable}`;
       fullSvgStr += `${mainLand}</svg>`;
 
       // Save svg data into local storage
       localStorage.setItem(SVG_EDIT_DEFAULT_KEY, fullSvgStr);
-      // localStorage.setItem(ADJACENT_LANDS_KEY, adjacentLands);
+      localStorage.setItem(ADJACENT_LANDS_KEY, adjacentLands);
       localStorage.setItem(PROPERTIES_KEY, JSON.stringify(properties));
       $("#txtSoTo").val(properties.SoHieuToBanDo);
       $("#txtSoThua").val(properties.SoThuTuThua);

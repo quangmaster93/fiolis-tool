@@ -51,9 +51,8 @@ const editor = {};
 let isShowAdjacent = false;
 let isShowLandInfo = true;
 let isShowCoordinates = true;
-let isFitToContent = false;
 let properties;
-const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
+const ADJACENT_MAKER = '<metadata id="adjacent-marker"/>';
 const MAIN_LAND_KEY = 'main-land';
 const ADJACENT_LANDS_KEY = 'adjacent_lands';
 const PROPERTIES_KEY = 'properties_land';
@@ -61,7 +60,8 @@ const SVG_EDIT_DATA_KEY = 'svgedit-data';
 const MA_XA = 'ma_xa';
 const SO_TO = 'so_to';
 const SO_THUA = 'so_thua';
-const ADJACENT_REGEX = /<path id="adjacent-marker".*?>.*?<path id="adjacent-marker".*?>/igm;
+const ADJACENT_MAKER_REGEX = /<metadata id="adjacent-marker".*?>\n.*?<metadata id="adjacent-marker".*?>/igm;
+const ADJACENT_REGEX = /<metadata id="adjacent-marker".*?>.*?<metadata id="adjacent-marker".*?>/igm;
 
 const $ = [
   jQueryPluginJSHotkeys, jQueryPluginBBQ, jQueryPluginSVGIcons, jQueryPluginJGraduate,
@@ -5049,19 +5049,34 @@ editor.init = function () {
   * @returns {void}
   */
   const clickToggleAdjacent = function () {
-    // $('#tool_toggle_adjacent').toggleClass('push_button_pressed tool_button');
-
-    toggleLayer(!isShowAdjacent, 'adjacent-lands');
-    isShowAdjacent = !isShowAdjacent;
-    if (!isFitToContent) {
-      showIndicator();
-      setTimeout(() => {
-        isFitToContent = true;
-        saveDocProperties('', true);
-        svgCanvas.zoomChanged(window, 'canvas');
-        hideIndicator();
-      }, 1000);
+    let svgString = svgCanvas.getSvgString();
+    let timeout;
+    
+    if (!isShowAdjacent) {
+      svgString = svgString.replace(
+          ADJACENT_MAKER_REGEX,
+          `${ADJACENT_MAKER}${editor.storage.getItem(ADJACENT_LANDS_KEY)}${ADJACENT_MAKER}`
+        ).replace(
+          `display="none" id="adjacent-lands"`,
+          `display="block" id="adjacent-lands"`
+        );
+      timeout = 700;
+    } else {
+      svgString = svgString.replace(/\n/igm, '').replace(
+          ADJACENT_REGEX,
+          `${ADJACENT_MAKER}${ADJACENT_MAKER}`
+        );
+      timeout = 300;
     }
+
+    isShowAdjacent = !isShowAdjacent;
+    showIndicator();
+    setTimeout(() => {
+      editor.loadFromString(svgString, {}, true);
+      saveDocProperties('', true);
+      svgCanvas.zoomChanged(window, 'canvas');
+      hideIndicator();
+    }, timeout);
   };
 
   /**
