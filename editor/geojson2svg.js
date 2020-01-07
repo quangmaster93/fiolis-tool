@@ -15,6 +15,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
   const svg = {};
   let svgSize = [];
+  let geometrySize = [];
   let adjacentLands = [];
   let mainLand = '';
   let cordinateTable = '';
@@ -355,8 +356,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           extent: extent,
           origin: [extent[0], extent[1]],
           geometrySize: [geometryWidth, geometryHeight]
-      }
+      };
 
+      geometrySize = [geometryWidth, geometryHeight];
       svgSize = option.size;
 
       return commonOpt;
@@ -476,7 +478,10 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           option[key] = option[key] || defaultOption[key];
       }
       let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '" overflow="hidden">';
-      fullSvgStr += `<g class="layer" display="none" id="adjacent-lands"><title>Thửa liền kề</title>`;
+      fullSvgStr += `
+        <g class="layer" display="none" id="adjacent-lands">
+          <title>Thửa liền kề</title>
+      `;
 
       // Add metadata for svg
       // fullSvgStr += `<metadata>${JSON.stringify(metadata)}</metadata>`;
@@ -518,7 +523,12 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       convert(geojson, option, commonOpt);
 
       // fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}</g>`;
-      fullSvgStr += `${adjacentLands}</g>`;
+      fullSvgStr += `
+          <svg preserveAspectRatio="xMinYMin slice" width="${geometrySize[0]}" height="${geometrySize[1]}">
+            ${adjacentLands}
+          </svg>
+        </g>
+      `;
 
       fullSvgStr += `${cordinateTable}`;
       fullSvgStr += `${mainLand}</svg>`;
