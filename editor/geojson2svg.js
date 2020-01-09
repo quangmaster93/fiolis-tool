@@ -16,6 +16,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
   const svg = {};
   let svgSize = [];
   let adjacentLands = [];
+  let adjacentLandtranslate = [];
   let mainLand = '';
   let cordinateTable = '';
   // let metadata;
@@ -57,12 +58,16 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         edgeLabels: ''
       };
 
-      const svgStr = `<path d="${pathd}"/>`;
+      let svgStr;
+
+      if (isMainLand) {
+        svgStr = `<path d="${pathd}"/>`;
+      } else {
+        svgStr = `<path d="${pathd}" transform="translate(${-adjacentLandtranslate[0]}, ${-adjacentLandtranslate[1]})"/>`;
+      }
 
       let svgStyle = svg.style(svgStr, option);
-
       let layerBreak = '';
-
       let landInfo = '';
 
       if (isMainLand) {
@@ -106,11 +111,16 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
     const moveEdgeLabels = -4;
 
     const textFormat = `<text fill="#000" font-family="serif" font-size="10px" stroke="#000"
-        stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
-        style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
+        stroke-width="0" style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
 
-    const centerPoint = getCenterPointCoordinate(points);
-    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua})</text>`;
+    const moveLandType = properties.KyHieuMucDichSuDung.length > 3 ? 40 : 30;
+    let centerPoint = getCenterPointCoordinate(points);
+    centerPoint = [
+        centerPoint[0] + moveLandType / 2,
+        centerPoint[1]
+    ]
+    centerLabels += `${textFormat} x="${centerPoint[0] - moveLandType}" y="${centerPoint[1] + 3}">${properties.KyHieuMucDichSuDung}</text>`;
+    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoThuTuThua} (${properties.SoHieuToBanDo})</text>`;
     centerLabels += `<line fill="none" stroke="#000" stroke-width="1" x1="${centerPoint[0] - 15}" x2="${centerPoint[0] + 15}" y1="${centerPoint[1]}" y2="${centerPoint[1]}"/>`;
     centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] + 11}">${properties.DienTich}</text>`;
 
@@ -123,10 +133,12 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
             midPoint = getMidpointCoordinate(points[index], points[index + 1]);
 
-            transform = `transform="rotate(${angleBetweenPoints(points[index], points[index + 1], midPoint, centerPoint)} ${midPoint[0]} ${midPoint[1]})"`;
+            // Rotate edge label folow edge
+            // transform = `transform="rotate(${angleBetweenPoints(points[index], points[index + 1], midPoint, centerPoint)} ${midPoint[0]} ${midPoint[1]})"`;
 
             // Render edge labels of polygon
-            edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
+            // edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
+            edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}">${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
         }
     }
 
@@ -355,7 +367,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           extent: extent,
           origin: [extent[0], extent[1]],
           geometrySize: [geometryWidth, geometryHeight]
-      }
+      };
 
       svgSize = option.size;
 
@@ -464,6 +476,16 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
   }
 
   const convertToSvg = function(geojson, option, sheetNum, parcelNum) {
+      // Extend size is 20%
+      const extendSize = 0.2;
+      const mainLandSize = [
+        option.size[0] - option.padding[1] - option.padding[3],
+        option.size[1] - option.padding[0] - option.padding[2]
+      ]
+      adjacentLandtranslate = [
+        option.padding[0] - mainLandSize[0] * extendSize,
+        option.padding[3] - mainLandSize[1] * extendSize
+      ]
       const type = geojson.type;
       let funcName = 'convert' + type;
       if (!converter[funcName]) {
@@ -476,7 +498,10 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           option[key] = option[key] || defaultOption[key];
       }
       let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '" overflow="hidden">';
-      fullSvgStr += `<g class="layer" display="none" id="adjacent-lands"><title>Thửa liền kề</title>`;
+      fullSvgStr += `
+        <g class="layer" display="none" id="adjacent-lands" transform="translate(${adjacentLandtranslate[0]}, ${adjacentLandtranslate[1]})">
+          <title>Thửa liền kề</title>
+      `;
 
       // Add metadata for svg
       // fullSvgStr += `<metadata>${JSON.stringify(metadata)}</metadata>`;
@@ -504,21 +529,19 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         geojson.features[0].properties.isMainLand = true;
       }
 
-      // geojson.features.map(
-      //     feature => {
-      //       if(feature.properties &&
-      //           feature.properties.SoHieuToBanDo === parseInt(sheetNum) &&
-      //           feature.properties.SoThuTuThua === parseInt(parcelNum)) {
-      //               properties = feature.properties;
-      //               return feature.properties.isMainLand = true;
-      //       }
-      //     }
-      // )
-
       convert(geojson, option, commonOpt);
 
       // fullSvgStr += `${ADJACENT_MAKER}${ADJACENT_MAKER}</g>`;
-      fullSvgStr += `${adjacentLands}</g>`;
+      const adjacentLandSize = [
+        mainLandSize[0] + mainLandSize[0] * extendSize * 2,
+        mainLandSize[1] + mainLandSize[1] * extendSize * 2
+      ];
+      fullSvgStr += `
+          <svg preserveAspectRatio="xMinYMin slice" width="${adjacentLandSize[0]}" height="${adjacentLandSize[1]}">
+            ${adjacentLands}
+          </svg>
+        </g>
+      `;
 
       fullSvgStr += `${cordinateTable}`;
       fullSvgStr += `${mainLand}</svg>`;
