@@ -111,8 +111,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
     const moveEdgeLabels = -4;
 
     const textFormat = `<text fill="#000" font-family="serif" font-size="10px" stroke="#000"
-        stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
-        style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
+        stroke-width="0" style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
 
     const moveLandType = properties.KyHieuMucDichSuDung.length > 3 ? 40 : 30;
     let centerPoint = getCenterPointCoordinate(points);
@@ -134,10 +133,12 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
             midPoint = getMidpointCoordinate(points[index], points[index + 1]);
 
-            transform = `transform="rotate(${angleBetweenPoints(points[index], points[index + 1], midPoint, centerPoint)} ${midPoint[0]} ${midPoint[1]})"`;
+            // Rotate edge label folow edge
+            // transform = `transform="rotate(${angleBetweenPoints(points[index], points[index + 1], midPoint, centerPoint)} ${midPoint[0]} ${midPoint[1]})"`;
 
             // Render edge labels of polygon
-            edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
+            // edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
+            edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}">${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
         }
     }
 
