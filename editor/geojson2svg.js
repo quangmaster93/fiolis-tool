@@ -114,8 +114,14 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="0"
         style="cursor: move;" text-anchor="middle" xml:space="preserve"`;
 
-    const centerPoint = getCenterPointCoordinate(points);
-    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoHieuToBanDo} (${properties.SoThuTuThua})</text>`;
+    const moveLandType = properties.KyHieuMucDichSuDung.length > 3 ? 40 : 30;
+    let centerPoint = getCenterPointCoordinate(points);
+    centerPoint = [
+        centerPoint[0] + moveLandType / 2,
+        centerPoint[1]
+    ]
+    centerLabels += `${textFormat} x="${centerPoint[0] - moveLandType}" y="${centerPoint[1] + 3}">${properties.KyHieuMucDichSuDung}</text>`;
+    centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] - 5}">${properties.SoThuTuThua} (${properties.SoHieuToBanDo})</text>`;
     centerLabels += `<line fill="none" stroke="#000" stroke-width="1" x1="${centerPoint[0] - 15}" x2="${centerPoint[0] + 15}" y1="${centerPoint[1]}" y2="${centerPoint[1]}"/>`;
     centerLabels += `${textFormat} x="${centerPoint[0]}" y="${centerPoint[1] + 11}">${properties.DienTich}</text>`;
 
