@@ -4740,11 +4740,10 @@ editor.init = function () {
     const properties = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
     if (properties != null) {
       const dataSave = {
-        objectId: properties.ObjectId,
-        soTo: properties.SoHieuToBanDo,
-        soThua: properties.SoThuTuThua,
-        maXa: properties.MaXa,
-        dataSVG: ""
+        sohieutobando: properties.SoHieuToBanDo,
+        sothututhua: properties.SoThuTuThua,
+        maxa: properties.MaXa,
+        param: ''
       }
       const message = {
         ok: uiStrings.notification.SaveSuccess,

@@ -3928,12 +3928,15 @@ class SvgCanvas {
       // remove the selected outline before serializing
       clearSelection();
       // no need for doctype, see https://jwatt.org/svg/authoring/#doctype-declaration
-      const str = this.svgCanvasToString();
-      svgData.dataSVG = str;
+      svgData.param = this.svgCanvasToString();
+
       let checkStatus = "";
+      const domain = `https://api-fiolis.map4d.vn`;
+      const url = `/Services/Save_svg`;
+
       $.ajax({
         type: "POST",
-        url: "https://api-fiolis.map4d.vn/v2/api/land-certificate/save-or-update?key=8bd33b7fd36d68baa96bf446c84011da",
+        url: `${domain}${url}?key=8bd33b7fd36d68baa96bf446c84011da`,
         data: JSON.stringify(svgData),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
