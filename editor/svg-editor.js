@@ -53,6 +53,7 @@ let isShowLandInfo = true;
 let isShowCoordinates = true;
 let isFitToContent = false;
 let properties;
+let domain;
 const ADJACENT_MAKER = '<path id="adjacent-marker"/>';
 const MAIN_LAND_KEY = 'main-land';
 const ADJACENT_LANDS_KEY = 'adjacent_lands';
@@ -477,6 +478,9 @@ editor.loadContentAndPrefs = function () {
         case 'maXa':
           landParams.code = decodeURIComponent(parameterName[1]) || '';
           break;
+        case 'domain':
+          landParams.domain = decodeURIComponent(parameterName[1]) || '';
+          break;
         default:
           break;
       }
@@ -502,6 +506,7 @@ editor.loadContentAndPrefs = function () {
   ) {
 
     const landParams = getLandParams() || {};
+    domain = landParams.domain || 'https://fiolis.map4d.vn';
     if (landParams.sheetNum && landParams.parcelNum && landParams.code) {
       showIndicator();
       editor.loadFromDB(landParams.sheetNum, landParams.parcelNum, landParams.code).then(
@@ -1424,6 +1429,7 @@ editor.init = function () {
         new_image: 'clear.png',
         save: 'save.png',
         save_database: 'save.png',
+        print_land: 'save.png',
         export: 'export.png',
         open: 'open.png',
         import: 'import.png',
@@ -1487,6 +1493,7 @@ editor.init = function () {
         '#tool_clear div,#layer_new': 'new_image',
         '#tool_save div': 'save',
         '#tool_save_database div': 'save',
+        '#tool_print_land div': 'export',
         '#tool_export div': 'export',
         '#tool_open div div': 'open',
         '#tool_import div div': 'import',
@@ -4749,7 +4756,7 @@ editor.init = function () {
         ok: uiStrings.notification.SaveSuccess,
         error: uiStrings.notification.SaveFail
       }
-      svgCanvas.saveDatabase(dataSave, message);
+      svgCanvas.saveDatabase(dataSave, message, domain);
     } else {
       $.alert(uiStrings.notification.SaveFail)
     }
@@ -4838,6 +4845,33 @@ editor.init = function () {
       hideIndicator();
     }
   };
+
+  const clickPrintLand = function() {
+    console.log('Print land');
+    const soTo = $('#txtSoTo').val();
+    const soThua = $('#txtSoThua').val();
+    const maXa = $('#txtCodeDiaChinh').val();
+
+    $.ajax({
+      type: 'POST',
+      url: `${domain}/InAn/InGCN`,
+      data: JSON.stringify({ SOTHUTUTHUA: soThua, SOHIEUTOBANDO: soTo, MAXA: maXa }),
+      contentType: 'application/json; charset=utf-8',
+      dataType: 'html',
+      success: function (response) {
+        // alert("Hello: " + response.Name + " .\nCurrent Date and Time: " + response.DateTime);
+        //var w = window.open();
+        //$(w.document.body).html(JSON.parse(response));
+        window.open(JSON.parse(response));
+      },
+      failure: function (response) {
+        console.log(response.responseText);
+      },
+      error: function (response) {
+        console.log(response.responseText);
+      }
+    });
+  }
 
   let loadingURL;
   /**
@@ -6123,7 +6157,11 @@ editor.init = function () {
         }, evt: 'mouseup', key: ['S', true]
       },
       {
-        sel: '#tool_save_database', fn: clickSaveDatabase, evt: 'mouseup'},
+        sel: '#tool_save_database', fn: clickSaveDatabase, evt: 'mouseup'
+      },
+      {
+        sel: '#tool_print_land', fn: clickPrintLand, evt: 'mouseup'
+      },
       {
         sel: '#btnSearch', fn() {
           let soTo = $('#txtSoTo').val();

@@ -240,6 +240,7 @@ export default {
     prefsopt: 'Editor options',
     save_doc: 'Save Image',
     save_database: 'Save to Database',
+    print_land: 'Print Land Certificate',
     import_doc: 'Import Image',
     align_to_page: 'Align Element to Page',
     align_bottom: 'Align Bottom',

@@ -3930,13 +3930,12 @@ class SvgCanvas {
       svgData.param = this.svgCanvasToString();
 
       let checkStatus = "";
-      const fiolisDomain = domain || 'https://fiolis.map4d.vn';
       const url = '/Services/Save_svg';
       // const key = '8bd33b7fd36d68baa96bf446c84011da';
 
       $.ajax({
         type: "POST",
-        url: `${fiolisDomain}${url}`,
+        url: `${domain}${url}`,
         // data: JSON.stringify(svgData),
         data: JSON.stringify({
           param: svgData.param,
