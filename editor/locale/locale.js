@@ -210,6 +210,7 @@ export const readLang = async function (langData) {
     tool_open: tools.open_doc,
     tool_save: tools.save_doc,
     tool_save_database: tools.save_database,
+    tool_print_land: tools.print_land,
     lblDrawProperty: tools.lbl_select_property,
     tool_toggle_adjacent: tools.tool_toggle_adjacent,
     toggle_land_info: tools.toggle_land_info,

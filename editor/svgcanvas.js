@@ -3924,17 +3924,25 @@ class SvgCanvas {
       call('saved', str);
     };
 
-    this.saveDatabase = function (svgData, message) {
+    this.saveDatabase = function (svgData, message, domain) {
       // remove the selected outline before serializing
       clearSelection();
-      // no need for doctype, see https://jwatt.org/svg/authoring/#doctype-declaration
-      const str = this.svgCanvasToString();
-      svgData.dataSVG = str;
+      svgData.param = this.svgCanvasToString();
+
       let checkStatus = "";
+      const url = '/Services/Save_svg';
+      // const key = '8bd33b7fd36d68baa96bf446c84011da';
+
       $.ajax({
         type: "POST",
-        url: "https://api-fiolis.map4d.vn/v2/api/land-certificate/save-or-update?key=8bd33b7fd36d68baa96bf446c84011da",
-        data: JSON.stringify(svgData),
+        url: `${domain}${url}`,
+        // data: JSON.stringify(svgData),
+        data: JSON.stringify({
+          param: svgData.param,
+          maxa: svgData.maxa,
+          sothututhua: svgData.sothututhua,
+          sohieutobando: svgData.sohieutobando
+        }),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         async: false,
