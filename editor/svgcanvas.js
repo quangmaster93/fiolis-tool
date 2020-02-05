@@ -3935,7 +3935,8 @@ class SvgCanvas {
 
       $.ajax({
         type: "POST",
-        url: `${domain}${url}`,
+        //url: `${domain}${url}`,
+	url: `${url}`,
         // data: JSON.stringify(svgData),
         data: JSON.stringify({
           param: svgData.param,
