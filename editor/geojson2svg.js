@@ -497,7 +497,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       for (let key in defaultOption) {
           option[key] = option[key] || defaultOption[key];
       }
-      let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '" overflow="hidden">';
+      let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '">';
       fullSvgStr += `
         <g class="layer" display="none" id="adjacent-lands" transform="translate(${adjacentLandtranslate[0]}, ${adjacentLandtranslate[1]})">
           <title>Thửa liền kề</title>
