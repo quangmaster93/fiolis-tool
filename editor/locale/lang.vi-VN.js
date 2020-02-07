@@ -241,6 +241,7 @@ export default {
       save_doc: 'Lưu hình ảnh',
       save_database: 'Lưu vào cơ sở dữ liệu',
       print_land: 'In giấy chứng nhận',
+      download_land: 'Tải về giấy chứng nhận',
       import_doc: 'Nhập hình ảnh',
       align_to_page: 'Căn chỉnh phần tử cho trang',
       align_bottom: 'Căn đáy',

@@ -3924,42 +3924,67 @@ class SvgCanvas {
       call('saved', str);
     };
 
-    this.saveDatabase = function (svgData, message, domain) {
+    this.saveDatabase = function (svgData, message) {
       // remove the selected outline before serializing
       clearSelection();
-      svgData.param = this.svgCanvasToString();
+      svgData.dataSVG = this.svgCanvasToString();
 
       let checkStatus = "";
-      const url = '/Services/Save_svg';
-      // const key = '8bd33b7fd36d68baa96bf446c84011da';
+      const url = 'https://api-fiolis.map4d.vn/v2/api/land-certificate/save-or-update';
+      const key = '8bd33b7fd36d68baa96bf446c84011da';
+
+      const saveSvg = function (svgData, message) {
+        let checkStatus = '';
+        const url = '/Services/Save_svg';
+  
+        $.ajax({
+          type: 'POST',
+          url: `${url}`,
+          data: JSON.stringify({
+            param: svgData.dataSVG,
+            maxa: svgData.maXa,
+            sothututhua: svgData.soThua,
+            sohieutobando: svgData.soTo
+          }),
+          contentType: 'application/json; charset=utf-8',
+          dataType: 'json',
+          async: false,
+          success: function (data) {
+            if (data !== null) {
+              checkStatus = data;
+            }
+          },
+          error: function (err) {
+            console.log(err);
+          }
+        });
+  
+        if (checkStatus === 'True') {
+          $.alert(message.ok);
+        } else {
+          $.alert(message.error);
+        }
+      };
 
       $.ajax({
         type: "POST",
-        //url: `${domain}${url}`,
-	url: `${url}`,
-        // data: JSON.stringify(svgData),
-        data: JSON.stringify({
-          param: svgData.param,
-          maxa: svgData.maxa,
-          sothututhua: svgData.sothututhua,
-          sohieutobando: svgData.sohieutobando
-        }),
+        url: `${url}?key=${key}`,
+        data: JSON.stringify(svgData),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         async: false,
         success: function (data) {
           if (data !== null) {
-            checkStatus = data.code
+            checkStatus = data.code;
+            saveSvg(svgData, message);
           }
         },
         error: function (err) {
-          console.log(err)
+          console.log(err);
         }
       });
 
-      if (checkStatus == "ok") {
-        $.alert(message.ok);
-      } else {
+      if (checkStatus !== "ok") {
         $.alert(message.error);
       }
     };

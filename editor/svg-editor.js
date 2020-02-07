@@ -1430,6 +1430,7 @@ editor.init = function () {
         save: 'save.png',
         save_database: 'save.png',
         print_land: 'save.png',
+        download_land: 'save.png',
         export: 'export.png',
         open: 'open.png',
         import: 'import.png',
@@ -1493,7 +1494,8 @@ editor.init = function () {
         '#tool_clear div,#layer_new': 'new_image',
         '#tool_save div': 'save',
         '#tool_save_database div': 'save',
-        '#tool_print_land div': 'export',
+        '#tool_print_land div': 'save',
+        '#tool_download_land div': 'save',
         '#tool_export div': 'export',
         '#tool_open div div': 'open',
         '#tool_import div div': 'import',
@@ -4747,16 +4749,17 @@ editor.init = function () {
     const properties = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
     if (properties != null) {
       const dataSave = {
-        sohieutobando: properties.SoHieuToBanDo,
-        sothututhua: properties.SoThuTuThua,
-        maxa: properties.MaXa,
-        param: ''
+        objectId: properties.ObjectId,
+        soTo: properties.SoHieuToBanDo,
+        soThua: properties.SoThuTuThua,
+        maXa: properties.MaXa,
+        dataSVG: ""
       }
       const message = {
         ok: uiStrings.notification.SaveSuccess,
         error: uiStrings.notification.SaveFail
       }
-      svgCanvas.saveDatabase(dataSave, message, domain);
+      svgCanvas.saveDatabase(dataSave, message);
     } else {
       $.alert(uiStrings.notification.SaveFail)
     }
@@ -4872,6 +4875,64 @@ editor.init = function () {
       }
     });
   }
+
+  /**
+  *
+  * @returns {void}
+  */
+  const clickDownloadLand = async function () {
+    const fileType = await $.select('Chọn loại tài liệu giấy chứng nhận để tải về: ', [
+      // See http://kangax.github.io/jstests/toDataUrl_mime_type_test/ for a useful list of MIME types and browser support
+      // 'ICO', // Todo: Find a way to preserve transparency in SVG-Edit if not working presently and do full packaging for x-icon; then switch back to position after 'PNG'
+      'PDF',
+      'DOC'
+    ], function () {
+      // TODO
+    }); // todo: replace hard-coded msg with uiStrings.notification.
+    if (!fileType) {
+      return;
+    }
+
+    /**
+     *
+     * @returns {void}
+     */
+    function viewLandCertificate(fileType) {
+      const soTo = $('#txtSoTo').val();
+      const soThua = $('#txtSoThua').val();
+      const maXa = $('#txtCodeDiaChinh').val();
+      $.ajax({
+        type: 'POST',
+        url: `${domain}/InAn/InGCN_Html`,
+        data: JSON.stringify({
+          sothututhua: soThua,
+          sohieutobando: soTo,
+          maxa: maXa,
+          type: fileType.toLowerCase()
+        }),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'html',
+        success: function (response) {
+          var w = window.open();
+          //$(w.document.body)[0].ondblclick = 'div_gcn.contentEditable = 'true'; tbrEdit.style.display = ''';
+          //$(w.document.body)[0].ID = 'abc123';
+          // $(w.document.body)[0].addEventListener('ondblclick', 'div_gcn.contentEditable = 'true'; tbrEdit.style.display = ''');
+          $(w.document.body)[0].outerHTML = (response);
+
+        },
+        failure: function (response) {
+          console.log(response.responseText);
+        },
+        error: function (response) {
+          console.log(response.responseText);
+        }
+      });
+    }
+
+    if (fileType === 'PDF' || fileType === 'DOC') {
+      viewLandCertificate(fileType);
+    }
+  };
 
   let loadingURL;
   /**
@@ -6161,6 +6222,9 @@ editor.init = function () {
       },
       {
         sel: '#tool_print_land', fn: clickPrintLand, evt: 'mouseup'
+      },
+      {
+        sel: '#tool_download_land', fn: clickDownloadLand, evt: 'mouseup'
       },
       {
         sel: '#btnSearch', fn() {
