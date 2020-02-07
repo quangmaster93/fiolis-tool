@@ -4747,16 +4747,17 @@ editor.init = function () {
     const properties = JSON.parse(editor.storage.getItem(PROPERTIES_KEY));
     if (properties != null) {
       const dataSave = {
-        sohieutobando: properties.SoHieuToBanDo,
-        sothututhua: properties.SoThuTuThua,
-        maxa: properties.MaXa,
-        param: ''
+        objectId: properties.ObjectId,
+        soTo: properties.SoHieuToBanDo,
+        soThua: properties.SoThuTuThua,
+        maXa: properties.MaXa,
+        dataSVG: ""
       }
       const message = {
         ok: uiStrings.notification.SaveSuccess,
         error: uiStrings.notification.SaveFail
       }
-      svgCanvas.saveDatabase(dataSave, message, domain);
+      svgCanvas.saveDatabase(dataSave, message);
     } else {
       $.alert(uiStrings.notification.SaveFail)
     }
