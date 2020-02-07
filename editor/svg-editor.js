@@ -4881,7 +4881,7 @@ editor.init = function () {
   * @returns {void}
   */
   const clickDownloadLand = async function () {
-    const fileType = await $.select('Select an file type for download: ', [
+    const fileType = await $.select('Chọn loại tài liệu giấy chứng nhận để tải về: ', [
       // See http://kangax.github.io/jstests/toDataUrl_mime_type_test/ for a useful list of MIME types and browser support
       // 'ICO', // Todo: Find a way to preserve transparency in SVG-Edit if not working presently and do full packaging for x-icon; then switch back to position after 'PNG'
       'PDF',
