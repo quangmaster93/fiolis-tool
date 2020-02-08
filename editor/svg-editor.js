@@ -5530,6 +5530,7 @@ editor.init = function () {
     const picker_solid_tab = uiStrings.ui.pick_solid_color_tab
     const picker_linear_tab = uiStrings.ui.pick_linear_gradient_tab
     const picker_radial_tab = uiStrings.ui.pick_radial_gradient_tab
+    const picker_cross_tab = uiStrings.ui.pick_cross_tab
     const picker_begin_point = uiStrings.ui.pick_begin_point
     const picker_center_point = uiStrings.ui.pick_center_point
     const picker_end_point = uiStrings.ui.pick_end_point
@@ -5595,6 +5596,7 @@ editor.init = function () {
             solidColor: picker_solid_tab,
             linearColor: picker_linear_tab,
             radialColor: picker_radial_tab,
+            crossBackground: picker_cross_tab,
             beginPoint: picker_begin_point,
             endPoint: picker_end_point,
             centerPoint: picker_center_point,
@@ -5648,9 +5650,23 @@ editor.init = function () {
           newstop: 'inverse'
         },
         function (p) {
-          paint = new $.jGraduate.Paint(p);
-          paintBox[picker].setPaint(paint);
-          svgCanvas.setPaint(picker, paint);
+          if (p.type !== 'crossBackground'){
+            paint = new $.jGraduate.Paint(p);
+            paintBox[picker].setPaint(paint);
+            svgCanvas.setPaint(picker, paint);
+          }else{
+            let degreeString = $("#color_picker_jGraduate_AngleInput").val()
+            let degree = 45;
+            let sizeString = $("#color_picker_jGraduate_SizeInput").val()
+            let size = 2;
+            if (degreeString !== undefined && degreeString !== ""){
+              degree = parseFloat(degreeString)
+            }
+            if (sizeString !== undefined && sizeString !== ""){
+              size = parseInt(sizeString)
+            }
+            svgCanvas.setCross(degree, size, "#000000")
+          }
           $('#color_picker').hide();
         },
         function () {

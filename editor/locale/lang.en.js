@@ -31,6 +31,7 @@ export default {
     pick_solid_color_tab: "Solid Color",
     pick_linear_gradient_tab: "Linear Gradient",
     pick_radial_gradient_tab: "Radial Gradient",
+    pick_cross_tab: "Background cross",
     pick_begin_point: "Begin point",
     pick_end_point: "End point",
     pick_center_point: "Center point",

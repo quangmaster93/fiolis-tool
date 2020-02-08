@@ -31,6 +31,7 @@ export default {
       pick_solid_color_tab: "Màu đơn sắc",
       pick_linear_gradient_tab: "Gradient tuyến tính",
       pick_radial_gradient_tab: "Gradient xuyên tâm",
+      pick_cross_tab: "Nền gạch chéo",
       pick_begin_point: "Điểm bắt đầu",
       pick_end_point: "Điểm kết thúc",
       pick_center_point: "Điểm trung tâm",

@@ -499,6 +499,11 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       }
       let fullSvgStr = '<svg xmlns="http://www.w3.org/2000/svg" style="background:' + option.background + '" width="' + (option.size[0]) + '" height="' + (option.size[1]) + '">';
       fullSvgStr += `
+        <defs>
+            <pattern height="10" id="pattern" patternTransform="rotate(45 50 50)" patternUnits="userSpaceOnUse" width="8">
+                <line id="svg_2" stroke="#a6a6a6" stroke-width="7px" y2="10"/>
+            </pattern>
+        </defs>
         <g class="layer" display="none" id="adjacent-lands" transform="translate(${adjacentLandtranslate[0]}, ${adjacentLandtranslate[1]})">
           <title>Thửa liền kề</title>
       `;

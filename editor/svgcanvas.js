@@ -5590,6 +5590,21 @@ class SvgCanvas {
       }
     };
 
+    this.setCross = function (degree, color) {
+      if (canvas.getElem('pattern') !== undefined && canvas.getElem('pattern') !== ""){
+        canvas.getElem('pattern').setAttribute("patternTransform", "rotate(" + degree +" 50 50)")
+        canvas.getElem('pattern').setAttribute("stroke", color)
+
+        let elemSelecteds = canvas.getSelectedElems()
+
+        if(elemSelecteds !== undefined && elemSelecteds.length > 0){
+          $.each(elemSelecteds, function(){
+              this.setAttribute("fill", "url(#pattern)")
+          });
+        }
+      }
+    };
+
     /**
     * @function module:svgcanvas.SvgCanvas#setStrokePaint
     * @param {module:jGraduate~Paint} paint

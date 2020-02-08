@@ -106,6 +106,8 @@ export default function jQueryPluginJGraduate ($) {
          */
         this.radialGradient = null;
 
+        this.crossBackground = null;
+
         switch (this.type) {
         case 'none':
           break;
@@ -118,6 +120,9 @@ export default function jQueryPluginJGraduate ($) {
         case 'radialGradient':
           this.radialGradient = options.copy.radialGradient.cloneNode(true);
           break;
+        case 'crossBackground':
+            this.crossBackground = options.copy.crossBackground.cloneNode(true);
+            break;
         }
       // create linear gradient paint
       } else if (options.linearGradient) {
@@ -131,6 +136,13 @@ export default function jQueryPluginJGraduate ($) {
         this.solidColor = null;
         this.linearGradient = null;
         this.radialGradient = options.radialGradient.cloneNode(true);
+        //Create cross background paint
+      }else if (options.crossBackground) {
+          this.type = 'crossBackground';
+          this.solidColor = null;
+          this.linearGradient = null;
+          this.radialGradient = null;
+          this.crossBackground = options.crossBackground.cloneNode(true);
       // create solid color paint
       } else if (options.solidColor) {
         this.type = 'solidColor';
@@ -290,6 +302,9 @@ export default function jQueryPluginJGraduate ($) {
         case 'linearGradient':
           $this.paint.radialGradient = null;
           break;
+        case 'crossBackground':
+          $this.paint.crossBackground = null;
+          break;
         case 'solidColor':
           $this.paint.radialGradient = $this.paint.linearGradient = null;
           break;
@@ -328,6 +343,7 @@ export default function jQueryPluginJGraduate ($) {
           '<li class="jGraduate_tab_color jGraduate_tab_current" data-type="col">' + $settings.window.solidColor + '</li>' +
           '<li class="jGraduate_tab_lingrad" data-type="lg">' + $settings.window.linearColor + '</li>' +
           '<li class="jGraduate_tab_radgrad" data-type="rg">' + $settings.window.radialColor + '</li>' +
+          '<li class="jGraduate_tab_cross_backgroud" data-type="cr">' + $settings.window.crossBackground + '</li>' +
         '</ul>' +
         '<div class="jGraduate_colPick"></div>' +
         '<div class="jGraduate_gradPick"></div>' +
@@ -394,7 +410,14 @@ export default function jQueryPluginJGraduate ($) {
             '</select>' +
           '</div>' +
         '</div>' +
-        '<div class="jGraduate_Form">' +
+        '<div class="jGraduate_StopSection">' +
+        '<label class="prelabel">' + $settings.window.lblAngle + '</label>' +
+            '<label><input type="text" id="' + id + '_jGraduate_AngleInput" size="3" value="45"/>' + $settings.window.lblDeg + '</label>' +
+            '<label class="prelabel">' + $settings.window.width + '</label>' +
+            '<label><input type="text" id="' + id + '_jGraduate_SizeInput" value="2"/>px</label>' +
+            
+            '</div>' +
+            '<div class="jGraduate_Form">' +
           '<div class="jGraduate_Slider jGraduate_RadiusField jGraduate_rg_field">' +
             '<label class="prelabel">' + $settings.window.lblRadius + '</label>' +
             '<div id="' + id + '_jGraduate_Radius" class="jGraduate_SliderBar jGraduate_Radius" title="' + $settings.window.titleRadius + '">' +
@@ -409,7 +432,7 @@ export default function jQueryPluginJGraduate ($) {
             '</div>' +
             '<label><input type="text" id="' + id + '_jGraduate_EllipInput" size="3" value="0"/>%</label>' +
           '</div>' +
-          '<div class="jGraduate_Slider jGraduate_AngleField jGraduate_rg_field">' +
+          '<div class="jGraduate_Slider jGraduate_AngleField jGraduate_rg_field jGraduate_cr_field">' +
             '<label class="prelabel">' + $settings.window.lblAngle + '</label>' +
             '<div id="' + id + '_jGraduate_Angle" class="jGraduate_SliderBar jGraduate_Angle" title="' + $settings.window.titleAngle + '">' +
               '<img id="' + id + '_jGraduate_AngleArrows" class="jGraduate_AngleArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
@@ -470,6 +493,7 @@ export default function jQueryPluginJGraduate ($) {
       // Make any missing gradients
       switch (curType) {
       case 'solidColor':
+        case 'crossBackground':
         // fall through
       case 'linearGradient':
         if (!isSolid) {
@@ -988,8 +1012,11 @@ export default function jQueryPluginJGraduate ($) {
       // bind GUI elements
       $('#' + id + '_jGraduate_Ok').bind('click', function () {
         $this.paint.type = curType;
-        $this.paint[curType] = curGradient.cloneNode(true);
-        $this.paint.solidColor = null;
+
+        if(curType !== 'crossBackground'){
+          $this.paint[curType] = curGradient.cloneNode(true);
+          $this.paint.solidColor = null;
+        }
         okClicked();
       });
       $('#' + id + '_jGraduate_Cancel').bind('click', function (paint) {
@@ -1293,16 +1320,32 @@ export default function jQueryPluginJGraduate ($) {
         $(idref + ' > div').hide();
         const type = $(this).attr('data-type');
         /* const container = */ $(idref + ' .jGraduate_gradPick').show();
-        if (type === 'rg' || type === 'lg') {
+        if (type === 'rg' || type === 'lg' || type === 'cr') {
           // Show/hide appropriate fields
           $('.jGraduate_' + type + '_field').show();
-          $('.jGraduate_' + (type === 'lg' ? 'rg' : 'lg') + '_field').hide();
+          // $('.jGraduate_' + (type === 'lg' ? 'rg' : 'lg') + '_field').hide();
+          
+          if (type === 'lg'){
+            $('.jGraduate_rg_field').hide();
+            $('.jGraduate_cr_field').hide();
+            curType = 'linearGradient';
+          }else{
+            if (type === 'rg'){
+              $('.jGraduate_lg_field').hide();
+              $('.jGraduate_cr_field').hide();
+              curType = 'radialGradient';
+            }else{
+              $('.jGraduate_lg_field').hide();
+              $('.jGraduate_rg_field').hide();
+              curType = 'crossBackground';
+            }
+          }
 
           $('#' + id + '_jgraduate_rect')[0].setAttribute('fill', 'url(#' + id + '_' + type + '_jgraduate_grad)');
 
           // Copy stops
 
-          curType = type === 'lg' ? 'linearGradient' : 'radialGradient';
+          // curType = type === 'lg' ? 'linearGradient' : 'radialGradient';
 
           $('#' + id + '_jGraduate_OpacInput').val($this.paint.alpha).change();
 
@@ -1335,6 +1378,9 @@ export default function jQueryPluginJGraduate ($) {
       case 'radialGradient':
         tab = $(idref + ' .jGraduate_tab_radgrad');
         break;
+      case 'crossBackground':
+          tab = $(idref + ' .jGraduate_tab_cross_backgroud');
+          break;
       default:
         tab = $(idref + ' .jGraduate_tab_color');
         break;
