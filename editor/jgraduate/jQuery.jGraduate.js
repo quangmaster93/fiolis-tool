@@ -35,8 +35,8 @@ const ns = {
 
 if (!window.console) {
   window.console = {
-    log (str) { /* */ },
-    dir (str) { /* */ }
+    log(str) { /* */ },
+    dir(str) { /* */ }
   };
 }
 
@@ -48,7 +48,7 @@ if (!window.console) {
 * @param {external:jQuery} $ The jQuery instance to wrap
 * @returns {external:jQuery}
 */
-export default function jQueryPluginJGraduate ($) {
+export default function jQueryPluginJGraduate($) {
   if (!$.loadingStylesheets) {
     $.loadingStylesheets = [];
   }
@@ -73,7 +73,7 @@ export default function jQueryPluginJGraduate ($) {
     /**
      * @param {module:jGraduate.jGraduatePaintOptions} [opt]
     */
-    constructor (opt) {
+    constructor(opt) {
       const options = opt || {};
       this.alpha = isNaN(options.alpha) ? 100 : options.alpha;
       // copy paint object
@@ -109,45 +109,45 @@ export default function jQueryPluginJGraduate ($) {
         this.crossBackground = null;
 
         switch (this.type) {
-        case 'none':
-          break;
-        case 'solidColor':
-          this.solidColor = options.copy.solidColor;
-          break;
-        case 'linearGradient':
-          this.linearGradient = options.copy.linearGradient.cloneNode(true);
-          break;
-        case 'radialGradient':
-          this.radialGradient = options.copy.radialGradient.cloneNode(true);
-          break;
-        case 'crossBackground':
+          case 'none':
+            break;
+          case 'solidColor':
+            this.solidColor = options.copy.solidColor;
+            break;
+          case 'linearGradient':
+            this.linearGradient = options.copy.linearGradient.cloneNode(true);
+            break;
+          case 'radialGradient':
+            this.radialGradient = options.copy.radialGradient.cloneNode(true);
+            break;
+          case 'crossBackground':
             this.crossBackground = options.copy.crossBackground.cloneNode(true);
             break;
         }
-      // create linear gradient paint
+        // create linear gradient paint
       } else if (options.linearGradient) {
         this.type = 'linearGradient';
         this.solidColor = null;
         this.radialGradient = null;
         this.linearGradient = options.linearGradient.cloneNode(true);
-      // create linear gradient paint
+        // create linear gradient paint
       } else if (options.radialGradient) {
         this.type = 'radialGradient';
         this.solidColor = null;
         this.linearGradient = null;
         this.radialGradient = options.radialGradient.cloneNode(true);
         //Create cross background paint
-      }else if (options.crossBackground) {
-          this.type = 'crossBackground';
-          this.solidColor = null;
-          this.linearGradient = null;
-          this.radialGradient = null;
-          this.crossBackground = options.crossBackground.cloneNode(true);
-      // create solid color paint
+      } else if (options.crossBackground) {
+        this.type = 'crossBackground';
+        this.solidColor = null;
+        this.linearGradient = null;
+        this.radialGradient = null;
+        this.crossBackground = options.crossBackground.cloneNode(true);
+        // create solid color paint
       } else if (options.solidColor) {
         this.type = 'solidColor';
         this.solidColor = options.solidColor;
-      // create empty paint
+        // create empty paint
       } else {
         this.type = 'none';
         this.solidColor = null;
@@ -218,7 +218,7 @@ export default function jQueryPluginJGraduate ($) {
   * @param {module:jGraduate.Attrs} attrs
   * @returns {void}
   */
-  function setAttrs (elem, attrs) {
+  function setAttrs(elem, attrs) {
     if (isGecko) {
       Object.entries(attrs).forEach(([aname, val]) => {
         elem.setAttribute(aname, val);
@@ -241,7 +241,7 @@ export default function jQueryPluginJGraduate ($) {
   * @param {Element} newparent
   * @returns {SVGElement}
   */
-  function mkElem (name, attrs, newparent) {
+  function mkElem(name, attrs, newparent) {
     const elem = document.createElementNS(ns.svg, name);
     setAttrs(elem, attrs);
     if (newparent) {
@@ -296,18 +296,18 @@ export default function jQueryPluginJGraduate ($) {
 
       const okClicked = function () {
         switch ($this.paint.type) {
-        case 'radialGradient':
-          $this.paint.linearGradient = null;
-          break;
-        case 'linearGradient':
-          $this.paint.radialGradient = null;
-          break;
-        case 'crossBackground':
-          $this.paint.crossBackground = null;
-          break;
-        case 'solidColor':
-          $this.paint.radialGradient = $this.paint.linearGradient = null;
-          break;
+          case 'radialGradient':
+            $this.paint.linearGradient = null;
+            break;
+          case 'linearGradient':
+            $this.paint.radialGradient = null;
+            break;
+          case 'crossBackground':
+            $this.paint.crossBackground = null;
+            break;
+          case 'solidColor':
+            $this.paint.radialGradient = $this.paint.linearGradient = null;
+            break;
         }
         typeof $this.okCallback === 'function' && $this.okCallback($this.paint);
         $this.hide();
@@ -323,7 +323,7 @@ export default function jQueryPluginJGraduate ($) {
         // public properties, methods, and callbacks
         {
           // make a copy of the incoming paint
-          paint: new $.jGraduate.Paint({copy: $settings.paint}),
+          paint: new $.jGraduate.Paint({ copy: $settings.paint }),
           okCallback: typeof okCallback === 'function' ? okCallback : null,
           cancelCallback: typeof cancelCallback === 'function' ? cancelCallback : null
         }
@@ -334,125 +334,138 @@ export default function jQueryPluginJGraduate ($) {
       const $win = $(window);
 
       if ($this.paint.type === 'none') {
-        $this.paint = new $.jGraduate.Paint({solidColor: 'ffffff'});
+        $this.paint = new $.jGraduate.Paint({ solidColor: 'ffffff' });
       }
 
       $this.addClass('jGraduate_Picker');
       $this.html(
         '<ul class="jGraduate_tabs">' +
-          '<li class="jGraduate_tab_color jGraduate_tab_current" data-type="col">' + $settings.window.solidColor + '</li>' +
-          '<li class="jGraduate_tab_lingrad" data-type="lg">' + $settings.window.linearColor + '</li>' +
-          '<li class="jGraduate_tab_radgrad" data-type="rg">' + $settings.window.radialColor + '</li>' +
-          '<li class="jGraduate_tab_cross_backgroud" data-type="cr">' + $settings.window.crossBackground + '</li>' +
+        '<li class="jGraduate_tab_color jGraduate_tab_current" data-type="col">' + $settings.window.solidColor + '</li>' +
+        '<li class="jGraduate_tab_lingrad" data-type="lg">' + $settings.window.linearColor + '</li>' +
+        '<li class="jGraduate_tab_radgrad" data-type="rg">' + $settings.window.radialColor + '</li>' +
+        '<li class="jGraduate_tab_cross_backgroud" data-type="cr">' + $settings.window.crossBackground + '</li>' +
         '</ul>' +
         '<div class="jGraduate_colPick"></div>' +
         '<div class="jGraduate_gradPick"></div>' +
+        '<div class="jGraduate_crossPick"></div>' +
         '<div class="jGraduate_LightBox"></div>' +
         '<div id="' + id + '_jGraduate_stopPicker" class="jGraduate_stopPicker"></div>'
       );
       const colPicker = $(idref + '> .jGraduate_colPick');
       const gradPicker = $(idref + '> .jGraduate_gradPick');
+      const crossPicker = $(idref + '> .jGraduate_crossPick');
+
+      crossPicker.html(
+        '<div class="cross-background">' +
+        '<div>' +
+        '<label class="prelabel">' + $settings.window.color + '</label>' +
+        '<input type="color" class="cross_field" id="cross_jGraduate_ColorInput" size="3" value="#000000"/>' +
+        '</div>' +
+        '<div>' +
+        '<label class="prelabel">' + $settings.window.lblAngle + '</label>' +
+        '<input type="text" class="cross_field" id="cross_jGraduate_AngleInput" size="3" value="45"/>' + $settings.window.lblDeg +
+        '</div>' +
+        '<label class="prelabel">' + $settings.window.lblSize + '</label>' +
+        '<input type="text" class="cross_field" id="cross_jGraduate_SizeInput" value="2"/>px' +
+        '</div>' +
+        '<div class="jGraduate_OkCancel">' +
+        '<input type="button" id="cross_jGraduate_Ok" class="jGraduate_Ok" value="' + $settings.window.btnOK + '"/>' +
+        '<input type="button" id="cross_jGraduate_Cancel" class="jGraduate_Cancel" value="' + $settings.window.btnCancel + '"/>' +
+        '</div>'
+      )
 
       gradPicker.html(
         '<div id="' + id + '_jGraduate_Swatch" class="jGraduate_Swatch">' +
-          '<h2 class="jGraduate_Title">' + $settings.window.pickerTitle + '</h2>' +
-          '<div id="' + id + '_jGraduate_GradContainer" class="jGraduate_GradContainer"></div>' +
-          '<div id="' + id + '_jGraduate_StopSlider" class="jGraduate_StopSlider"></div>' +
+        '<h2 class="jGraduate_Title">' + $settings.window.pickerTitle + '</h2>' +
+        '<div id="' + id + '_jGraduate_GradContainer" class="jGraduate_GradContainer"></div>' +
+        '<div id="' + id + '_jGraduate_StopSlider" class="jGraduate_StopSlider"></div>' +
         '</div>' +
         '<div class="jGraduate_Form jGraduate_Points jGraduate_lg_field">' +
-          '<div class="jGraduate_StopSection">' +
-            '<label class="jGraduate_Form_Heading">' + $settings.window.beginPoint + '</label>' +
-            '<div class="jGraduate_Form_Section">' +
-              '<label>x:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_x1" size="3" title="' + $settings.window.titleX1 + '"/>' +
-              '<label>y:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_y1" size="3" title="' + $settings.window.titleY1 + '"/>' +
-            '</div>' +
-          '</div>' +
-          '<div class="jGraduate_StopSection">' +
-            '<label class="jGraduate_Form_Heading">' + $settings.window.endPoint + '</label>' +
-            '<div class="jGraduate_Form_Section">' +
-              '<label>x:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_x2" size="3" title="' + $settings.window.titleX2 + '"/>' +
-              '<label>y:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_y2" size="3" title="' + $settings.window.titleY2 + '"/>' +
-            '</div>' +
-          '</div>' +
+        '<div class="jGraduate_StopSection">' +
+        '<label class="jGraduate_Form_Heading">' + $settings.window.beginPoint + '</label>' +
+        '<div class="jGraduate_Form_Section">' +
+        '<label>x:</label>' +
+        '<input type="text" id="' + id + '_jGraduate_x1" size="3" title="' + $settings.window.titleX1 + '"/>' +
+        '<label>y:</label>' +
+        '<input type="text" id="' + id + '_jGraduate_y1" size="3" title="' + $settings.window.titleY1 + '"/>' +
         '</div>' +
-        '<div class="jGraduate_Form jGraduate_Points jGraduate_rg_field">' +
-          '<div class="jGraduate_StopSection">' +
-            '<label class="jGraduate_Form_Heading">' + $settings.window.centerPoint + '</label>' +
-            '<div class="jGraduate_Form_Section">' +
-              '<label>x:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_cx" size="3" title="' + $settings.window.titleX3 + '"/>' +
-              '<label>y:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_cy" size="3" title="' + $settings.window.titleY3 + '"/>' +
-            '</div>' +
-          '</div>' +
-          '<div class="jGraduate_StopSection">' +
-            '<label class="jGraduate_Form_Heading">' + $settings.window.focalPoint + '</label>' +
-            '<div class="jGraduate_Form_Section">' +
-              '<label>Match center: <input type="checkbox" checked="checked" id="' + id + '_jGraduate_match_ctr"/></label><br/>' +
-              '<label>x:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_fx" size="3" title="' + $settings.window.titleX3 + '"/>' +
-              '<label>y:</label>' +
-              '<input type="text" id="' + id + '_jGraduate_fy" size="3" title="' + $settings.window.titleY3 + '"/>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="jGraduate_StopSection jGraduate_SpreadMethod">' +
-          '<label class="jGraduate_Form_Heading">' + $settings.window.lblSpreadMethod + '</label>' +
-          '<div class="jGraduate_Form_Section">' +
-            '<select class="jGraduate_spreadMethod">' +
-              '<option value=pad selected>' + $settings.window.optPad + '</option>' +
-              '<option value=reflect>' + $settings.window.optReflect + '</option>' +
-              '<option value=repeat>' + $settings.window.optRepeat + '</option>' +
-            '</select>' +
-          '</div>' +
         '</div>' +
         '<div class="jGraduate_StopSection">' +
+        '<label class="jGraduate_Form_Heading">' + $settings.window.endPoint + '</label>' +
+        '<div class="jGraduate_Form_Section">' +
+        '<label>x:</label>' +
+        '<input type="text" id="' + id + '_jGraduate_x2" size="3" title="' + $settings.window.titleX2 + '"/>' +
+        '<label>y:</label>' +
+        '<input type="text" id="' + id + '_jGraduate_y2" size="3" title="' + $settings.window.titleY2 + '"/>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="jGraduate_Form jGraduate_Points jGraduate_rg_field">' +
+        '<div class="jGraduate_StopSection">' +
+        '<label class="jGraduate_Form_Heading">' + $settings.window.centerPoint + '</label>' +
+        '<div class="jGraduate_Form_Section">' +
+        '<label>x:</label>' +
+        '<input type="text" id="' + id + '_jGraduate_cx" size="3" title="' + $settings.window.titleX3 + '"/>' +
+        '<label>y:</label>' +
+        '<input type="text" id="' + id + '_jGraduate_cy" size="3" title="' + $settings.window.titleY3 + '"/>' +
+        '</div>' +
+        '</div>' +
+        '<div class="jGraduate_StopSection">' +
+        '<label class="jGraduate_Form_Heading">' + $settings.window.focalPoint + '</label>' +
+        '<div class="jGraduate_Form_Section">' +
+        '<label>Match center: <input type="checkbox" checked="checked" id="' + id + '_jGraduate_match_ctr"/></label><br/>' +
+        '<label>x:</label>' +
+        '<input type="text" id="' + id + '_jGraduate_fx" size="3" title="' + $settings.window.titleX3 + '"/>' +
+        '<label>y:</label>' +
+        '<input type="text" id="' + id + '_jGraduate_fy" size="3" title="' + $settings.window.titleY3 + '"/>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="jGraduate_StopSection jGraduate_SpreadMethod jGraduate_rg_field jGraduate_lg_field">' +
+        '<label class="jGraduate_Form_Heading">' + $settings.window.lblSpreadMethod + '</label>' +
+        '<div class="jGraduate_Form_Section">' +
+        '<select class="jGraduate_spreadMethod">' +
+        '<option value=pad selected>' + $settings.window.optPad + '</option>' +
+        '<option value=reflect>' + $settings.window.optReflect + '</option>' +
+        '<option value=repeat>' + $settings.window.optRepeat + '</option>' +
+        '</select>' +
+        '</div>' +
+        '</div>' +
+        '<div class="jGraduate_Form">' +
+        '<div class="jGraduate_Slider jGraduate_RadiusField jGraduate_rg_field">' +
+        '<label class="prelabel">' + $settings.window.lblRadius + '</label>' +
+        '<div id="' + id + '_jGraduate_Radius" class="jGraduate_SliderBar jGraduate_Radius" title="' + $settings.window.titleRadius + '">' +
+        '<img id="' + id + '_jGraduate_RadiusArrows" class="jGraduate_RadiusArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
+        '</div>' +
+        '<label><input type="text" id="' + id + '_jGraduate_RadiusInput" size="3" value="100"/>%</label>' +
+        '</div>' +
+        '<div class="jGraduate_Slider jGraduate_EllipField jGraduate_rg_field">' +
+        '<label class="prelabel">Ellip:</label>' +
+        '<div id="' + id + '_jGraduate_Ellip" class="jGraduate_SliderBar jGraduate_Ellip" title="' + $settings.window.titleEllip + '">' +
+        '<img id="' + id + '_jGraduate_EllipArrows" class="jGraduate_EllipArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
+        '</div>' +
+        '<label><input type="text" id="' + id + '_jGraduate_EllipInput" size="3" value="0"/>%</label>' +
+        '</div>' +
+        '<div class="jGraduate_Slider jGraduate_AngleField jGraduate_rg_field">' +
         '<label class="prelabel">' + $settings.window.lblAngle + '</label>' +
-            '<label><input type="text" id="' + id + '_jGraduate_AngleInput" size="3" value="45"/>' + $settings.window.lblDeg + '</label>' +
-            '<label class="prelabel">' + $settings.window.width + '</label>' +
-            '<label><input type="text" id="' + id + '_jGraduate_SizeInput" value="2"/>px</label>' +
-            
-            '</div>' +
-            '<div class="jGraduate_Form">' +
-          '<div class="jGraduate_Slider jGraduate_RadiusField jGraduate_rg_field">' +
-            '<label class="prelabel">' + $settings.window.lblRadius + '</label>' +
-            '<div id="' + id + '_jGraduate_Radius" class="jGraduate_SliderBar jGraduate_Radius" title="' + $settings.window.titleRadius + '">' +
-              '<img id="' + id + '_jGraduate_RadiusArrows" class="jGraduate_RadiusArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
-            '</div>' +
-            '<label><input type="text" id="' + id + '_jGraduate_RadiusInput" size="3" value="100"/>%</label>' +
-          '</div>' +
-          '<div class="jGraduate_Slider jGraduate_EllipField jGraduate_rg_field">' +
-            '<label class="prelabel">Ellip:</label>' +
-            '<div id="' + id + '_jGraduate_Ellip" class="jGraduate_SliderBar jGraduate_Ellip" title="' + $settings.window.titleEllip + '">' +
-              '<img id="' + id + '_jGraduate_EllipArrows" class="jGraduate_EllipArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
-            '</div>' +
-            '<label><input type="text" id="' + id + '_jGraduate_EllipInput" size="3" value="0"/>%</label>' +
-          '</div>' +
-          '<div class="jGraduate_Slider jGraduate_AngleField jGraduate_rg_field jGraduate_cr_field">' +
-            '<label class="prelabel">' + $settings.window.lblAngle + '</label>' +
-            '<div id="' + id + '_jGraduate_Angle" class="jGraduate_SliderBar jGraduate_Angle" title="' + $settings.window.titleAngle + '">' +
-              '<img id="' + id + '_jGraduate_AngleArrows" class="jGraduate_AngleArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
-            '</div>' +
-            '<label><input type="text" id="' + id + '_jGraduate_AngleInput" size="3" value="0"/>' + $settings.window.lblDeg + '</label>' +
-          '</div>' +
-          '<div class="jGraduate_Slider jGraduate_OpacField">' +
-            '<label class="prelabel" title="' + $settings.window.lblOpac + '">Opac:</label>' +
-            '<div id="' + id + '_jGraduate_Opac" class="jGraduate_SliderBar jGraduate_Opac" title="' + $settings.window.titleOpac + '">' +
-              '<img id="' + id + '_jGraduate_OpacArrows" class="jGraduate_OpacArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
-            '</div>' +
-            '<label><input type="text" id="' + id + '_jGraduate_OpacInput" size="3" value="100"/>%</label>' +
-          '</div>' +
+        '<div id="' + id + '_jGraduate_Angle" class="jGraduate_SliderBar jGraduate_Angle" title="' + $settings.window.titleAngle + '">' +
+        '<img id="' + id + '_jGraduate_AngleArrows" class="jGraduate_AngleArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
+        '</div>' +
+        '<label><input type="text" id="' + id + '_jGraduate_AngleInput" size="3" value="0"/>' + $settings.window.lblDeg + '</label>' +
+        '</div>' +
+        '<div class="jGraduate_Slider jGraduate_OpacField">' +
+        '<label class="prelabel" title="' + $settings.window.lblOpac + '">Opac:</label>' +
+        '<div id="' + id + '_jGraduate_Opac" class="jGraduate_SliderBar jGraduate_Opac" title="' + $settings.window.titleOpac + '">' +
+        '<img id="' + id + '_jGraduate_OpacArrows" class="jGraduate_OpacArrows" src="' + $settings.images.clientPath + 'rangearrows2.gif">' +
+        '</div>' +
+        '<label><input type="text" id="' + id + '_jGraduate_OpacInput" size="3" value="100"/>%</label>' +
+        '</div>' +
         '</div>' +
         '<div class="jGraduate_OkCancel">' +
-          '<input type="button" id="' + id + '_jGraduate_Ok" class="jGraduate_Ok" value="' + $settings.window.btnOK + '"/>' +
-          '<input type="button" id="' + id + '_jGraduate_Cancel" class="jGraduate_Cancel" value="' + $settings.window.btnCancel + '"/>' +
+        '<input type="button" id="' + id + '_jGraduate_Ok" class="jGraduate_Ok" value="' + $settings.window.btnOK + '"/>' +
+        '<input type="button" id="' + id + '_jGraduate_Cancel" class="jGraduate_Cancel" value="' + $settings.window.btnCancel + '"/>' +
         '</div>'
       );
-
       // --------------
       // Set up all the SVG elements (the gradient, stops and rectangle)
       const MAX = 256,
@@ -492,27 +505,27 @@ export default function jQueryPluginJGraduate ($) {
 
       // Make any missing gradients
       switch (curType) {
-      case 'solidColor':
+        case 'solidColor':
         case 'crossBackground':
         // fall through
-      case 'linearGradient':
-        if (!isSolid) {
-          curGradient.id = id + '_lg_jgraduate_grad';
-          grad = curGradient = svg.appendChild(curGradient); // .cloneNode(true));
-        }
-        mkElem('radialGradient', {
-          id: id + '_rg_jgraduate_grad'
-        }, svg);
-        if (curType === 'linearGradient') { break; }
+        case 'linearGradient':
+          if (!isSolid) {
+            curGradient.id = id + '_lg_jgraduate_grad';
+            grad = curGradient = svg.appendChild(curGradient); // .cloneNode(true));
+          }
+          mkElem('radialGradient', {
+            id: id + '_rg_jgraduate_grad'
+          }, svg);
+          if (curType === 'linearGradient') { break; }
         // fall through
-      case 'radialGradient':
-        if (!isSolid) {
-          curGradient.id = id + '_rg_jgraduate_grad';
-          grad = curGradient = svg.appendChild(curGradient); // .cloneNode(true));
-        }
-        mkElem('linearGradient', {
-          id: id + '_lg_jgraduate_grad'
-        }, svg);
+        case 'radialGradient':
+          if (!isSolid) {
+            curGradient.id = id + '_rg_jgraduate_grad';
+            grad = curGradient = svg.appendChild(curGradient); // .cloneNode(true));
+          }
+          mkElem('linearGradient', {
+            id: id + '_lg_jgraduate_grad'
+          }, svg);
       }
 
       let stopGroup; // eslint-disable-line prefer-const
@@ -525,28 +538,28 @@ export default function jQueryPluginJGraduate ($) {
 
         if (type === 'string') {
           switch ($settings.newstop) {
-          case 'same':
-            mkStop(1, '#' + color, 1);
-            break;
+            case 'same':
+              mkStop(1, '#' + color, 1);
+              break;
 
-          case 'inverse': {
-            // Invert current color for second stop
-            let inverted = '';
-            for (let i = 0; i < 6; i += 2) {
-              // const ch = color.substr(i, 2);
-              let inv = (255 - parseInt(color.substr(i, 2), 16)).toString(16);
-              if (inv.length < 2) inv = 0 + inv;
-              inverted += inv;
-            }
-            mkStop(1, '#' + inverted, 1);
-            break;
-          } case 'white':
-            mkStop(1, '#ffffff', 1);
-            break;
+            case 'inverse': {
+              // Invert current color for second stop
+              let inverted = '';
+              for (let i = 0; i < 6; i += 2) {
+                // const ch = color.substr(i, 2);
+                let inv = (255 - parseInt(color.substr(i, 2), 16)).toString(16);
+                if (inv.length < 2) inv = 0 + inv;
+                inverted += inv;
+              }
+              mkStop(1, '#' + inverted, 1);
+              break;
+            } case 'white':
+              mkStop(1, '#ffffff', 1);
+              break;
 
-          case 'black':
-            mkStop(1, '#000000', 1);
-            break;
+            case 'black':
+              mkStop(1, '#000000', 1);
+              break;
           }
         } else if (type === 'object') {
           const opac = ('opac' in $settings.newstop) ? $settings.newstop.opac : 1;
@@ -667,7 +680,7 @@ export default function jQueryPluginJGraduate ($) {
        * @param {SVGStopElement} [stopElem]
        * @returns {SVGStopElement}
        */
-      function mkStop (n, colr, opac, sel, stopElem) {
+      function mkStop(n, colr, opac, sel, stopElem) {
         const stop = stopElem || mkElem('stop', {
           'stop-color': colr,
           'stop-opacity': opac,
@@ -714,10 +727,10 @@ export default function jQueryPluginJGraduate ($) {
           let thisAlpha = (parseFloat(stopOpacity) * 255).toString(16);
           while (thisAlpha.length < 2) { thisAlpha = '0' + thisAlpha; }
           colr = stopColor.substr(1) + thisAlpha;
-          $('#' + id + '_jGraduate_stopPicker').css({left: 100, bottom: 15}).jPicker({
-            window: {title: 'Pick the start color and opacity for the gradient'},
-            images: {clientPath: $settings.images.clientPath},
-            color: {active: colr, alphaSupport: true}
+          $('#' + id + '_jGraduate_stopPicker').css({ left: 100, bottom: 15 }).jPicker({
+            window: { title: 'Pick the start color and opacity for the gradient' },
+            images: { clientPath: $settings.images.clientPath },
+            color: { active: colr, alphaSupport: true }
           }, function (clr, arg2) {
             stopColor = clr.val('hex') ? ('#' + clr.val('hex')) : 'none';
             stopOpacity = clr.val('a') !== null ? clr.val('a') / 256 : 1;
@@ -757,7 +770,7 @@ export default function jQueryPluginJGraduate ($) {
       *
       * @returns {void}
       */
-      function remStop () {
+      function remStop() {
         delStop.setAttribute('display', 'none');
         const path = $(curStop);
         const stop = path.data('stop');
@@ -781,7 +794,7 @@ export default function jQueryPluginJGraduate ($) {
       * @param {Element} item
       * @returns {void}
       */
-      function selectStop (item) {
+      function selectStop(item) {
         if (curStop) curStop.setAttribute('stroke', '#000');
         item.setAttribute('stroke', 'blue');
         curStop = item;
@@ -796,7 +809,7 @@ export default function jQueryPluginJGraduate ($) {
       *
       * @returns {void}
       */
-      function remDrags () {
+      function remDrags() {
         $win.unbind('mousemove', dragColor);
         if (delStop.getAttribute('display') !== 'none') {
           remStop();
@@ -812,7 +825,7 @@ export default function jQueryPluginJGraduate ($) {
       *
       * @returns {void}
       */
-      function xform () {
+      function xform() {
         const rot = angle ? 'rotate(' + angle + ',' + cX + ',' + cY + ') ' : '';
         if (scaleX === 1 && scaleY === 1) {
           curGradient.removeAttribute('gradientTransform');
@@ -829,7 +842,7 @@ export default function jQueryPluginJGraduate ($) {
       * @param {Event} evt
       * @returns {void}
       */
-      function dragColor (evt) {
+      function dragColor(evt) {
         let x = evt.pageX - stopOffset.left;
         const y = evt.pageY - stopOffset.top;
         x = x < 10
@@ -888,7 +901,7 @@ export default function jQueryPluginJGraduate ($) {
 
       $(stopMakerSVG).click(function (evt) {
         stopOffset = stopMakerDiv.offset();
-        const {target} = evt;
+        const { target } = evt;
         if (target.tagName === 'path') return;
         let x = evt.pageX - stopOffset.left - 8;
         x = x < 10 ? 10 : x > MAX + 10 ? MAX + 10 : x;
@@ -936,33 +949,33 @@ export default function jQueryPluginJGraduate ($) {
         const grd = curGradient;
 
         switch (type) {
-        case 'start':
-          attrInput.x1.val(fracx);
-          attrInput.y1.val(fracy);
-          grd.setAttribute('x1', fracx);
-          grd.setAttribute('y1', fracy);
-          break;
-        case 'end':
-          attrInput.x2.val(fracx);
-          attrInput.y2.val(fracy);
-          grd.setAttribute('x2', fracx);
-          grd.setAttribute('y2', fracy);
-          break;
-        case 'center':
-          attrInput.cx.val(fracx);
-          attrInput.cy.val(fracy);
-          grd.setAttribute('cx', fracx);
-          grd.setAttribute('cy', fracy);
-          cX = fracx;
-          cY = fracy;
-          xform();
-          break;
-        case 'focus':
-          attrInput.fx.val(fracx);
-          attrInput.fy.val(fracy);
-          grd.setAttribute('fx', fracx);
-          grd.setAttribute('fy', fracy);
-          xform();
+          case 'start':
+            attrInput.x1.val(fracx);
+            attrInput.y1.val(fracy);
+            grd.setAttribute('x1', fracx);
+            grd.setAttribute('y1', fracy);
+            break;
+          case 'end':
+            attrInput.x2.val(fracx);
+            attrInput.y2.val(fracy);
+            grd.setAttribute('x2', fracx);
+            grd.setAttribute('y2', fracy);
+            break;
+          case 'center':
+            attrInput.cx.val(fracx);
+            attrInput.cy.val(fracy);
+            grd.setAttribute('cx', fracx);
+            grd.setAttribute('cy', fracy);
+            cX = fracx;
+            cY = fracy;
+            xform();
+            break;
+          case 'focus':
+            attrInput.fx.val(fracx);
+            attrInput.fy.val(fracy);
+            grd.setAttribute('fx', fracx);
+            grd.setAttribute('fy', fracy);
+            xform();
         }
 
         evt.preventDefault();
@@ -1010,16 +1023,32 @@ export default function jQueryPluginJGraduate ($) {
       });
 
       // bind GUI elements
+      $('#cross_jGraduate_AngleInput').on('mousedown', function () {
+        $("#cross_jGraduate_AngleInput").focus();
+      });
+
+      $('#cross_jGraduate_SizeInput').on('mousedown', function () {
+          $("#cross_jGraduate_SizeInput").focus();
+      });
+
       $('#' + id + '_jGraduate_Ok').bind('click', function () {
         $this.paint.type = curType;
 
-        if(curType !== 'crossBackground'){
+        if (curType !== 'crossBackground') {
           $this.paint[curType] = curGradient.cloneNode(true);
           $this.paint.solidColor = null;
         }
         okClicked();
       });
       $('#' + id + '_jGraduate_Cancel').bind('click', function (paint) {
+        cancelClicked();
+      });
+
+      $('#cross_jGraduate_Ok').bind('click', function () {
+        $this.paint.type = 'crossBackground';
+        okClicked();
+      });
+      $('#cross_jGraduate_Cancel').bind('click', function (paint) {
         cancelClicked();
       });
 
@@ -1072,7 +1101,7 @@ export default function jQueryPluginJGraduate ($) {
       let slider;
 
       const setSlider = function (e) {
-        const {offset: {left}} = slider;
+        const { offset: { left } } = slider;
         const div = slider.parent;
         let x = (e.pageX - left - parseInt(div.css('border-left-width')));
         if (x > SLIDERW) x = SLIDERW;
@@ -1081,41 +1110,41 @@ export default function jQueryPluginJGraduate ($) {
         x /= SLIDERW;
 
         switch (slider.type) {
-        case 'radius':
-          x = (x * 2) ** 2.5;
-          if (x > 0.98 && x < 1.02) x = 1;
-          if (x <= 0.01) x = 0.01;
-          curGradient.setAttribute('r', x);
-          break;
-        case 'opacity':
-          $this.paint.alpha = parseInt(x * 100);
-          previewRect.setAttribute('fill-opacity', x);
-          break;
-        case 'ellip':
-          scaleX = 1;
-          scaleY = 1;
-          if (x < 0.5) {
-            x /= 0.5; // 0.001
-            scaleX = x <= 0 ? 0.01 : x;
-          } else if (x > 0.5) {
-            x /= 0.5; // 2
-            x = 2 - x;
-            scaleY = x <= 0 ? 0.01 : x;
-          }
-          xform();
-          x -= 1;
-          if (scaleY === x + 1) {
-            x = Math.abs(x);
-          }
-          break;
-        case 'angle':
-          x -= 0.5;
-          angle = x *= 180;
-          xform();
-          x /= 100;
-          break;
+          case 'radius':
+            x = (x * 2) ** 2.5;
+            if (x > 0.98 && x < 1.02) x = 1;
+            if (x <= 0.01) x = 0.01;
+            curGradient.setAttribute('r', x);
+            break;
+          case 'opacity':
+            $this.paint.alpha = parseInt(x * 100);
+            previewRect.setAttribute('fill-opacity', x);
+            break;
+          case 'ellip':
+            scaleX = 1;
+            scaleY = 1;
+            if (x < 0.5) {
+              x /= 0.5; // 0.001
+              scaleX = x <= 0 ? 0.01 : x;
+            } else if (x > 0.5) {
+              x /= 0.5; // 2
+              x = 2 - x;
+              scaleY = x <= 0 ? 0.01 : x;
+            }
+            xform();
+            x -= 1;
+            if (scaleY === x + 1) {
+              x = Math.abs(x);
+            }
+            break;
+          case 'angle':
+            x -= 0.5;
+            angle = x *= 180;
+            xform();
+            x /= 100;
+            break;
         }
-        slider.elem.css({'margin-left': posx});
+        slider.elem.css({ 'margin-left': posx });
         x = Math.round(x * 100);
         slider.input.val(x);
       };
@@ -1199,47 +1228,47 @@ export default function jQueryPluginJGraduate ($) {
           let val = Number(this.value);
           let xpos = 0;
           switch (type) {
-          case 'radius':
-            if (isRad) curGradient.setAttribute('r', val / 100);
-            xpos = (((val / 100) ** (1 / 2.5)) / 2) * SLIDERW;
-            break;
-
-          case 'opacity':
-            $this.paint.alpha = val;
-            previewRect.setAttribute('fill-opacity', val / 100);
-            xpos = val * (SLIDERW / 100);
-            break;
-
-          case 'ellip':
-            scaleX = scaleY = 1;
-            if (val === 0) {
-              xpos = SLIDERW * 0.5;
+            case 'radius':
+              if (isRad) curGradient.setAttribute('r', val / 100);
+              xpos = (((val / 100) ** (1 / 2.5)) / 2) * SLIDERW;
               break;
-            }
-            if (val > 99.5) val = 99.5;
-            if (val > 0) {
-              scaleY = 1 - (val / 100);
-            } else {
-              scaleX = -(val / 100) - 1;
-            }
 
-            xpos = SLIDERW * ((val + 100) / 2) / 100;
-            if (isRad) xform();
-            break;
+            case 'opacity':
+              $this.paint.alpha = val;
+              previewRect.setAttribute('fill-opacity', val / 100);
+              xpos = val * (SLIDERW / 100);
+              break;
 
-          case 'angle':
-            angle = val;
-            xpos = angle / 180;
-            xpos += 0.5;
-            xpos *= SLIDERW;
-            if (isRad) xform();
+            case 'ellip':
+              scaleX = scaleY = 1;
+              if (val === 0) {
+                xpos = SLIDERW * 0.5;
+                break;
+              }
+              if (val > 99.5) val = 99.5;
+              if (val > 0) {
+                scaleY = 1 - (val / 100);
+              } else {
+                scaleX = -(val / 100) - 1;
+              }
+
+              xpos = SLIDERW * ((val + 100) / 2) / 100;
+              if (isRad) xform();
+              break;
+
+            case 'angle':
+              angle = val;
+              xpos = angle / 180;
+              xpos += 0.5;
+              xpos *= SLIDERW;
+              if (isRad) xform();
           }
           if (xpos > SLIDERW) {
             xpos = SLIDERW;
           } else if (xpos < 0) {
             xpos = 0;
           }
-          handle.css({'margin-left': xpos - 5});
+          handle.css({ 'margin-left': xpos - 5 });
         }).change();
       });
 
@@ -1265,14 +1294,14 @@ export default function jQueryPluginJGraduate ($) {
 
       // This should be done somewhere else, probably
       $.extend($.fn.jPicker.defaults.window, {
-        alphaSupport: true, effects: {type: 'show', speed: 0}
+        alphaSupport: true, effects: { type: 'show', speed: 0 }
       });
 
       colPicker.jPicker(
         {
           window: {
-            title: $settings.window.pickerTitle, 
-            btnOK: $settings.window.btnOK, 
+            title: $settings.window.pickerTitle,
+            btnOK: $settings.window.btnOK,
             btnCancel: $settings.window.btnCancel,
             localization_text_title: $settings.window.localization_text_title,
             localization_text_newColor: $settings.window.localization_text_newColor,
@@ -1299,8 +1328,8 @@ export default function jQueryPluginJGraduate ($) {
             localization_tooltips_hex_textbox: $settings.window.localization_tooltips_hex_textbox,
             localization_tooltips_hex_alpha: $settings.window.localization_tooltips_hex_alpha,
           },
-          images: {clientPath: $settings.images.clientPath},
-          color: {active: color, alphaSupport: true}
+          images: { clientPath: $settings.images.clientPath },
+          color: { active: color, alphaSupport: true }
         },
         function (clr) {
           $this.paint.type = 'solidColor';
@@ -1320,32 +1349,16 @@ export default function jQueryPluginJGraduate ($) {
         $(idref + ' > div').hide();
         const type = $(this).attr('data-type');
         /* const container = */ $(idref + ' .jGraduate_gradPick').show();
-        if (type === 'rg' || type === 'lg' || type === 'cr') {
+        if (type === 'rg' || type === 'lg') {
           // Show/hide appropriate fields
           $('.jGraduate_' + type + '_field').show();
-          // $('.jGraduate_' + (type === 'lg' ? 'rg' : 'lg') + '_field').hide();
-          
-          if (type === 'lg'){
-            $('.jGraduate_rg_field').hide();
-            $('.jGraduate_cr_field').hide();
-            curType = 'linearGradient';
-          }else{
-            if (type === 'rg'){
-              $('.jGraduate_lg_field').hide();
-              $('.jGraduate_cr_field').hide();
-              curType = 'radialGradient';
-            }else{
-              $('.jGraduate_lg_field').hide();
-              $('.jGraduate_rg_field').hide();
-              curType = 'crossBackground';
-            }
-          }
+          $('.jGraduate_' + (type === 'lg' ? 'rg' : 'lg') + '_field').hide();
 
           $('#' + id + '_jgraduate_rect')[0].setAttribute('fill', 'url(#' + id + '_' + type + '_jgraduate_grad)');
 
           // Copy stops
 
-          // curType = type === 'lg' ? 'linearGradient' : 'radialGradient';
+          curType = type === 'lg' ? 'linearGradient' : 'radialGradient';
 
           $('#' + id + '_jGraduate_OpacInput').val($this.paint.alpha).change();
 
@@ -1364,26 +1377,32 @@ export default function jQueryPluginJGraduate ($) {
             $('#' + id + '_jGraduate_match_ctr')[0].checked = false;
           }
         } else {
+          if(type === 'cr'){
+            $(idref + ' .jGraduate_gradPick').hide();
+            $(idref + ' .jGraduate_colPick').hide();
+            $(idref + ' .jGraduate_crossPick').show();
+          }else{
           $(idref + ' .jGraduate_gradPick').hide();
           $(idref + ' .jGraduate_colPick').show();
+          }
         }
       });
       $(idref + ' > div').hide();
       tabs.removeClass('jGraduate_tab_current');
       let tab;
       switch ($this.paint.type) {
-      case 'linearGradient':
-        tab = $(idref + ' .jGraduate_tab_lingrad');
-        break;
-      case 'radialGradient':
-        tab = $(idref + ' .jGraduate_tab_radgrad');
-        break;
-      case 'crossBackground':
+        case 'linearGradient':
+          tab = $(idref + ' .jGraduate_tab_lingrad');
+          break;
+        case 'radialGradient':
+          tab = $(idref + ' .jGraduate_tab_radgrad');
+          break;
+        case 'crossBackground':
           tab = $(idref + ' .jGraduate_tab_cross_backgroud');
           break;
-      default:
-        tab = $(idref + ' .jGraduate_tab_color');
-        break;
+        default:
+          tab = $(idref + ' .jGraduate_tab_color');
+          break;
       }
       $this.show();
 

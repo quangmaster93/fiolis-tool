@@ -3936,7 +3936,7 @@ class SvgCanvas {
       const saveSvg = function (svgData, message) {
         let checkStatus = '';
         const url = '/Services/Save_svg';
-  
+
         $.ajax({
           type: 'POST',
           url: `${url}`,
@@ -3958,7 +3958,7 @@ class SvgCanvas {
             console.log(err);
           }
         });
-  
+
         if (checkStatus === 'True') {
           $.alert(message.ok);
         } else {
@@ -5590,18 +5590,27 @@ class SvgCanvas {
       }
     };
 
-    this.setCross = function (degree, color) {
-      if (canvas.getElem('pattern') !== undefined && canvas.getElem('pattern') !== ""){
-        canvas.getElem('pattern').setAttribute("patternTransform", "rotate(" + degree +" 50 50)")
-        canvas.getElem('pattern').setAttribute("stroke", color)
+    this.setCross = function (degree, size, color) {
+      if (canvas.getElem('pattern') !== undefined && canvas.getElem('pattern') !== null && canvas.getElem('pattern') !== "") {
+        canvas.getElem('pattern').setAttribute("patternTransform", "rotate(" + degree + " 50 50)")
+        canvas.getElem('pattern_svg_2').setAttribute("stroke", color)
+        canvas.getElem('pattern_svg_2').setAttribute("stroke-width", size + 'px')
+      } else {
+        let svgCurrent = canvas.getSvgString().replace("</svg>", "")
+        svgCurrent += `<defs>
+          <pattern height="10" id="pattern" patternTransform="rotate(` + degree + ` 50 50)" patternUnits="userSpaceOnUse" width="8">
+              <line id="pattern_svg_2" stroke="` + color + `" stroke-width="` + size + `" y2="10"/>
+          </pattern>
+        </defs></svg>`
+        this.setSvgString(svgCurrent);
+      }
 
-        let elemSelecteds = canvas.getSelectedElems()
+      let elemSelecteds = canvas.getSelectedElems()
 
-        if(elemSelecteds !== undefined && elemSelecteds.length > 0){
-          $.each(elemSelecteds, function(){
-              this.setAttribute("fill", "url(#pattern)")
-          });
-        }
+      if (elemSelecteds !== undefined && elemSelecteds.length > 0) {
+        $.each(elemSelecteds, function () {
+          this.setAttribute("fill", "url(#pattern)")
+        });
       }
     };
 

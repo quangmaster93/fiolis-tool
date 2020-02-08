@@ -5552,6 +5552,8 @@ editor.init = function () {
     const picker_optionReflect = uiStrings.ui.pick_option_reflect
     const picker_optionRepeat = uiStrings.ui.pick_option_repeat
     const picker_lblAngle = uiStrings.ui.pick_lbl_angle
+    const picker_lblColor = uiStrings.ui.pick_lbl_color
+    const picker_lblSize = uiStrings.ui.pick_lbl_size
     const picker_lblOpac = uiStrings.ui.pick_lbl_opac
     const picker_lblRadius = uiStrings.ui.pick_lbl_radius
     const localization_text_title = uiStrings.localization.text.title
@@ -5592,6 +5594,7 @@ editor.init = function () {
         {
           paint,
           window: {
+            color: picker_lblColor,
             pickerTitle: title,
             solidColor: picker_solid_tab,
             linearColor: picker_linear_tab,
@@ -5618,6 +5621,7 @@ editor.init = function () {
             optReflect: picker_optionReflect,
             optRepeat: picker_optionRepeat,
             lblAngle: picker_lblAngle,
+            lblSize: picker_lblSize,
             lblOpac: picker_lblOpac,
             lblRadius: picker_lblRadius,
             localization_text_title: localization_text_title,
@@ -5655,9 +5659,10 @@ editor.init = function () {
             paintBox[picker].setPaint(paint);
             svgCanvas.setPaint(picker, paint);
           }else{
-            let degreeString = $("#color_picker_jGraduate_AngleInput").val()
+            let color = $("#cross_jGraduate_ColorInput").val()
+            let degreeString = $("#cross_jGraduate_AngleInput").val()
             let degree = 45;
-            let sizeString = $("#color_picker_jGraduate_SizeInput").val()
+            let sizeString = $("#cross_jGraduate_SizeInput").val()
             let size = 2;
             if (degreeString !== undefined && degreeString !== ""){
               degree = parseFloat(degreeString)
@@ -5665,7 +5670,7 @@ editor.init = function () {
             if (sizeString !== undefined && sizeString !== ""){
               size = parseInt(sizeString)
             }
-            svgCanvas.setCross(degree, size, "#000000")
+            svgCanvas.setCross(degree, size, color)
           }
           $('#color_picker').hide();
         },

@@ -54,6 +54,8 @@ export default {
     pick_option_reflect: "Reflect",
     pick_option_repeat: "Repeat",
     pick_lbl_angle: "Angle:",
+    pick_lbl_color: "Color:",
+    pick_lbl_size: "Diagonal line size:",
     pick_lbl_opac: "Opac:",
     pick_lbl_deg: "deg",
     ObjectId: "Object Id",
