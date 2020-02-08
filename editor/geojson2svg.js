@@ -504,7 +504,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
                 <line id="pattern_svg_2" stroke="#a6a6a6" stroke-width="7px" y2="10"/>
             </pattern>
         </defs>
-        <g class="layer" display="none" id="adjacent-lands" transform="translate(${adjacentLandtranslate[0]}, ${adjacentLandtranslate[1]})">
+        <g class="layer" display="none" id="adjacent-lands">
           <title>Thửa liền kề</title>
       `;
 
@@ -542,9 +542,11 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         mainLandSize[1] + mainLandSize[1] * extendSize * 2
       ];
       fullSvgStr += `
-          <svg preserveAspectRatio="xMinYMin slice" width="${adjacentLandSize[0]}" height="${adjacentLandSize[1]}">
-            ${adjacentLands}
-          </svg>
+          <g transform="translate(${adjacentLandtranslate[0]}, ${adjacentLandtranslate[1]})">
+            <svg preserveAspectRatio="xMinYMin slice" width="${adjacentLandSize[0]}" height="${adjacentLandSize[1]}">
+              ${adjacentLands}
+            </svg>
+          </g>
         </g>
       `;
 
