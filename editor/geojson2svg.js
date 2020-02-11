@@ -77,7 +77,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         landInfo = renderLandInfo(properties);
       }
 
-      return `${landInfo}${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${layerBreak}`;
+      return `${landInfo}${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${mainLandItems.blackPoints}${layerBreak}`;
   }
 
   // parse svg string to svg element
@@ -103,6 +103,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
     let centerLabels = '';
 
     let midPoint = [];
+
+    let blackPoints = '';
 
     let transform = '';
 
@@ -139,13 +141,16 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
             // Render edge labels of polygon
             // edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
             edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}">${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
+
+            blackPoints += `<circle cx="${points[index][0]}" cy="${points[index][1]}" r="2" stroke="#000" stroke-width="1px" fill="#000"/>`;
         }
     }
 
     return {
         centerLabels: centerLabels,
         verticeLabels: verticeLabels,
-        edgeLabels: edgeLabels
+        edgeLabels: edgeLabels,
+        blackPoints: blackPoints
     };
   }
 
