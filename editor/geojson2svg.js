@@ -77,7 +77,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         landInfo = renderLandInfo(properties);
       }
 
-      return `${landInfo}${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${mainLandItems.blackPoints}${layerBreak}`;
+      return `${landInfo}${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${mainLandItems.blackPoints}${mainLandItems.directionArrow}${layerBreak}`;
   }
 
   // parse svg string to svg element
@@ -105,6 +105,11 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
     let midPoint = [];
 
     let blackPoints = '';
+
+    let directionArrow = `
+        <text fill="#000" font-family="serif" font-size="35px" font-weight="bold" text-anchor="middle" x="${svgSize[0] - 100}" xml:space="preserve" y="325">B</text>
+        <line marker-end="url(#arrow)" stroke="#000" stroke-width="2" x1="${svgSize[0] - 100}" x2="${svgSize[0] - 100}" y1="400" y2="250"/>
+    `;
 
     let transform = '';
 
@@ -150,7 +155,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         centerLabels: centerLabels,
         verticeLabels: verticeLabels,
         edgeLabels: edgeLabels,
-        blackPoints: blackPoints
+        blackPoints: blackPoints,
+        directionArrow: directionArrow
     };
   }
 
@@ -508,6 +514,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
             <pattern height="10" id="pattern" patternTransform="rotate(45 50 50)" patternUnits="userSpaceOnUse" width="8">
                 <line id="pattern_svg_2" stroke="#a6a6a6" stroke-width="7px" y2="10"/>
             </pattern>
+            <marker id="arrow" markerHeight="10" markerUnits="strokeWidth" markerWidth="10" orient="auto" refX="0" refY="3">
+                <path d="m0,0l0,6l7,-3l-7,-3z" fill="#000"/>
+            </marker>
         </defs>
         <g class="layer" display="none" id="adjacent-lands">
           <title>Thửa liền kề</title>
