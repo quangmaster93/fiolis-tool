@@ -5147,15 +5147,15 @@ editor.init = function () {
 
     toggleLayer(!isShowAdjacent, 'adjacent-lands');
     isShowAdjacent = !isShowAdjacent;
-    if (!isFitToContent) {
-      showIndicator();
-      setTimeout(() => {
-        isFitToContent = true;
-        saveDocProperties('', true);
-        svgCanvas.zoomChanged(window, 'canvas');
-        hideIndicator();
-      }, 1000);
-    }
+    // if (!isFitToContent) {
+    //   showIndicator();
+    //   setTimeout(() => {
+    //     isFitToContent = true;
+    //     saveDocProperties('', true);
+    //     svgCanvas.zoomChanged(window, 'canvas');
+    //     hideIndicator();
+    //   }, 1000);
+    // }
   };
 
   /**
