@@ -113,7 +113,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
     let transform = '';
 
-    const moveVerticeLabels = 5;
+    // const moveVerticeLabels = 5;
+    let verticeLabelPosition = [];
 
     const moveEdgeLabels = -4;
 
@@ -134,9 +135,15 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
     // Render vertice labels and edge labels of polygon
     for (let index = 0; index < (points || []).length; index++) {
         if (index < points.length - 1) {
+            verticeLabelPosition = getVerticeLabelPosition(
+                centerPoint[0],
+                centerPoint[1],
+                points[index][0],
+                points[index][1]
+            )
 
             // Render vertice labels of polygon
-            verticeLabels += `${textFormat} x="${points[index][0] + moveVerticeLabels}" y="${points[index][1] + moveVerticeLabels}">${index + 1}</text>`;
+            verticeLabels += `${textFormat} x="${verticeLabelPosition[0]}" y="${verticeLabelPosition[1]}">${index + 1}</text>`;
 
             midPoint = getMidpointCoordinate(points[index], points[index + 1]);
 
@@ -158,6 +165,16 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         blackPoints: blackPoints,
         directionArrow: directionArrow
     };
+  }
+
+  function getVerticeLabelPosition(x1, y1, x2, y2, move = 10) {
+    const lineLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    const percentage = move / lineLength;
+
+    return [
+        ((x2 - x1) * percentage) + x2,
+        ((y2 - y1) * percentage) + y2
+    ];
   }
 
   function angleBetweenPoints(point1, point2, midPoint, centerPoint) {
