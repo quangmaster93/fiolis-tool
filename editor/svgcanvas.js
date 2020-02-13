@@ -3919,7 +3919,7 @@ class SvgCanvas {
       saveOptions.apply = true;
 
       // no need for doctype, see https://jwatt.org/svg/authoring/#doctype-declaration
-      const str = this.svgCanvasToString();
+      const str = this.svgCanvasToString().replaceAll("\"", "\'");
       console.log(str);
       call('saved', str);
     };
@@ -3927,7 +3927,7 @@ class SvgCanvas {
     this.saveDatabase = function (svgData, message) {
       // remove the selected outline before serializing
       clearSelection();
-      svgData.dataSVG = this.svgCanvasToString();
+      svgData.dataSVG = this.svgCanvasToString().replaceAll("\"", "\'");
 
       let checkStatus = "";
       const url = 'https://api-fiolis.map4d.vn/v2/api/land-certificate/save-or-update';
@@ -4604,6 +4604,7 @@ class SvgCanvas {
     this.setSvgString = function (xmlString, preventUndo) {
       try {
         // convert string into XML document
+        xmlString = xmlString.replaceAll("\"", "\'")
         const newDoc = text2xml(xmlString);
         if (newDoc.firstElementChild &&
           newDoc.firstElementChild.namespaceURI !== NS.SVG) {
