@@ -77,7 +77,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         landInfo = renderLandInfo(properties);
       }
 
-      return `${landInfo}${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${layerBreak}`;
+      return `${landInfo}${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${mainLandItems.blackPoints}${mainLandItems.directionArrow}${layerBreak}`;
   }
 
   // parse svg string to svg element
@@ -104,9 +104,17 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
     let midPoint = [];
 
+    let blackPoints = '';
+
+    let directionArrow = `
+        <text fill="#000" font-family="serif" font-size="35px" font-weight="bold" text-anchor="middle" x="${svgSize[0] - 100}" xml:space="preserve" y="325">B</text>
+        <line marker-end="url(#arrow)" stroke="#000" stroke-width="2" x1="${svgSize[0] - 100}" x2="${svgSize[0] - 100}" y1="400" y2="250"/>
+    `;
+
     let transform = '';
 
-    const moveVerticeLabels = 5;
+    // const moveVerticeLabels = 5;
+    let verticeLabelPosition = [];
 
     const moveEdgeLabels = -4;
 
@@ -127,9 +135,15 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
     // Render vertice labels and edge labels of polygon
     for (let index = 0; index < (points || []).length; index++) {
         if (index < points.length - 1) {
+            verticeLabelPosition = getVerticeLabelPosition(
+                centerPoint[0],
+                centerPoint[1],
+                points[index][0],
+                points[index][1]
+            )
 
             // Render vertice labels of polygon
-            verticeLabels += `${textFormat} x="${points[index][0] + moveVerticeLabels}" y="${points[index][1] + moveVerticeLabels}">${index + 1}</text>`;
+            verticeLabels += `${textFormat} x="${verticeLabelPosition[0]}" y="${verticeLabelPosition[1]}">${index + 1}</text>`;
 
             midPoint = getMidpointCoordinate(points[index], points[index + 1]);
 
@@ -139,14 +153,28 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
             // Render edge labels of polygon
             // edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
             edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}">${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
+
+            blackPoints += `<circle cx="${points[index][0]}" cy="${points[index][1]}" r="2" stroke="#000" stroke-width="1px" fill="#000"/>`;
         }
     }
 
     return {
         centerLabels: centerLabels,
         verticeLabels: verticeLabels,
-        edgeLabels: edgeLabels
+        edgeLabels: edgeLabels,
+        blackPoints: blackPoints,
+        directionArrow: directionArrow
     };
+  }
+
+  function getVerticeLabelPosition(x1, y1, x2, y2, move = 10) {
+    const lineLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    const percentage = move / lineLength;
+
+    return [
+        ((x2 - x1) * percentage) + x2,
+        ((y2 - y1) * percentage) + y2
+    ];
   }
 
   function angleBetweenPoints(point1, point2, midPoint, centerPoint) {
@@ -503,6 +531,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
             <pattern height="10" id="pattern" patternTransform="rotate(45 50 50)" patternUnits="userSpaceOnUse" width="8">
                 <line id="pattern_svg_2" stroke="#a6a6a6" stroke-width="7px" y2="10"/>
             </pattern>
+            <marker id="arrow" markerHeight="10" markerUnits="strokeWidth" markerWidth="10" orient="auto" refX="0" refY="3">
+                <path d="m0,0l0,6l7,-3l-7,-3z" fill="#000"/>
+            </marker>
         </defs>
         <g class="layer" display="none" id="adjacent-lands">
           <title>Thửa liền kề</title>
