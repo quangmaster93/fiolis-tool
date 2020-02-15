@@ -3738,6 +3738,7 @@ editor.init = function () {
   // $('#text').blur(function () { textBeingEntered = false; });
 
   // bind the selected event to our function that handles updates to the UI
+  
   svgCanvas.bind('selected', selectedChanged);
   svgCanvas.bind('transition', elementTransition);
   svgCanvas.bind('changed', elementChanged);
@@ -5870,6 +5871,14 @@ editor.init = function () {
   $('#zoomLabel').click(function () {
     $('#zoom_dropdown button').mousedown();
     $(window).mouseup();
+  });
+
+  $('#txtSoTo').on('mousedown', function () {
+    $("#txtSoTo").focus();
+  });
+
+  $('#txtSoThua').on('mousedown', function () {
+      $("#txtSoThua").focus();
   });
 
   $('#tool_move_top').mousedown(function (evt) {
