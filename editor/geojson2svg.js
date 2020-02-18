@@ -55,7 +55,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       let mainLandItems = {
         centerLabels: '',
         verticeLabels: '',
-        edgeLabels: ''
+        edgeLabels: '',
+        blackPoints: '',
+        directionArrow: ''
       };
 
       let svgStr;
@@ -575,7 +577,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
       fullSvgStr += `
           <g transform="translate(${adjacentLandtranslate[0]}, ${adjacentLandtranslate[1]})">
             <svg preserveAspectRatio="xMinYMin slice" width="${adjacentLandSize[0]}" height="${adjacentLandSize[1]}">
-              ${adjacentLands}
+              ${adjacentLands.join('')}
             </svg>
           </g>
         </g>
