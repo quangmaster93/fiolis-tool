@@ -3927,7 +3927,8 @@ class SvgCanvas {
     this.saveDatabase = function (svgData, message) {
       // remove the selected outline before serializing
       clearSelection();
-      svgData.dataSVG = this.svgCanvasToString().replaceAll("\"", "\'");
+      svgData.dataSVG = this.svgCanvasToString().replaceAll("\"", "\'")
+        .replace(`display='block' id='arrow-layer'`, `display='none' id='arrow-layer'`);
 
       let checkStatus = "";
       const url = 'https://api-fiolis.map4d.vn/v2/api/land-certificate/save-or-update';
@@ -4605,6 +4606,7 @@ class SvgCanvas {
       try {
         // convert string into XML document
         xmlString = xmlString.replaceAll("\"", "\'")
+          .replace(`display='none' id='arrow-layer'`, `display='block' id='arrow-layer'`);
         const newDoc = text2xml(xmlString);
         if (newDoc.firstElementChild &&
           newDoc.firstElementChild.namespaceURI !== NS.SVG) {

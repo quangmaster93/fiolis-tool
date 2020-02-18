@@ -56,8 +56,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         centerLabels: '',
         verticeLabels: '',
         edgeLabels: '',
-        blackPoints: '',
-        directionArrow: ''
+        blackPoints: ''
       };
 
       let svgStr;
@@ -79,7 +78,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         landInfo = renderLandInfo(properties);
       }
 
-      return `${landInfo}${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${mainLandItems.blackPoints}${mainLandItems.directionArrow}${layerBreak}`;
+      return `${landInfo}${svgStyle}${mainLandItems.centerLabels}${mainLandItems.verticeLabels}${mainLandItems.edgeLabels}${mainLandItems.blackPoints}${layerBreak}`;
   }
 
   // parse svg string to svg element
@@ -107,11 +106,6 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
     let midPoint = [];
 
     let blackPoints = '';
-
-    let directionArrow = `
-        <text fill="#000" font-family="serif" font-size="35px" font-weight="bold" text-anchor="middle" x="${svgSize[0] - 100}" xml:space="preserve" y="325">B</text>
-        <line marker-end="url(#arrow)" stroke="#000" stroke-width="2" x1="${svgSize[0] - 100}" x2="${svgSize[0] - 100}" y1="400" y2="250"/>
-    `;
 
     let transform = '';
 
@@ -164,8 +158,7 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         centerLabels: centerLabels,
         verticeLabels: verticeLabels,
         edgeLabels: edgeLabels,
-        blackPoints: blackPoints,
-        directionArrow: directionArrow
+        blackPoints: blackPoints
     };
   }
 
@@ -263,6 +256,17 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         `;
 
       return landInfo;
+  }
+
+  function renderDirectionArrow(svgSize) {
+    const directionArrow = `
+      <g display="block" id="arrow-layer">
+        <title>Mũi tên</title>
+        <text fill="#000" font-family="serif" font-size="35px" font-weight="bold" text-anchor="middle" x="${svgSize[0] - 100}" xml:space="preserve" y="325">B</text>
+        <line marker-end="url(#arrow)" stroke="#000" stroke-width="2" x1="${svgSize[0] - 100}" x2="${svgSize[0] - 100}" y1="400" y2="250"/>
+      </g>`;
+    
+    return directionArrow;
   }
 
   function getMidpointCoordinate(firstPoint, secondPoint) {
@@ -583,6 +587,9 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         </g>
       `;
 
+      const directionArrow = renderDirectionArrow(svgSize);
+
+      fullSvgStr += `${directionArrow}`;
       fullSvgStr += `${cordinateTable}`;
       fullSvgStr += `${mainLand}</svg>`;
 
