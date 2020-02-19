@@ -148,7 +148,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
 
             // Render edge labels of polygon
             // edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}" ${transform}>${(+properties.calculate[0][0][0].distances[index]).toFixed(2)} m</text>`;
-            edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}">${(+properties.calculate[0][0][0].distances[index]).toFixed(2)}</text>`;
+            const calculate = properties.calculate[0][0][0] || properties.calculate[0][0];
+            edgeLabels += `${textFormat} x="${midPoint[0] + moveEdgeLabels}" y="${midPoint[1] + moveEdgeLabels}">${(+calculate.distances[index]).toFixed(2)}</text>`;
 
             blackPoints += `<circle cx="${points[index][0]}" cy="${points[index][1]}" r="2" stroke="#000" stroke-width="1px" fill="#000"/>`;
         }
@@ -462,7 +463,8 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
           let pixelPoints = points.map(pt => geoPointToPixelPoint(pt, geometrySize, xRes, yRes, res, extent, origin, option.padding));
 
           if (isMainLand) {
-              cordinateTable = renderCordinateTable(points, properties.calculate[0][0][0].distances)
+              const calculate = properties.calculate[0][0][0] || properties.calculate[0][0];
+              cordinateTable = renderCordinateTable(points, calculate.distances)
           }
           // the first polygon is outer polygon
           if (index == 0 || Array.isArray(geojson)) {
