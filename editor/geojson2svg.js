@@ -194,12 +194,12 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
             yAxes += yAxesIncrease;
             raws += 
                 `
-                <text font-size="10px" text-anchor="middle" x="${xStart + yAxesStart}" y="${yStart + 32}" alignment-baseline="middle">
-                    <tspan fill="#000" text-anchor="start" x="${xStart + yAxesStart}" y="${yStart + yAxes}">${index + 1}</tspan>
-                    <tspan x="${xStart + 85}" y="${yStart + yAxes}">${pt[0].toFixed(2)}</tspan>
-                    <tspan x="${xStart + 160}" y="${yStart + yAxes}">${pt[1].toFixed(2)}</tspan>
-                    <tspan x="${xStart + 235}" y="${yStart + yAxes}">${(+edgeLabels[index]).toFixed(2)}</tspan>
+                <rect fill="none" height="16" id="header" stroke="#000" width="70" x="${xStart + 90}" y="${yStart + 40 + (index * 16)}" xmlns="http://www.w3.org/2000/svg"/>
+                <text font-size="10px" text-anchor="middle" x="${xStart + 30}" y="${yStart + yAxesStart}">
+                    <tspan x="${xStart + 125}" y="${yStart + yAxes + 15 + (index * 4)}">${index + 1}</tspan>
+                    <tspan text-anchor="start" x="${xStart + 190}" y="${yStart + yAxes + 15 + (index * 4)}">${(+edgeLabels[index]).toFixed(2)}</tspan>
                 </text>
+                
                 `;
         }
       });
@@ -209,21 +209,16 @@ export default function geojson2svg(geojson, option, sheetNum, parcelNum) {
         <g class="layer" id="cordinates-table">
             <title>Bảng tọa độ góc ranh</title>
             <g class="layer" id="table" xmlns="http://www.w3.org/2000/svg">
-                <text fill="#000" font-size="10px" font-weight="bold" text-anchor="middle" x="${xStart + 135}" y="${yStart + 5}">
-                BẢNG LIỆT KÊ TỌA ĐỘ GÓC RANH
-                </text>
-                <rect fill="none" height="15" id="header" stroke="#000" width="260" x="${xStart + 10}" y="${yStart + 10}" xmlns="http://www.w3.org/2000/svg"/>
-                <line fill="none" stroke="#000" x1="${xStart + 10}" x2="${xStart + 10}" y1="${yStart + 25}" y2="${yStart + endPointY}"/>
-                <line fill="none" stroke="#000" x1="${xStart + 50}" x2="${xStart + 50}" y1="${yStart + 10}" y2="${yStart + endPointY}"/>
-                <line fill="none" stroke="#000" x1="${xStart + 120}" x2="${xStart + 120}" y1="${yStart + 10}" y2="${yStart + endPointY}"/>
-                <line fill="none" stroke="#000" x1="${xStart + 200}" x2="${xStart + 200}" y1="${yStart + 10}" y2="${yStart + endPointY}"/>
-                <line fill="none" stroke="#000" x1="${xStart + 270}" x2="${xStart + 270}" y1="${yStart + 25}" y2="${yStart + endPointY}"/>
-                <line fill="none"  stroke="#000" x1="${xStart + 10}" x2="${xStart + 270}" y1="${yStart + endPointY}" y2="${yStart + endPointY}"/>
+                <rect fill="none" height="30" id="header" stroke="#000" width="142" x="${xStart + 90}" y="${yStart + 10}" xmlns="http://www.w3.org/2000/svg"/>
+                <line fill="none" stroke="#000" x1="${xStart + 90}" x2="${xStart + 90}" y1="${yStart + 10}" y2="${yStart + endPointY + 10}"/>
+                <line fill="none" stroke="#000" x1="${xStart + 160}" x2="${xStart + 160}" y1="${yStart + 10}" y2="${yStart + 40}"/>
+                <line fill="none" stroke="#000" x1="${xStart + 232}" x2="${xStart + 232}" y1="${yStart + 10}" y2="${yStart + 40 + (points.length - 1) * 16}"/>
+                <line fill="none"  stroke="#000" x1="${xStart + 90}" x2="${xStart + 232}" y1="${yStart + 40 + (points.length - 1) * 16}" y2="${yStart + 40 + (points.length - 1) * 16}"/>
                 <text fill="#000" font-size="10px" text-anchor="middle" x="${xStart + 30}" y="${yStart + yAxesStart}">
-                    <tspan x="${xStart + 30}" y="${yStart + yAxesStart}">Điểm</tspan>
-                    <tspan x="${xStart + 85}" y="${yStart + yAxesStart}">X (m)</tspan>
-                    <tspan x="${xStart + 160}" y="${yStart + yAxesStart}">Y (m)</tspan>
-                    <tspan x="${xStart + 235}" y="${yStart + yAxesStart}">Cạnh (m)</tspan>
+                    <tspan x="${xStart + 125}" y="${yStart + yAxesStart + 3}">Số hiệu đỉnh</tspan>
+                    <tspan x="${xStart + 125}" y="${yStart + yAxesStart + 13}">thửa</tspan>
+                    <tspan x="${xStart + 195}" y="${yStart + yAxesStart + 3}">Chiều dài</tspan>
+                    <tspan x="${xStart + 195}" y="${yStart + yAxesStart + 13}">(m)</tspan>
                 </text>
                 ${raws}
             </g>
