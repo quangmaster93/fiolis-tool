@@ -539,9 +539,10 @@ editor.loadContentAndPrefs = function () {
 };
 
 const convertGeojsonToSvg = function (geojson, sheetNum, parcelNum) {
+  const resize = [331/900, 230/1000];
   var option = {
-    size: [900, 1000],           // size[0] is svg width, size[1] is svg height
-    padding: [300, 300, 400, 300],  // paddingTop, paddingRight, paddingBottom, paddingLeft, respectively
+    size: [900 * resize[0], 1000 * resize[1]],           // size[0] is svg width, size[1] is svg height
+    padding: [300 * resize[1], 300 * resize[0], 400 * resize[1], 300 * resize[0]],  // paddingTop, paddingRight, paddingBottom, paddingLeft, respectively
     output: 'element',          // output type: 'string' | 'element'(only supported in browser)
     precision: 3,               // svg coordinates precision
     stroke: '#000',             // stroke color
